@@ -14,7 +14,10 @@ pipeline_utils.o: pipeline_utils.h
 
 emulate: pipeline_utils.o emulate.o
 
+execute_test: pipeline_utils.o execute_test.o
+
 clean:
 	rm -f $(wildcard *.o)
 	rm -f assemble
 	rm -f emulate
+	rm -f execute_test
