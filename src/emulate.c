@@ -6,6 +6,7 @@
 
 #define MASK_16 (1 << 16) - 1
 
+// loads the instructions read from a file into memory
 int loadToMemory(struct CurrentState currentState, char *filepath){
   FILE *sourceFile;
   sourceFile = fopen(filepath, "rb");
@@ -31,12 +32,13 @@ int loadToMemory(struct CurrentState currentState, char *filepath){
   return fclose(sourceFile);
 }
 
+// fetches an instruction from memory at the regPC address
 void fetchInstruction(struct CurrentState currentState, struct Pipeline currentPipeline){
   // Shifting the pipeline
   currentPipeline.executed = currentPipeline.decoded;
   currentPipeline.decoded = currentPipeline.fetched;
   
-  // Fetch next instruction, masking the PC adress, and incrament PC
+  // Fetching next instruction, masking the PC adress, and incramenting PC
   currentPipeline.fetched = currentState.memory[(currentState.regPC) & (MASK_16)];
   currentState.regPC += 4;
 }
@@ -44,7 +46,10 @@ void fetchInstruction(struct CurrentState currentState, struct Pipeline currentP
 int main(int argc, char **argv) {
   assert (argc == 2);
   
+  // a structure representing the current state including memory and registers
   struct CurrentState currentState = { 0 };
+
+  // a structure representing the instructions currently being fetched, decoded and executed
   struct Pipeline currentPipeline = { 0 };
   
   loadToMemory(currentState, argv[1]);

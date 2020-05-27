@@ -1,19 +1,16 @@
-#include <stdint.h>
+// a header specifying all the structures and enums we use to represent the current state
+// of our machines memory registers and the state of the pipeline
+// as well as all the functions that alter these features
 
+#include <stdint.h>
 #ifndef PIPELINE_UTILS_H
 #define PIPELINE_UTILS_H
-
-/* Registers stored as 32 bit unsigned ints:
-     0-12  - general use
-     13-14 - SP, LR (ignored for this)
-     15    - PC
-     16    - CPSR
- */
 
 #define MEMORY_SIZE 32768
 
 typedef uint32_t Instruction;
 
+// structure for representing the current state of the memory and all registers
 typedef struct CurrentState{
   // general purpose registers
   uint32_t reg0;
@@ -45,12 +42,16 @@ typedef struct CurrentState{
   uint8_t memory[MEMORY_SIZE];
 } State;
 
+// structure for representing the currently
+// fetched, decoded and executed instructions
 typedef struct Pipeline{
   Instruction fetched;
   Instruction decoded;
   Instruction executed;
 } Pipe;
 
+// enum representing all 4 instruction types
+// plus the all-0 - HALT instruction
 typedef enum instr_type{
 		BRANCH,
 		DATA_TRANSFER,
@@ -59,6 +60,8 @@ typedef enum instr_type{
 		HALT
 } InstructionType;
 
+// enum representing condition codes
+// as hexadecinal numbers
 typedef enum condition_code{
 	       eq = 0x0,   // 0b0000
 	       ne = 0x1,   // 0b0001
@@ -68,5 +71,18 @@ typedef enum condition_code{
 	       le = 0xD,   // 0b1101
 	       al = 0xE    // 0b1110
 } ConditionCode;
+
+//Returns an enum type specifying the type of the given instruction
+InstructionType determineType(Instruction instruction);
+
+// Determines the condition code of a given instruction
+ConditionCode determineCondition(Instruction instruction);
+
+// returns 1 if the condition code is satisfied
+// by the current instruction, 0 otherwise
+int determineValidity(Instruction instruction, struct CurrentState state);
+
+
+
 
 #endif // PIPELINE_UTILS_H
