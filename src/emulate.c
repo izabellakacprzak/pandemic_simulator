@@ -7,7 +7,7 @@
 #define MASK_16 (1 << 16) - 1
 
 // loads the instructions read from a file into memory
-int loadToMemory(struct CurrentState currentState, char *filepath){
+int loadToMemory(struct CurrentState *currentStatePtr, char *filepath){
 	FILE *sourceFile;
 	sourceFile = fopen(filepath, "rb");
 
@@ -25,49 +25,53 @@ int loadToMemory(struct CurrentState currentState, char *filepath){
 			exit(EXIT_FAILURE);
 		}
 
-		fread(&currentState.memory[i], 4, 1, sourceFile);
+		fread(&currentStatePtr->memory[i], 4, 1, sourceFile);
 		i += 4;
 	}
 
 	return fclose(sourceFile);
 }
 
+
 int main(int argc, char **argv) {
 	assert (argc == 2);
 
 	// a structure representing the current state including memory and registers
 	struct CurrentState currentState = { 0 };
+	struct CurrentState *currentStatePtr = &currentState;
 
 	// a structure representing the instructions
 	// currently being fetched, decoded and executed
 	struct Pipeline currentPipeline = { 0 };
+	struct Pipeline *currentPipelinePtr = &currentPipeline;
 
 	// loading all the instructions from the given file into memory
-	loadToMemory(currentState, argv[1]);
+	loadToMemory(currentStatePtr, argv[1]);
 
 	// fetching the first instruction
-	fetchInstruction(currentState, currentPipeline);
+	fetchInstruction(currentStatePtr, currentPipelinePtr);
 	
 	// fetching the second instruction
-	fetchInstruction(currentState, currentPipeline);
+	fetchInstruction(currentStatePtr, currentPipelinePtr);
 
-
-	InstructionType decodedInstruction;
 	while (1) {
 		// decoding the instruction from currentPipeline.decoded
-		decodedInstruction = determineType(currentPipeline.decoded);
+		InstructionType decodedInstruction = determineType(currentPipeline.decoded);
 
 		// fetching a new instruction
 		// passing the decoded into executed
-		fetchInstruction(currentState, currentPipeline);
+		fetchInstruction(currentStatePtr, currentPipelinePtr);
 
 		// checking if the previously decoded instruction
 		// is valid (checcing the condition code)
 		// and if so executing
-		if(determineValidity(currentPipeline.executed, currentState)){
+		if(determineValidity(currentPipeline.executed, currentStatePtr)){
 			//execute(decodedInstruction, currentPipeline.executed);
 		}
-		return EXIT_SUCCESS;
+		
+		if (decodedInstruction == HALT) {
+		    return EXIT_SUCCESS;
+		}
 	}
 
 	return EXIT_SUCCESS;

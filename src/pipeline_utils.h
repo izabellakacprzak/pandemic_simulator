@@ -80,11 +80,11 @@ ConditionCode determineCondition(Instruction instruction);
 
 // returns 1 if the condition code is satisfied
 // by the current instruction, 0 otherwise
-int determineValidity(Instruction instruction, struct CurrentState state);
+int determineValidity(Instruction instruction, struct CurrentState *statePtr);
 
 // fetches an instruction from memory at the regPC address
 // putting it into currentState.fetched
 // shifts the pipeline and increments the PC
-void fetchInstruction(struct CurrentState currentState, struct Pipeline currentPipeline);
+void fetchInstruction(struct CurrentState *currentStatePtr, struct Pipeline *currentPipelinePtr);
 
 #endif // PIPELINE_UTILS_H
