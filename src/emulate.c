@@ -56,8 +56,9 @@ enum InstructType {HALT, DATA_PROCESSING, MULTIPLY, SINGLE_DATA_TRANSFER, BRANCH
 
 int loadToMemory(struct CurrentState currentState, char *filepath){
   FILE *sourceFile;
-  
-  if((sourceFile = fopen(filepath, "rb")) == NULL){
+  sourceFile = fopen(filepath, "rb")
+   
+  if(!sourceFile){
     perror("Error opening file");
     exit(EXIT_FAILURE);
   }
