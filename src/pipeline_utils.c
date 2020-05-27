@@ -64,11 +64,11 @@ int determineValidity(Instruction instruction, struct CurrentState state){
   ConditionCode condition = determineCondition(instruction);
   int validity = 0;
 
-  uint32_t setZ = (state.regCPSR & Z_MASK) >> 31;
+  uint32_t setZ = state.regCPSR & (1 << 30);
   uint32_t clearZ = !(setZ);
 
-  uint32_t stateOfN = state.regCPSR >> 31;
-  uint32_t stateOfV = (state.regCPSR << 3) >> 31;
+  uint32_t stateOfN = state.regCPSR & (1 << 31);
+  uint32_t stateOfV = state.regCPSR & (1 << 28);
 
   switch(condition) {
   case eq: validity = setZ;
