@@ -88,3 +88,4 @@ int determineValidity(Instruction instruction, struct CurrentState state){
   return validity;
 
 }
+
