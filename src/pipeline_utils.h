@@ -82,7 +82,9 @@ ConditionCode determineCondition(Instruction instruction);
 // by the current instruction, 0 otherwise
 int determineValidity(Instruction instruction, struct CurrentState state);
 
-
-
+// fetches an instruction from memory at the regPC address
+// putting it into currentState.fetched
+// shifts the pipeline and increments the PC
+void fetchInstruction(struct CurrentState currentState, struct Pipeline currentPipeline);
 
 #endif // PIPELINE_UTILS_H

@@ -4,6 +4,19 @@
 
 #define Z_MASK (1 << 30)
 
+// fetches an instruction from memory at the regPC address
+// putting it into currentState.fetched
+// shifts the pipeline and increments the PC
+void fetchInstruction(struct CurrentState currentState, struct Pipeline currentPipeline){
+  // Shifting the pipeline
+  currentPipeline.executed = currentPipeline.decoded;
+  currentPipeline.decoded = currentPipeline.fetched;
+
+  // Fetching next instruction, masking the PC adress, and incramenting PC
+  currentPipeline.fetched = currentState.memory[(currentState.regPC) & (MASK_16)];
+  currentState.regPC += 4;
+}
+
 //Returns an enum type specifying the type of the given instruction
 InstructionType determineType(Instruction instruction){
   //HALT = all-0 instruction all bits are 0
