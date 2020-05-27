@@ -1,6 +1,7 @@
 CC      = gcc
-CFLAGS  = -Wall -g -D_DEFAULT_SOURCE -std=c99 -pedantic
-BUILD	= assemble emulate
+CFLAGS  = -Wall -Ilib -g -D_DEFAULT_SOURCE -std=c99 -pedantic
+LDLIBS  = -Lemulatelib -lemulate_utils
+BUILD	= libs assemble emulate
 
 .SUFFIXES: .c .o
 
@@ -10,11 +11,13 @@ all: $(BUILD)
 
 assemble: assemble.o
 
-pipeline_utils.o: pipeline_utils.h
+emulate:  emulate.o
 
-emulate: pipeline_utils.o emulate.o
+libs:
+	cd emulatelib; make
 
 clean:
 	rm -f $(wildcard *.o)
 	rm -f assemble
 	rm -f emulate
+	cd emulatelib; make clean
