@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "pipeline_utis.h"
+
 //Define masks for the particular bits instead of creating them in the if?
 
 #define Z_MASK (1 << 30)
@@ -63,24 +64,24 @@ int determineValidity(Instruction instruction, struct CurrentState state){
   ConditionCode condition = determineCondition(instruction);
   int validity = 0;
 
-  uint32_t setZ = state.regCPSR & Z_MASK;
+  uint32_t setZ = (state.regCPSR & Z_MASK) >> 31;
   uint32_t clearZ = !(setZ);
 
   uint32_t stateOfN = state.regCPSR >> 31;
   uint32_t stateOfV = (state.regCPSR << 3) >> 31;
 
   switch(condition) {
-  case eq:
+  case eq: validity = setZ;
     break;
-  case ne:
+  case ne: validity = clearZ;
     break;
-  case ge:
+  case ge: validity = (stateOfN == stateOfV);
+    break; 
+  case lt: validity = (stateOfN != stateOfV);
     break;
-  case lt:
+  case gt: validity = clearZ && (stateOfN == stateOfV);
     break;
-  case gt:
-    break;
-  case le:
+  case le: validity = setZ || (stateOfN != stateOfV);
     break;
   case al: validity = 1;
     break;
