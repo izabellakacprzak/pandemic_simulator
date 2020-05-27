@@ -6,7 +6,7 @@
 
 #define MASK_16 (1 << 16) - 1
 
-int loadToMemory(struct CurrentState currentState, char *filepath){
+int loadToMemory(struct CurrentState *currentStatePtr, char *filepath){
   FILE *sourceFile;
   sourceFile = fopen(filepath, "rb");
    
@@ -24,21 +24,29 @@ int loadToMemory(struct CurrentState currentState, char *filepath){
       exit(EXIT_FAILURE);
     }
 
-    fread(&currentState.memory[i], 4, 1, sourceFile);
+    fread(&(*currentStatePtr).memory[i], 4, 1, sourceFile);
     i += 4;
   }
   
   return fclose(sourceFile);
 }
 
-void fetchInstruction(struct CurrentState currentState, struct Pipeline currentPipeline){
+void fetchInstruction(struct CurrentState *currentStatePtr, struct Pipeline *currentPipelinePtr){
   // Shifting the pipeline
-  currentPipeline.executed = currentPipeline.decoded;
-  currentPipeline.decoded = currentPipeline.fetched;
+  (*currentPipelinePtr).executed = (*currentPipelinePtr).decoded;
+  (*currentPipelinePtr).decoded = (*currentPipelinePtr).fetched;
   
-  // Fetch next instruction, masking the PC adress, and incrament PC
-  currentPipeline.fetched = currentState.memory[(currentState.regPC) & (MASK_16)];
-  currentState.regPC += 4;
+  // Fetch next instruction, masking the PC adress, and increment PC
+  
+  //(*currentPipelinePtr).fetched = (*currentStatePtr).memory[((*currentStatePtr).regPC) & (MASK_16)];
+  uint8_t first = (*currentStatePtr).memory[(*currentStatePtr).regPC];
+  uint8_t second = (*currentStatePtr).memory[(*currentStatePtr).regPC + 1];
+  uint8_t third = (*currentStatePtr).memory[(*currentStatePtr).regPC + 2];
+  uint8_t fourth = (*currentStatePtr).memory[(*currentStatePtr).regPC + 3];
+
+    
+  (*currentPipelinePtr).fetched = (first << 24) | (second << 16) | (third << 8) | fourth;
+  (*currentStatePtr).regPC += 4;
 }
   
 int main(int argc, char **argv) {
@@ -46,26 +54,33 @@ int main(int argc, char **argv) {
   
   struct CurrentState currentState = { 0 };
   struct Pipeline currentPipeline = { 0 };
-  
-  loadToMemory(currentState, argv[1]);
 
-  fetchInstruction(currentState, currentPipeline);
+  struct CurrentState *currentStatePtr = &currentState;
+  struct Pipeline *currentPipelinePtr = &currentPipeline;
+  
+  loadToMemory(currentStatePtr, argv[1]);
+
+  fetchInstruction(currentStatePtr, currentPipelinePtr);
+
+  // do we need an extra decode?
   
   while (1) {
     // Fetch
 
-    fetchInstruction(currentState, currentPipeline);
+    fetchInstruction(currentStatePtr, currentPipelinePtr);
 
     // Decode
     
-    
+    InstructionType type;
+    type = determineType(currentPipeline.decoded);
 
     // Execute
 
     
-    
-    return EXIT_SUCCESS;
+    if (type == HALT) {
+      return EXIT_SUCCESS;
+    }
   }
   
-  return EXIT_SUCCESS;
+  return EXIT_FAILURE;
 }
