@@ -58,11 +58,11 @@ int main(int argc, char **argv) {
 
     // Decode
     
-    // enum InstructType type = decodeInstruction(currentState, currentPipeline);
+    
 
     // Execute
 
-
+    
     
     return EXIT_SUCCESS;
   }
