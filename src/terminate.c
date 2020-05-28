@@ -5,15 +5,17 @@
 #define SIZE_OF_MEM 23
 
 void terminate(struct CurrentState* currentState){
-	printf("Refisters:\n");
-	for(int i = 0; i < NUM_OF_REGISTERS; i++){
-		printf("$%d\t:\t%d (%x)", i, currentState.reg0
-	}
+        printf("Refisters:\n");
+        uint32_t *regPtr = &currentState->reg0;
+        for(int i = 0; i < 17; i++){
+                printf("$%d\t:\t%u (%x)", i, *regPtr, *regPtr);
+                regPtr++;
+        }
 
-	printf("Non-zero memory:\n");
-	for(int i = 0; i < SIZE_OF_MEM; i++){
-		if(currentState.memory[i] != 0){
-			printf("%x: %x", i*4, currentState.memory[i]);
-		}
-	}
+        printf("Non-zero memory:\n");
+        for(int i = 0; i < MEMORY_SIZE; i++){
+                if(currentState->memory[i] != 0){
+                        printf("%x: %x", i*4, currentState->memory[i]);
+                }
+        }
 }

@@ -1,20 +1,43 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "pipeline_utils.h"
+#include <stdio.h>
 
 #define Z_MASK (1 << 30)
+
+void terminate(struct CurrentState* currentState){
+        printf("Refisters:\n");
+	uint32_t *regPtr = &currentState->reg0;
+        for(int i = 0; i < 17; i++){
+                printf("$%d\t:\t%u (%x)", i, *regPtr, *regPtr);
+		regPtr++;
+        }
+
+        printf("Non-zero memory:\n");
+        for(int i = 0; i < MEMORY_SIZE; i++){
+                if(currentState->memory[i] != 0){
+                        printf("%x: %x", i*4, currentState->memory[i]);
+                }
+        }
+}
 
 // fetches an instruction from memory at the regPC address
 // putting it into currentState.fetched
 // shifts the pipeline and increments the PC
-void fetchInstruction(struct CurrentState currentState, struct Pipeline currentPipeline){
+void fetchInstruction(struct CurrentState *currentStatePtr, struct Pipeline *currentPipelinePtr){
   // Shifting the pipeline
-  currentPipeline.executed = currentPipeline.decoded;
-  currentPipeline.decoded = currentPipeline.fetched;
+  currentPipelinePtr->executed = currentPipelinePtr->decoded;
+  currentPipelinePtr->decoded = currentPipelinePtr->fetched;
 
-  // Fetching next instruction, masking the PC adress, and incramenting PC
-  currentPipeline.fetched = currentState.memory[(currentState.regPC) & (MASK_16)];
-  currentState.regPC += 4;
+  // Fetching next instruction and incramenting PC
+  uint8_t first = currentStatePtr->memory[currentStatePtr->regPC];
+  uint8_t second = currentStatePtr->memory[currentStatePtr->regPC + 1];
+  uint8_t third = currentStatePtr->memory[currentStatePtr->regPC + 2];
+  uint8_t fourth = currentStatePtr->memory[currentStatePtr->regPC + 3];
+
+    
+  currentPipelinePtr->fetched = (first << 24) | (second << 16) | (third << 8) | fourth;
+  currentStatePtr->regPC += 4;
 }
 
 //Returns an enum type specifying the type of the given instruction
@@ -61,15 +84,15 @@ ConditionCode determineCondition(Instruction instruction){
 
 // returns 1 if the condition code is satisfied
 // by the current instruction, 0 otherwise
-int determineValidity(Instruction instruction, struct CurrentState state){
+int determineValidity(Instruction instruction, struct CurrentState *state){
 
   ConditionCode condition = determineCondition(instruction);
   int validity = 0;
 
-  uint32_t setZ	= state.regCPSR & Z_MASK;
+  uint32_t setZ	= state->regCPSR & Z_MASK;
   uint32_t clearZ = ~(setZ);
-  uint32_t stateOfN = state.regCPSR >> 31;
-  uint32_t stateOfV = (state.regCPSR << 3) >> 31;
+  uint32_t stateOfN = state->regCPSR >> 31;
+  uint32_t stateOfV = (state->regCPSR << 3) >> 31;
 
   // checks for all possible conditions and updates validity accordingly
   switch(condition) {

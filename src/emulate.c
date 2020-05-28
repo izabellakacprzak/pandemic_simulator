@@ -70,5 +70,6 @@ int main(int argc, char **argv) {
 		return EXIT_SUCCESS;
 	}
 
+	termiante(currentState);
 	return EXIT_SUCCESS;
 }

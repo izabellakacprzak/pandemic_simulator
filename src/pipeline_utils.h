@@ -72,6 +72,8 @@ typedef enum condition_code{
 	       al = 0xE    // 0b1110
 } ConditionCode;
 
+void terminate(struct CurrentState *currentState);
+
 //Returns an enum type specifying the type of the given instruction
 InstructionType determineType(Instruction instruction);
 
@@ -80,11 +82,11 @@ ConditionCode determineCondition(Instruction instruction);
 
 // returns 1 if the condition code is satisfied
 // by the current instruction, 0 otherwise
-int determineValidity(Instruction instruction, struct CurrentState state);
+int determineValidity(Instruction instruction, struct CurrentState *state);
 
 // fetches an instruction from memory at the regPC address
 // putting it into currentState.fetched
 // shifts the pipeline and increments the PC
-void fetchInstruction(struct CurrentState currentState, struct Pipeline currentPipeline);
+void fetchInstruction(struct CurrentState *currentState, struct Pipeline *currentPipeline);
 
 #endif // PIPELINE_UTILS_H
