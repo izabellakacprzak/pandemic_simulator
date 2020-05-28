@@ -1,25 +1,5 @@
 #include "execute_utils.h"
 
-int execute_halt(Instruction intruction, struct CurrentState *state){
-  return 4;
-}
-
-int execute_data_processing(Instruction intruction, struct CurrentState *state) {
-  return 2;
-}
-
-int execute_multiply(Instruction intruction, struct CurrentState *state){
-  return 3;
-}
-
-int execute_data_transfer(Instruction intruction, struct CurrentState *state) {
-  return 1;
-}
-
-int execute_branch(Instruction intruction, struct CurrentState *state){
-  return 0;
-}
-
 int execute(Instruction instruction, struct CurrentState *state, enum instr_type type) {
   //instruction to be executed, machine state, boolean on whether to execute, instruction type
   int (*executions[5])(Instruction, struct CurrentState*);
