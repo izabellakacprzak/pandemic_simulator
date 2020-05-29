@@ -72,7 +72,7 @@ typedef enum condition_code{
 	       al = 0xE    // 0b1110
 } ConditionCode;
 
-void terminate(struct CurrentState *currentState);
+void terminate(struct CurrentState *currentStatePtr);
 
 //Returns an enum type specifying the type of the given instruction
 InstructionType determineType(Instruction instruction);

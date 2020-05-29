@@ -5,19 +5,28 @@
 
 #define Z_MASK (1 << 30)
 
-void terminate(struct CurrentState* currentState){
-        printf("Refisters:\n");
-	uint32_t *regPtr = &currentState->reg0;
-        for(int i = 0; i < 17; i++){
-                printf("$%d\t:\t%u (%x)", i, *regPtr, *regPtr);
-		regPtr++;
+void terminate(struct CurrentState *currentState){
+        printf("Registers:\n");
+        uint32_t *regPtr = &currentState->reg0;
+        for(int i = 0; i < 13; i++){
+                printf("$%-3d:%11u (0x%08x)\n", i, *regPtr, *regPtr);
+                regPtr++;
         }
 
+	printf("PC  :%11u (0x%08x)\n", currentState->regPC, currentState->regPC);
+	printf("CPSR:%11u (0x%08x)\n", currentState->regCPSR, currentState->regCPSR);
+
         printf("Non-zero memory:\n");
-        for(int i = 0; i < MEMORY_SIZE; i++){
-                if(currentState->memory[i] != 0){
-                        printf("%x: %x", i*4, currentState->memory[i]);
+	uint32_t memoryValue = 0;
+        for(int i = 0; i < MEMORY_SIZE; i+=4){
+		memoryValue = (currentState->memory[i] << 24);
+		memoryValue += (currentState->memory[i+1] << 16);
+		memoryValue += (currentState->memory[i+2] << 8);
+		memoryValue += currentState->memory[i+3];
+                if(memoryValue != 0){
+                        printf("0x%08x: 0x%08x\n", i, memoryValue);
                 }
+		memoryValue = 0;
         }
 }
 
