@@ -141,6 +141,7 @@ uint32_t setCPSR(Instruction instruction){
 }
 
 
+
 // sets the Z flag iff the result is zero
 void setZ(State *statePtr, int result){
 
@@ -175,5 +176,61 @@ void setC(State *statePtr, int value){
     statePtr->regCPSR = ~C_MASK & statePtr->regCPSR;
   }
   
+}
+
+
+
+// Should we have different names opposed to getX?
+
+
+
+// determines whether the multiply instrucion should perform
+// multiply and accumulate or multiply only
+// takes the 21st bit of an instruction
+uint32_t getA(Instruction instruction){
+
+  return instruction & (1 << 21);
+  
+}
+
+
+
+// determines whether Offset is interpreted as a shifted register
+// or as an unsigned 12 bit imm offset
+// takes the 25th bit of an instrucion
+uint32_t getI(Instruction instruction){
+
+  return instruction & (1 << 25);
+
+}
+
+// determines  whether the offset is added/subtracted to the base register
+// before transferring the data or after
+// takes the 24th bit of an instruction
+uint32_t getP(Instruction instruction){
+
+  return instruction & (1 << 24);
+  
+}
+
+
+// determines whether the offset is added to or
+// subtracted from the base register
+// takes the 23th bit of instruction
+uint32_t getU(Instruction instruction){
+
+  return instruction & (1 << 23);
+  
+}
+
+
+//determines whether the word is loaded from memory
+// or stored into
+//takes the 20th bit of an instruction
+//currently the same instruction as setCPSR - should we have both for clarity sake?
+uint32_t getL(Instruction instruction){
+
+  return instruction & (1 << 20);
+
 }
 

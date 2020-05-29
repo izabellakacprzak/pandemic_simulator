@@ -105,4 +105,29 @@ void setZ(State *statePtr, int result);
 // takes the 20th bit of an instruction
 uint32_t setCPSR(Instruction instruction);
 
+// determines whether the multiply instrucion should perform
+// multiply and accumulate or multiply only
+// takes the 21st bit of an instruction
+uint32_t getA(Instruction instruction);
+
+// determines whether Offset is interpreted as a shifted register
+// or as an unsigned 12 bit imm offset
+// takes the 25th bit of an instrucion
+uint32_t getI(Instruction instruction);
+
+// determines  whether the offset is added/subtracted to the base register
+// before transferring the data or after
+// takes the 24th bit of an instruction
+uint32_t getP(Instruction instruction);
+
+// determines whether the offset is added to or
+// subtracted from the base register
+// takes the 23th bit of instruction
+uint32_t getU(Instruction instruction);
+
+//determines whether the word is loaded from memory
+// or stored into
+//takes the 20th bit of an instruction
+uint32_t getL(Instruction instruction);
+
 #endif // PIPELINE_UTILS_H
