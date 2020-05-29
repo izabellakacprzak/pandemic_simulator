@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 		// checking if the previously decoded instruction
 		// is valid (checcing the condition code)
 		// and if so executing
-		if(determineValidity(currentPipeline.executed, currentStatePtr)){
+		if(determineValidity(currentPipeline.decoded, currentStatePtr)){
 			//execute(decodedInstruction, currentPipeline.executed);
 		}
 		
