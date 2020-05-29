@@ -72,6 +72,9 @@ typedef enum condition_code{
 	       al = 0xE    // 0b1110
 } ConditionCode;
 
+// at the termination of emulator
+// prints out the values stored at the registers
+// as well as any non-zero memory locations
 void terminate(struct CurrentState *currentStatePtr);
 
 //Returns an enum type specifying the type of the given instruction

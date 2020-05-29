@@ -6,19 +6,23 @@
 #define Z_MASK (1 << 30)
 
 void terminate(struct CurrentState *currentState){
-        printf("Registers:\n");
+	printf("Registers:\n");
         uint32_t *regPtr = &currentState->reg0;
+	// prints the values stored a registers from 0 - 12
         for(int i = 0; i < 13; i++){
                 printf("$%-3d:%11u (0x%08x)\n", i, *regPtr, *regPtr);
                 regPtr++;
         }
 
+	// ptints the values stored at registers PC and CPSR
 	printf("PC  :%11u (0x%08x)\n", currentState->regPC, currentState->regPC);
 	printf("CPSR:%11u (0x%08x)\n", currentState->regCPSR, currentState->regCPSR);
 
+	// prints the values of non-zero memory locations
         printf("Non-zero memory:\n");
 	uint32_t memoryValue = 0;
         for(int i = 0; i < MEMORY_SIZE; i+=4){
+		// combinitng four 8-bit long ints into one 32-bit long
 		memoryValue = (currentState->memory[i] << 24);
 		memoryValue += (currentState->memory[i+1] << 16);
 		memoryValue += (currentState->memory[i+2] << 8);
