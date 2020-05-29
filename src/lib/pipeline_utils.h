@@ -47,7 +47,7 @@ typedef struct CurrentState{
 typedef struct Pipeline{
   Instruction fetched;
   Instruction decoded;
-  Instruction executed;
+  // Instruction executed;
 } Pipeline;
 
 // enum representing all 4 instruction types

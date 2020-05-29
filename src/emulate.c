@@ -45,6 +45,8 @@ int main(int argc, char **argv) {
 	Pipeline currentPipeline = { 0 };
 	Pipeline *currentPipelinePtr = &currentPipeline;
 
+	InstructionType decodedInstruction;
+
 	// loading all the instructions from the given file into memory
 	loadToMemory(currentStatePtr, argv[1]);
 
@@ -52,16 +54,17 @@ int main(int argc, char **argv) {
 	fetchInstruction(currentStatePtr, currentPipelinePtr);
 	
 	// fetching the second instruction
-	fetchInstruction(currentStatePtr, currentPipelinePtr);
+	//fetchInstruction(currentStatePtr, currentPipelinePtr);
 
 	while (1) {
-		// decoding the instruction from currentPipeline.decoded
-		InstructionType decodedInstruction = determineType(currentPipeline.decoded);
 
 		// fetching a new instruction
 		// passing the decoded into executed
 		fetchInstruction(currentStatePtr, currentPipelinePtr);
 
+		// decoding the instruction from currentPipeline.decoded
+		decodedInstruction = determineType(currentPipeline.decoded);
+		
 		// checking if the previously decoded instruction
 		// is valid (checcing the condition code)
 		// and if so executing

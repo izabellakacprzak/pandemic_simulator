@@ -41,7 +41,7 @@ void terminate(State *currentState){
 // shifts the pipeline and increments the PC
 void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr){
   // Shifting the pipeline
-  currentPipelinePtr->executed = currentPipelinePtr->decoded;
+  //currentPipelinePtr->executed = currentPipelinePtr->decoded;
   currentPipelinePtr->decoded = currentPipelinePtr->fetched;
 
   // Fetching next instruction and incramenting PC
