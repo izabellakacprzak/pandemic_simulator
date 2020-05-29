@@ -7,7 +7,7 @@
 #define MASK_16 (1 << 16) - 1
 
 // loads the instructions read from a file into memory
-int loadToMemory(struct CurrentState *currentStatePtr, char *filepath){
+int loadToMemory(State *currentStatePtr, char *filepath){
 	FILE *sourceFile;
 	sourceFile = fopen(filepath, "rb");
 
@@ -37,13 +37,13 @@ int main(int argc, char **argv) {
 	assert (argc == 2);
 
 	// a structure representing the current state including memory and registers
-	struct CurrentState currentState = { 0 };
-	struct CurrentState *currentStatePtr = &currentState;
+	State currentState = { 0 };
+	State *currentStatePtr = &currentState;
 
 	// a structure representing the instructions
 	// currently being fetched, decoded and executed
-	struct Pipeline currentPipeline = { 0 };
-	struct Pipeline *currentPipelinePtr = &currentPipeline;
+	Pipeline currentPipeline = { 0 };
+	Pipeline *currentPipelinePtr = &currentPipeline;
 
 	// loading all the instructions from the given file into memory
 	loadToMemory(currentStatePtr, argv[1]);
@@ -70,7 +70,8 @@ int main(int argc, char **argv) {
 		}
 		
 		if (decodedInstruction == HALT) {
-		    return EXIT_SUCCESS;
+		  terminate(currentStatePtr);
+		  return EXIT_SUCCESS;
 		}
 	}
 

@@ -48,7 +48,7 @@ typedef struct Pipeline{
   Instruction fetched;
   Instruction decoded;
   Instruction executed;
-} Pipe;
+} Pipeline;
 
 // enum representing all 4 instruction types
 // plus the all-0 - HALT instruction
@@ -75,7 +75,7 @@ typedef enum condition_code{
 // at the termination of emulator
 // prints out the values stored at the registers
 // as well as any non-zero memory locations
-void terminate(struct CurrentState *currentStatePtr);
+void terminate(State *currentStatePtr);
 
 //Returns an enum type specifying the type of the given instruction
 InstructionType determineType(Instruction instruction);
@@ -85,11 +85,24 @@ ConditionCode determineCondition(Instruction instruction);
 
 // returns 1 if the condition code is satisfied
 // by the current instruction, 0 otherwise
-int determineValidity(Instruction instruction, struct CurrentState *statePtr);
+int determineValidity(Instruction instruction, State *statePtr);
 
 // fetches an instruction from memory at the regPC address
 // putting it into currentState.fetched
 // shifts the pipeline and increments the PC
-void fetchInstruction(struct CurrentState *currentStatePtr, struct Pipeline *currentPipelinePtr);
+void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr);
+
+// sets or clears the C flag based on the value passed
+void setC(State *statePtr, int value);
+
+// sets the N flag to the 31st bit of the result
+void setN(State *statePtr, int result);
+
+// sets the Z flag iff the result is zero
+void setZ(State *statePtr, int result);
+
+// determines whether the CPSR flags should be updated
+// takes the 20th bit of an instruction
+uint32_t setCPSR(Instruction instruction);
 
 #endif // PIPELINE_UTILS_H

@@ -2,17 +2,17 @@
 #ifndef EXECUTE_UTILS
 #define EXECUTE_UTILS
 
-int execute_halt(Instruction intruction, struct CurrentState *state);
+int execute_halt(Instruction intruction, State *state);
 
-int execute_data_processing(Instruction intruction, struct CurrentState *state);
+int execute_data_processing(Instruction intruction, State *state);
 
-int execute_multiply(Instruction intruction, struct CurrentState *state);
+int execute_multiply(Instruction intruction, State *state);
 
-int execute_data_transfer(Instruction intruction, struct CurrentState *state);
+int execute_data_transfer(Instruction intruction, State *state);
 
-int execute_branch(Instruction intruction, struct CurrentState *state);
+int execute_branch(Instruction intruction, State *state);
 
-int execute(Instruction instruction, struct CurrentState *state, enum instr_type type);
+int execute(Instruction instruction, State *state, InstructionType type);
 
 
 #endif

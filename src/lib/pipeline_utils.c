@@ -1,10 +1,13 @@
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include "pipeline_utils.h"
 
 #define Z_MASK (1 << 30)
+#define N_MASK (1 << 31)
+#define C_MASK (1 << 29)
 
-void terminate(struct CurrentState *currentState){
+void terminate(State *currentState){
 	printf("Registers:\n");
         uint32_t *regPtr = &currentState->reg0;
 	// prints the values stored a registers from 0 - 12
@@ -36,7 +39,7 @@ void terminate(struct CurrentState *currentState){
 // fetches an instruction from memory at the regPC address
 // putting it into currentState.fetched
 // shifts the pipeline and increments the PC
-void fetchInstruction(struct CurrentState *currentStatePtr, struct Pipeline *currentPipelinePtr){
+void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr){
   // Shifting the pipeline
   currentPipelinePtr->executed = currentPipelinePtr->decoded;
   currentPipelinePtr->decoded = currentPipelinePtr->fetched;
@@ -96,7 +99,7 @@ ConditionCode determineCondition(Instruction instruction){
 
 // returns 1 if the condition code is satisfied
 // by the current instruction, 0 otherwise
-int determineValidity(Instruction instruction, struct CurrentState *statePtr){
+int determineValidity(Instruction instruction, State *statePtr){
 
   ConditionCode condition = determineCondition(instruction);
   int validity = 0;
@@ -139,7 +142,7 @@ uint32_t setCPSR(Instruction instruction){
 
 
 // sets the Z flag iff the result is zero
-void setZ(struct CurrentState *statePtr, int result){
+void setZ(State *statePtr, int result){
 
   if(!result){
     statePtr->regCPSR = Z_MASK | statePtr->regCPSR;
@@ -150,7 +153,7 @@ void setZ(struct CurrentState *statePtr, int result){
 }
 
 // sets the N flag to the 31st bit of the result
-void setN(struct CurrentState *statePtr, int result){
+void setN(State *statePtr, int result){
 
   if(result & N_MASK){
     statePtr->regCPSR = N_MASK | statePtr->regCPSR;
@@ -164,7 +167,7 @@ void setN(struct CurrentState *statePtr, int result){
 // there are too many conditions which determine whether C should be set or cleared
 // might be cleaner if we have this funvtion and determine during the Data Processing execution
 // whether we should set or clear C
-void setC(struct CurrentState *statePtr, int value){
+void setC(State *statePtr, int value){
 
   if(value){
     statePtr->regCPSR = C_MASK | statePtr->regCPSR;
