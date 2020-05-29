@@ -3,6 +3,8 @@
 #include "pipeline_utils.h"
 
 #define Z_MASK (1 << 30)
+#define N_MASK (1 << 31)
+#define C_MASK (1 << 29)
 
 // fetches an instruction from memory at the regPC address
 // putting it into currentState.fetched
@@ -79,7 +81,7 @@ int determineValidity(Instruction instruction, struct CurrentState *statePtr){
 
   // checks for all possible conditions and updates validity accordingly
   switch(condition) {
-  case eq:validity = setZ;
+  case eq: validity = setZ;
     break;
   case ne: validity = clearZ;
     break;
@@ -99,6 +101,52 @@ int determineValidity(Instruction instruction, struct CurrentState *statePtr){
   return validity;
 
 }
+
+// determines whether the CPSR flags should be updated
+// takes the 20th bit of an instruction
+uint32_t setCPSR(Instruction instruction){
+
+  return instruction & (1 << 20);
+  
+}
+
+
+// sets the Z flag iff the result is zero
+void setZ(struct CurrentState *statePtr, int result){
+
+  if(!result){
+    statePtr->regCPSR = Z_MASK | statePtr->regCPSR;
+  } else{
+    statePtr->regCPSR = ~Z_MASK & statePtr->regCPSR;
+  }
+
+}
+
+// sets the N flag to the 31st bit of the result
+void setN(struct CurrentState *statePtr, int result){
+
+  if(result & N_MASK){
+    statePtr->regCPSR = N_MASK | statePtr->regCPSR;
+  } else{
+    statePtr->regCPSR = ~N_MASK & statePtr->regCPSR;    
+  }
+  
+}
+
+// sets or clears the C flag based on the value passed
+// there are too many conditions which determine whether C should be set or cleared
+// might be cleaner if we have this funvtion and determine during the Data Processing execution
+// whether we should set or clear C
+void setC(struct CurrentState *statePtr, int value){
+
+  if(value){
+    statePtr->regCPSR = C_MASK | statePtr->regCPSR;
+  } else{
+    statePtr->regCPSR = ~C_MASK & statePtr->regCPSR;
+  }
+  
+}
+
 
 int execute_halt(Instruction intruction, struct CurrentState *state){
   return 4;
