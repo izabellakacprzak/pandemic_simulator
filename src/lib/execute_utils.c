@@ -3,37 +3,54 @@
 
 #define CREATE_MASK(start, end) ((1 << start) - (1 << end))
 //creates a mask of 1s from start to end
+#define OPERATOR_FUNCTION(name, operator)	\
+  static uint32_t name(const uint32_t operand1, const uint32_t operand2)\
+  {\
+    return operand1 operator operand2;\
+  }
 
 typedef int (*execution_function)(Instruction, State*);
 
-static uint32_t and(uint32_t operand1, uint32_t operand2) {
-  return 0;
-}
-
-static uint32_t eor(uint32_t operand1, uint32_t operand2) {
-  return 0;
-}
-
-static uint32_t sub(uint32_t operand1, uint32_t operand2) {
-  return 0;
-}
+// defining operator functions for use in execute_data_processing
+OPERATOR_FUNCTION(and, &)
+OPERATOR_FUNCTION(eor, ^)
+OPERATOR_FUNCTION(sub, -)
+OPERATOR_FUNCTION(add, +)
+OPERATOR_FUNCTION(or, |)
+OPERATOR_FUNCTION(mov, *0+)
 
 static uint32_t rsb(uint32_t operand1, uint32_t operand2) {
-  return 0;
+  return sub(operand2, operand1);
 }
 
-static uint32_t add(uint32_t operand1, uint32_t operand2) {
-  return 0;
+OPERATOR_FUNCTION(lsl, <<)
+OPERATOR_FUNCTION(lsr, >>)
+
+static uint32_t asr(uint32_t value, uint32_t shift){
+  if (shift > 32) {
+    shift = 32;
+  }
+
+  int sign = value & (1 << 31);
+  value = value >> shift;
+
+  if (sign) {
+    value | CREATE_MASK(31, (32 - shift));
+  }
+
+  return value;
 }
 
-static uint32_t mov(uint32_t operand1, uint32_t operand2) {
-  return 0;
+static uint32_t ror(uint32_t value, uint32_t shift){
+  uint32_t shifted, rotated;
+  shift %= 32;
+
+  shifted = value >> shift;
+  rotated = value << (32 - shift);
+  return shifted | rotated;
 }
 
-static uint32_t or(uint32_t operand1, uint32_t operand2) {
-  return 0;
-}
-
+// start of execute functions
 int execute_halt(Instruction intruction, State *state){
   return 4;
 }
