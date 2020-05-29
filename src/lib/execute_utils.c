@@ -1,7 +1,7 @@
 #include "execute_utils.h"
 #include <stdio.h>
 
-#define CREATE_MASK(start, end) ((1 << start) - (1 << end))
+#define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
 //creates a mask of 1s from start to end
 #define OPERATOR_FUNCTION(name, operator)	\
   static uint32_t name(const uint32_t operand1, const uint32_t operand2)\
@@ -35,7 +35,7 @@ static uint32_t asr(uint32_t value, uint32_t shift){
   value = value >> shift;
 
   if (sign) {
-    value | CREATE_MASK(31, (32 - shift));
+    return value | ~((1 << (32 - shift)) - 1); // CREATE_MASK(31, (32 - shift));
   }
 
   return value;
@@ -107,6 +107,15 @@ static int execute_data_processing(Instruction instruction, State *state) {
     default:
       perror("ERROR: invalid operand");
       return 1;
+  }
+  
+  if (instruction & (1 << 25)) {
+    // operand2 is an immediate constant
+    operand2 = instruction & CREATE_MASK(7, 0);
+    // rotate  = rotate * 2
+    uint32_t rotate = (instruction & CREATE_MASK(11, 8)) >> 7;
+
+    operand2 = ror(operand2, rotate);
   }
   
   return 0;
