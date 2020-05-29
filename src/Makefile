@@ -11,7 +11,7 @@ all: $(BUILD)
 
 assemble: assemble.o
 
-emulate:  emulate.o
+emulate: emulate.o
 
 libs:
 	cd lib; make
