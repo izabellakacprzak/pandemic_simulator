@@ -54,7 +54,7 @@ static uint32_t ror(uint32_t value, uint32_t shift){
 }
 
 // start of execute functions
-int execute_halt(Instruction intruction, State *state){
+static int execute_halt(Instruction intruction, State *state){
   return 4;
 }
 
@@ -125,7 +125,7 @@ static int execute_data_processing(Instruction instruction, State *state) {
 }
 
 
-Register *getRegPointer(int reg, State *currentState, Instruction instruction){
+static Register *getRegPointer(int reg, State *currentState, Instruction instruction){
 	Register *regPtr = &currentState->reg0;
 	// getting the 4 bits of the instruction
 	// which correspond to the register which
@@ -136,7 +136,7 @@ Register *getRegPointer(int reg, State *currentState, Instruction instruction){
 }
 
 
-int execute_multiply(Instruction instruction, State *state){
+static int execute_multiply(Instruction instruction, State *state){
       //get destination register pointer - bits 19 to 16 in instr
       // Rm - bits 3 to 0
       // Rs - bits 11 to 8
@@ -177,7 +177,7 @@ int execute_multiply(Instruction instruction, State *state){
       return 1;
 }
 
-int execute_data_transfer(Instruction instruction, State *state) {
+static int execute_data_transfer(Instruction instruction, State *state) {
 
   int offset = instruction & ((1 << 12) - 1);
 	// here the function which calculates the offset
@@ -215,7 +215,7 @@ int execute_data_transfer(Instruction instruction, State *state) {
 	return 1;
 }
 
-int execute_branch(Instruction instruction, State *state){
+static int execute_branch(Instruction instruction, State *state){
   return 0;
 }
 
