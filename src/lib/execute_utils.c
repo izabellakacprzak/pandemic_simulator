@@ -11,8 +11,20 @@
   {\
     return operand1 operator operand2;\
   }
+#define OPERATOR_NONSHIFT(name, operator)\
+static Register name(const Register operand1, const Register operand2)\
+  {\
+    return operand1 operator operand2;\
+  }
+#define OPERATOR_SHIFT(name, operator)\
+static Register name(const Register value, const uint32_t shift)\
+  {\
+    return value operator shift;\
+  }
+
 
 typedef int (*execution_function)(Instruction, State*);
+typedef Register (*shift_function)(Register, uint32_t);
 
 // defining operator functions for use in execute_data_processing
 OPERATOR_FUNCTION(and, &)
@@ -56,6 +68,41 @@ static uint32_t ror(uint32_t value, uint32_t shift){
 // start of execute functions
 int execute_halt(Instruction intruction, State *state){
   return 4;
+}
+
+// if you want to change the carry bit then carry = 1
+// loads register offset given an instruction and state by checking bits 11-0
+Register get_offset_register(int carry, Instruction instruction, State *state){
+  Register value = *getRegPointer(3, state, instruction);
+
+  // check bits 6-5 to find what shift to use on register value
+  shift_function shifts[4] = {lsl, lsr, asr, ror};
+  shift_function selectedShift = shifts[(instruction & CREATE_MASK(6, 5)) >> 5];
+
+  uint32_t amount;
+  
+  // Check 4th bit
+  if (instruction & (1 << 4)) {
+    // 4th bit is 1
+    amount = *getRegPointer(11, state, instruction);
+  } else {
+    // 4th bit is 0
+    amount = (instruction & CREATE_MASK(11, 7)) >> 7;
+  }
+
+  if (carry) {
+    int carryBit;
+    
+    if (selectedShift == lsl) {
+      carryBit = (instruction & (1 << (32 - amount))) >> (32 - amount);
+    } else {
+      carryBit = (instruction & (1 << (amount - 1))) >> (amount - 1);
+    }
+
+    setC(state, carryBit);
+  }
+
+  return selectedShift(value, amount);
 }
 
 static int execute_data_processing(Instruction instruction, State *state) {
@@ -192,7 +239,9 @@ int execute_data_transfer(Instruction instruction, State *state) {
 		// subtracting offset
 		offset = -offset;
 	}
-	
+	if(getI(instruction)){
+		offset = get_offset_register(0, instruction, state);
+	}	
 	if(getP(instruction)){
 		// pre-indexing
 		if(getL(instruction)){
@@ -222,7 +271,9 @@ int execute_data_transfer(Instruction instruction, State *state) {
 }
 
 int execute_branch(Instruction instruction, State *state){
-  return 0;
+	int32_t extendedOffset = (CREATE_MASK(23, 0) & instruction) << 2;
+	state->regPC += extendedOffset;
+       	return 1;
 }
 
 int execute(Instruction instruction, State *state, InstructionType type) {
