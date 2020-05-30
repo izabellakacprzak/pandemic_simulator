@@ -9,7 +9,7 @@
 
 void terminate(State *currentState){
 	printf("Registers:\n");
-        uint32_t *regPtr = &currentState->reg0;
+        Register *regPtr = &currentState->reg0;
 	// prints the values stored a registers from 0 - 12
         for(int i = 0; i < 13; i++){
                 printf("$%-3d:%11u (0x%08x)\n", i, *regPtr, *regPtr);

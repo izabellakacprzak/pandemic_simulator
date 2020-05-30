@@ -9,35 +9,36 @@
 #define MEMORY_SIZE 32768
 
 typedef uint32_t Instruction;
+typedef int32_t Register;
 
 // structure for representing the current state of the memory and all registers
 typedef struct CurrentState{
   // general purpose registers
-  uint32_t reg0;
-  uint32_t reg1;
-  uint32_t reg2;
-  uint32_t reg3;
-  uint32_t reg4;
-  uint32_t reg5;
-  uint32_t reg6;
-  uint32_t reg7;
-  uint32_t reg8;
-  uint32_t reg9;
-  uint32_t reg10;
-  uint32_t reg11;
-  uint32_t reg12;
+  Register reg0;
+  Register reg1;
+  Register reg2;
+  Register reg3;
+  Register reg4;
+  Register reg5;
+  Register reg6;
+  Register reg7;
+  Register reg8;
+  Register reg9;
+  Register reg10;
+  Register reg11;
+  Register reg12;
   
   // SP register (ignored for this exercise)
-  uint32_t reg13;
+  Register reg13;
   
   // LR register (ignored for this exercise)
-  uint32_t reg14;
+  Register reg14;
   
   // PC register
-  uint32_t regPC;
+  Register regPC;
   
   // CPSR register
-  uint32_t regCPSR;
+  Register regCPSR;
 
   uint8_t memory[MEMORY_SIZE];
 } State;
