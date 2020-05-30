@@ -6,30 +6,38 @@
 
 #define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
 //creates a mask of 1s from start to end
-#define OPERATOR_FUNCTION(name, operator)	\
-  static Register name(const Register operand1, const Register operand2)\
+#define OPERATOR_NONSHIFT(name, operator)\
+static Register name(const Register operand1, const Register operand2)\
   {\
     return operand1 operator operand2;\
   }
+#define OPERATOR_SHIFT(name, operator)\
+static Register name(const Register value, const uint32_t shift)\
+  {\
+    return value operator shift;\
+  }
 
 typedef int (*execution_function)(Instruction, State*);
+typedef Register (*shift_function)(Register, uint32_t);
 
 // defining operator functions for use in execute_data_processing
-OPERATOR_FUNCTION(and, &)
-OPERATOR_FUNCTION(eor, ^)
-OPERATOR_FUNCTION(sub, -)
-OPERATOR_FUNCTION(add, +)
-OPERATOR_FUNCTION(or, |)
-OPERATOR_FUNCTION(mov, *0+)
+//   arithmetic
+OPERATOR_NONSHIFT(and, &)
+OPERATOR_NONSHIFT(eor, ^)
+OPERATOR_NONSHIFT(sub, -)
+OPERATOR_NONSHIFT(add, +)
+OPERATOR_NONSHIFT(or, |)
+OPERATOR_NONSHIFT(mov, *0+)
 
-  static Register rsb(Register operand1, Register operand2) {
+static Register rsb(Register operand1, Register operand2) {
   return sub(operand2, operand1);
 }
 
-OPERATOR_FUNCTION(lsl, <<)
-OPERATOR_FUNCTION(lsr, >>)
+//  shifts
+OPERATOR_SHIFT(lsl, <<)
+OPERATOR_SHIFT(lsr, >>)
 
-static uint32_t asr(uint32_t value, uint32_t shift){
+static Register asr(Register value, uint32_t shift){
   if (shift > 32) {
     shift = 32;
   }
@@ -44,7 +52,7 @@ static uint32_t asr(uint32_t value, uint32_t shift){
   return value;
 }
 
-static uint32_t ror(uint32_t value, uint32_t shift){
+static Register ror(Register value, uint32_t shift){
   uint32_t shifted, rotated;
   shift %= 32;
 
@@ -58,13 +66,49 @@ int execute_halt(Instruction intruction, State *state){
   return 4;
 }
 
-static int execute_data_processing(Instruction instruction, State *state) {
-  Register operand1, operand2, destination;
-  Operand operand = {0};
+// if you want to change the carry bit then carry = 1
+// loads register offset given an instruction and state by checking bits 11-0
+Register get_offset_register(int carry, Instruction instruction, State *state){
+  Register value = *getRegPointer(3, state, instruction);
+
+  // check bits 6-5 to find what shift to use on register value
+  shift_function shifts[4] = {lsl, lsr, asr, ror};
+  shift_function selectedShift = shifts[(instruction & CREATE_MASK(6, 5)) >> 5];
+
+  uint32_t amount;
   
-  //operand1 = *(state + (instruction & CREATE_MASK(19,16)));
-  //destination = *(state + (instruction & CREATE_MASK(15,12)));
-  //TODO fix these lines
+  // Check 4th bit
+  if (instruction & (1 << 4)) {
+    // 4th bit is 1
+    amount = *getRegPointer(11, state, instruction);
+  } else {
+    // 4th bit is 0
+    amount = (instruction & CREATE_MASK(11, 7)) >> 7;
+  }
+
+  if (carry) {
+    int carryBit;
+    
+    if (selectedShift == lsl) {
+      carryBit = (instruction & (1 << (32 - amount))) >> (32 - amount);
+    } else {
+      carryBit = (instruction & (1 << (amount - 1))) >> (amount - 1);
+    }
+
+    setC(state, carryBit);
+  }
+
+  return selectedShift(value, amount);
+}
+
+static int execute_data_processing(Instruction instruction, State *state) {
+  Register operand1, operand2;
+  Register *destination;
+  Operand operand = {0};
+
+  operand1 = *getRegPointer(19, state, instruction);
+  destination = getRegPointer(15, state, instruction);
+  
   switch(instruction & CREATE_MASK(24,21)) {
     case 0: 
       operand.operation = and;
@@ -111,7 +155,8 @@ static int execute_data_processing(Instruction instruction, State *state) {
       perror("ERROR: invalid operand");
       return 1;
   }
-  
+
+  // checking the I flag
   if (instruction & (1 << 25)) {
     // operand2 is an immediate constant
     operand2 = instruction & CREATE_MASK(7, 0);
@@ -119,6 +164,15 @@ static int execute_data_processing(Instruction instruction, State *state) {
     uint32_t rotate = (instruction & CREATE_MASK(11, 8)) >> 7;
 
     operand2 = ror(operand2, rotate);
+  } else {
+    // find operand2 using a register to shift, set carry if not an arithmetic function
+    operand2 = get_offset_register(!operand.isArithmetic, instruction, state);
+  }
+
+  if (operand.isWritten) {
+    *destination = operand.operation(operand1, operand2);
+  } else {
+    operand.operation(operand1, operand2);
   }
   
   return 0;
