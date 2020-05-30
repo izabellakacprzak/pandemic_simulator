@@ -3,6 +3,7 @@
 #include "execute_utils.h"
 #include "pipeline_utils.h"
 #include <stdio.h>
+#include <limits.h>
 
 #define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
 //creates a mask of 1s from start to end
@@ -24,13 +25,27 @@ typedef Register (*shift_function)(Register, uint32_t);
 //   arithmetic
 OPERATOR_NONSHIFT(and, &)
 OPERATOR_NONSHIFT(eor, ^)
-OPERATOR_NONSHIFT(sub, -)
-OPERATOR_NONSHIFT(add, +)
 OPERATOR_NONSHIFT(or, |)
 OPERATOR_NONSHIFT(mov, *0+)
 
-static Register rsb(Register operand1, Register operand2) {
-  return sub(operand2, operand1);
+static Register add(int isCarry, State *state, Register operand1, Register operand2) {
+  if (isCarry) {
+    setC(state, ((operand2 > 0) && (operand1 > INT_MAX - operand2 ))
+	 || ((operand2 < 0) && (operand1 < INT_MIN - operand2)));
+  } //sets C if there is an overflow or underflow and S is set
+  return operand1 +operand2;
+}
+
+static Register sub(int isCarry, State *state, Register operand1, Register operand2) {
+  if (isCarry) {
+    setC(state, ((operand2 < 0) && (operand1 > INT_MAX + operand2 ))
+	 || ((operand2 > 0) && (operand1 < INT_MIN + operand2)));
+  } //sets C if there is an overflow or underflow and S is set
+  return operand1 - operand2;
+}
+
+static Register rsb(int isCarry, State *state, Register operand1, Register operand2) {
+  return sub(isCarry, state, operand2, operand1);
 }
 
 //  shifts
@@ -101,55 +116,63 @@ Register get_offset_register(int carry, Instruction instruction, State *state){
   return selectedShift(value, amount);
 }
 
+static Register callOperator(int sFlag, State *state, const Operator *operator, Register operand1, Register operand2) {
+  if (operator->isArithmetic) {
+    return operator->operation.operationWithCarry(sFlag, state, operand1, operand2);
+  }
+  return operator->operation.operationWithoutCarry(operand1, operand2);
+}
+
 static int execute_data_processing(Instruction instruction, State *state) {
   Register operand1, operand2;
   Register *destination;
-  Operand operand = {0};
+  int sFlag = instruction & (1 << 20);
+  Operator operator = {0};
 
   operand1 = *getRegPointer(19, state, instruction);
   destination = getRegPointer(15, state, instruction);
   
   switch(instruction & CREATE_MASK(24,21)) {
     case 0: 
-      operand.operation = and;
-      operand.isWritten = 1;
+      operator.operation.operationWithoutCarry = and;
+      operator.isWritten = 1;
       break;
     case 1:
-      operand.operation = eor;
-      operand.isWritten = 1;
+      operator.operation.operationWithoutCarry = eor;
+      operator.isWritten = 1;
       break;
     case 2:
-      operand.operation = sub;
-      operand.isWritten = 1;
-      operand.isArithmetic = 1;
+      operator.operation.operationWithCarry = sub;
+      operator.isWritten = 1;
+      operator.isArithmetic = 1;
       break;
     case 3:
-      operand.operation = rsb;
-      operand.isWritten = 1;
-      operand.isArithmetic = 1;
+      operator.operation.operationWithCarry = rsb;
+      operator.isWritten = 1;
+      operator.isArithmetic = 1;
       break;
     case 4:
-      operand.operation = add;
-      operand.isWritten = 1;
-      operand.isArithmetic = 1;
+      operator.operation.operationWithCarry = add;
+      operator.isWritten = 1;
+      operator.isArithmetic = 1;
       break;
     case 8:
-      operand.operation = and;
+      operator.operation.operationWithoutCarry = and;
       break;
     case 9:
-      operand.operation = eor;
+      operator.operation.operationWithoutCarry = eor;
       break;
     case 10:  
-      operand.operation = sub;
-      operand.isArithmetic = 1;
+      operator.operation.operationWithCarry = sub;
+      operator.isArithmetic = 1;
       break;
     case 12:
-      operand.operation = or;
-      operand.isWritten = 1;
+      operator.operation.operationWithoutCarry = or;
+      operator.isWritten = 1;
       break;
     case 13:
-      operand.operation = mov;
-      operand.isWritten = 1;
+      operator.operation.operationWithoutCarry = mov;
+      operator.isWritten = 1;
       break;
     default:
       perror("ERROR: invalid operand");
@@ -165,14 +188,19 @@ static int execute_data_processing(Instruction instruction, State *state) {
 
     operand2 = ror(operand2, rotate);
   } else {
-    // find operand2 using a register to shift, set carry if not an arithmetic function
-    operand2 = get_offset_register(!operand.isArithmetic, instruction, state);
+    // find operand2 using a register to shift, set carry if not an arithmetic function and flags to be written
+    operand2 = get_offset_register(!operator.isArithmetic && sFlag, instruction, state);
   }
 
-  if (operand.isWritten) {
-    *destination = operand.operation(operand1, operand2);
-  } else {
-    operand.operation(operand1, operand2);
+  Register res = callOperator(sFlag, state, &operator, operand1, operand2); 
+  if (operator.isWritten) {
+    *destination = res;
+  }
+
+  if (sFlag) { //if S is set
+    setN(state, res);
+    setZ(state, res);
+    //setC done in operator functions or operand2 loading
   }
   
   return 0;

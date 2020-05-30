@@ -2,11 +2,14 @@
 #ifndef EXECUTE_UTILS
 #define EXECUTE_UTILS
 
-typedef struct Operand {
-  Register (*operation) (Register, Register);
+typedef struct Operator {
   int isArithmetic;
   int isWritten;
-} Operand;
+  union {
+    Register (*operationWithoutCarry) (Register, Register);
+    Register (*operationWithCarry) (int, State *, Register, Register);
+  } operation;
+} Operator;
 
 // return a pointer to a register whose address
 // is the 4 bits of instruction starting from bit reg
