@@ -124,7 +124,7 @@ static Register callOperator(int sFlag, State *state, const Operator *operator, 
   return operator->operation.operationWithoutCarry(operand1, operand2);
 }
 
-static int execute_data_processing(Instruction instruction, State *state) {
+int execute_data_processing(Instruction instruction, State *state) {
   Register operand1, operand2;
   Register *destination;
   int sFlag = instruction & (1 << 20);
@@ -310,9 +310,14 @@ int execute_data_transfer(Instruction instruction, State *state) {
 }
 
 int execute_branch(Instruction instruction, State *state){
-	int32_t extendedOffset = (CREATE_MASK(23, 0) & instruction) << 2;
-	state->regPC += extendedOffset;
-       	return 1;
+  int32_t extendedOffset = (CREATE_MASK(23, 0) & instruction) << 2;
+
+  if (instruction & (1 << 25)) {
+    extendedOffset = extendedOffset | ~((1 << 26) - 1);
+  }
+  
+  state->regPC += extendedOffset;
+  return 1;
 }
 
 int execute(Instruction instruction, State *state, InstructionType type) {
