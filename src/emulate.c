@@ -25,7 +25,10 @@ int loadToMemory(State *currentStatePtr, char *filepath){
 			exit(EXIT_FAILURE);
 		}
 
-		fread(&currentStatePtr->memory[i], 4, 1, sourceFile);
+		fread(&currentStatePtr->memory[i + 3], 1, 1, sourceFile);
+		fread(&currentStatePtr->memory[i + 2], 1, 1, sourceFile);
+		fread(&currentStatePtr->memory[i + 1], 1, 1, sourceFile);
+		fread(&currentStatePtr->memory[i], 1, 1, sourceFile);
 		i += 4;
 	}
 

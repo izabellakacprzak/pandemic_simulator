@@ -268,6 +268,8 @@ int execute_data_transfer(Instruction instruction, State *state) {
 	Register *destReg = getRegPointer(15, state, instruction);
 	Register *baseReg = getRegPointer(19, state, instruction);
 	
+	int memAddress = 0;
+
 	if(!getU(instruction)){
 		// subtracting offset
 		offset = -offset;
@@ -280,7 +282,11 @@ int execute_data_transfer(Instruction instruction, State *state) {
 			*destReg = state->memory[*baseReg + offset];
 		} else {
 			// storing
-			state->memory[*baseReg + offset] = *destReg;
+			memAddress = *baseReg + offset;
+			state->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
+			state->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
+			state->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
+			state->memory[memAddress + 3] = CREATE_MASK(7, 0) & (*destReg >> 24);
 		}
 	} else {
 		// post-indexing

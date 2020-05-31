@@ -25,10 +25,10 @@ void terminate(State *currentState){
 	uint32_t memoryValue = 0;
         for(int i = 0; i < MEMORY_SIZE; i+=4){
 		// combinitng four 8-bit long ints into one 32-bit long
-		memoryValue = (currentState->memory[i] << 24);
-		memoryValue += (currentState->memory[i+1] << 16);
-		memoryValue += (currentState->memory[i+2] << 8);
-		memoryValue += currentState->memory[i+3];
+		memoryValue = currentState->memory[i];
+		memoryValue += (currentState->memory[i+1] << 8);
+		memoryValue += (currentState->memory[i+2] << 16);
+		memoryValue += (currentState->memory[i+3] << 24);
                 if(memoryValue != 0){
                         printf("0x%08x: 0x%08x\n", i, memoryValue);
                 }
@@ -45,10 +45,10 @@ void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr){
   currentPipelinePtr->decoded = currentPipelinePtr->fetched;
 
   // Fetching next instruction and incramenting PC
-  uint8_t first = currentStatePtr->memory[currentStatePtr->regPC];
-  uint8_t second = currentStatePtr->memory[currentStatePtr->regPC + 1];
-  uint8_t third = currentStatePtr->memory[currentStatePtr->regPC + 2];
-  uint8_t fourth = currentStatePtr->memory[currentStatePtr->regPC + 3];
+  uint8_t first = currentStatePtr->memory[currentStatePtr->regPC + 3];
+  uint8_t second = currentStatePtr->memory[currentStatePtr->regPC + 2];
+  uint8_t third = currentStatePtr->memory[currentStatePtr->regPC + 1];
+  uint8_t fourth = currentStatePtr->memory[currentStatePtr->regPC];
 
     
   currentPipelinePtr->fetched = (first << 24) | (second << 16) | (third << 8) | fourth;
