@@ -45,10 +45,10 @@ void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr){
   currentPipelinePtr->decoded = currentPipelinePtr->fetched;
 
   // Fetching next instruction and incramenting PC
-  uint8_t first = currentStatePtr->memory[currentStatePtr->regPC + 3];
-  uint8_t second = currentStatePtr->memory[currentStatePtr->regPC + 2];
-  uint8_t third = currentStatePtr->memory[currentStatePtr->regPC + 1];
-  uint8_t fourth = currentStatePtr->memory[currentStatePtr->regPC];
+  uint8_t first = currentStatePtr->memory[currentStatePtr->regPC];
+  uint8_t second = currentStatePtr->memory[currentStatePtr->regPC + 1];
+  uint8_t third = currentStatePtr->memory[currentStatePtr->regPC + 2];
+  uint8_t fourth = currentStatePtr->memory[currentStatePtr->regPC + 3];
 
     
   currentPipelinePtr->fetched = (first << 24) | (second << 16) | (third << 8) | fourth;
@@ -103,6 +103,8 @@ int determineValidity(Instruction instruction, State *statePtr){
 
   ConditionCode condition = determineCondition(instruction);
   int validity = 0;
+
+  condition = condition >> 28;
 
   uint32_t setZ	= statePtr->regCPSR & Z_MASK;
   uint32_t clearZ = ~(setZ);

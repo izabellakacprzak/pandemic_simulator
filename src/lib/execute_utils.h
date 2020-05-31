@@ -14,7 +14,7 @@ Register *getRegPointer(int reg, State *currentState, Instruction instruction);
 
 int execute_halt(Instruction intruction, State *state);
 
-static int execute_data_processing(Instruction intruction, State *state);
+int execute_data_processing(Instruction intruction, State *state);
 
 int execute_multiply(Instruction intruction, State *state);
 

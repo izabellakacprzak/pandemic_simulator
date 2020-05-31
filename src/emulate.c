@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "pipeline_utils.h"
+#include "execute_utils.h"
 
 #define MASK_16 (1 << 16) - 1
 
@@ -72,7 +73,7 @@ int main(int argc, char **argv) {
 		// is valid (checcing the condition code)
 		// and if so executing
 		if(determineValidity(currentPipeline.decoded, currentStatePtr)){
-			//execute(decodedInstruction, currentPipeline.executed);
+			execute(currentPipeline.decoded, currentStatePtr, decodedInstruction);
 		}
 		
 		if (decodedInstruction == HALT) {

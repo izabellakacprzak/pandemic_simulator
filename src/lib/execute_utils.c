@@ -105,7 +105,7 @@ Register get_offset_register(int carry, Instruction instruction, State *state){
   return selectedShift(value, amount);
 }
 
-static int execute_data_processing(Instruction instruction, State *state) {
+int execute_data_processing(Instruction instruction, State *state) {
   Register operand1, operand2, destination;
   Operand operand = {0};
   
@@ -177,7 +177,7 @@ Register *getRegPointer(int reg, State *currentState, Instruction instruction){
 	// getting the 4 bits of the instruction
 	// which correspond to the register which
 	// starts at bit reg
-	int regAddress = instruction & ((1 << (reg + 1)) - 1) >> (reg - 4);
+	int regAddress = ((1 << 4) - 1) & (instruction >> (reg - 4 + 1));
 	regPtr += regAddress;
 	return regPtr;
 }
@@ -246,7 +246,10 @@ int execute_data_transfer(Instruction instruction, State *state) {
 		// pre-indexing
 		if(getL(instruction)){
 			// loading
-			*destReg = state->memory[*baseReg + offset];
+			*destReg = state->memory[(*baseReg + offset)/4];
+			*destReg += state->memory[(*baseReg + offset + 1)/8] << 8;
+			*destReg += state->memory[(*baseReg + offset + 2)/8] << 16;
+			*destReg += state->memory[(*baseReg + offset + 3)/8] << 24;
 		} else {
 			// storing
 			memAddress = *baseReg + offset;
