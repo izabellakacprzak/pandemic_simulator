@@ -79,17 +79,11 @@ InstructionType determineType(Instruction instruction){
     return DATA_PROCESSING;
   }
 
-  //DATA_PROCESSING with shifted register specified by const - 7th bit is clear
-  if(~(1 << 7) & instruction){
-    return DATA_PROCESSING;
-  }
-  
-  //DATA_PROCESSING with shifted register specified by register - 4th bit is clear 
-  if(~(1 << 4) & instruction){
-    return DATA_PROCESSING;
+  if((1 << 7) & instruction && (1<<4) & instruction) {
+    return MULTIPLY;
   }
 
-  return MULTIPLY;
+  return DATA_PROCESSING;
 
 }
 
