@@ -1,3 +1,7 @@
+/* 
+   Note: memoryValue must be changed if Memory typedef is changed.
+ */
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>

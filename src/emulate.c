@@ -5,7 +5,7 @@
 #include "pipeline_utils.h"
 #include "execute_utils.h"
 
-#define MASK_16 (1 << 16) - 1
+#define MASK_16 ((1 << 16) - 1)
 
 // loads the instructions read from a file into memory
 int loadToMemory(State *currentStatePtr, char *filepath){
@@ -77,10 +77,10 @@ int main(int argc, char **argv) {
       execute(currentPipeline.decoded, currentStatePtr, decodedInstruction);
 
       // if there is a branch (regPC has changed) reset the pipeline
-      if (currentState.branchFlag) {
-	fetchInstruction(currentStatePtr, currentPipelinePtr);
-	currentState.branchFlag = 0;
-      }
+      /* if (currentState.branchFlag) {
+       	fetchInstruction(currentStatePtr, currentPipelinePtr);
+       	currentState.branchFlag = 0;
+       } */
     }
 		
   } while (decodedInstruction != HALT);

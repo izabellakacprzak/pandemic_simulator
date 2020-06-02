@@ -6,8 +6,9 @@
 #include "execute_utils.h"
 #include "pipeline_utils.h"
 
-#define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
 //creates a mask of 1s from start to end
+#define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
+
 #define OPERATOR_NONSHIFT(name, operator)\
 static Register name(const Register operand1, const Register operand2)\
   {\
@@ -79,13 +80,13 @@ static Register ror(Register value, uint32_t shift){
 }
 
 // start of execute functions
-int execute_halt(Instruction instruction, State *state){
+static int execute_halt(Instruction instruction, State *state){
   return 4;
 }
 
 // if you want to change the carry bit then carry = 1
 // loads register offset given an instruction and state by checking bits 11-0
-Register get_offset_register(int carry, Instruction instruction, State *state){
+static Register get_offset_register(int carry, Instruction instruction, State *state){
   Register value = *getRegPointer(3, state, instruction);
 
   // check bits 6-5 to find what shift to use on register value
@@ -118,14 +119,16 @@ Register get_offset_register(int carry, Instruction instruction, State *state){
   return selectedShift(value, amount);
 }
 
-static Register callOperator(int sFlag, State *state, const Operator *operator, Register operand1, Register operand2) {
+static Register callOperator(int sFlag, State *state, const Operator *operator,
+			     Register operand1, Register operand2) {
   if (operator->isArithmetic) {
     return operator->operation.operationWithCarry(sFlag, state, operand1, operand2);
   }
+  
   return operator->operation.operationWithoutCarry(operand1, operand2);
 }
 
-int execute_data_processing(Instruction instruction, State *state) {
+static int execute_data_processing(Instruction instruction, State *state) {
   Register operand1, operand2;
   Register *destination;
   int sFlag = instruction & (1 << 20);
@@ -208,19 +211,7 @@ int execute_data_processing(Instruction instruction, State *state) {
   return 0;
 }
 
-
-Register *getRegPointer(int reg, State *currentState, Instruction instruction){
-	Register *regPtr = &currentState->reg0;
-	// getting the 4 bits of the instruction
-	// which correspond to the register which
-	// starts at bit reg
-	int regAddress = ((1 << 4) - 1) & (instruction >> (reg - 4 + 1));
-	regPtr += regAddress;
-	return regPtr;
-}
-
-
-int execute_multiply(Instruction instruction, State *state){
+static int execute_multiply(Instruction instruction, State *state){
   //get destination register pointer - bits 19 to 16 in instr
   // Rm - bits 3 to 0
   // Rs - bits 11 to 8
@@ -261,7 +252,7 @@ int execute_multiply(Instruction instruction, State *state){
   return 1;
 }
 
-int execute_data_transfer(Instruction instruction, State *state) {
+static int execute_data_transfer(Instruction instruction, State *state) {
   int offset = instruction & ((1 << 12) - 1);
   // here the function which calculates the offset
   // depending on the I bit of the instruction
@@ -321,7 +312,7 @@ int execute_data_transfer(Instruction instruction, State *state) {
 
 }
 
-int execute_branch(Instruction instruction, State *state){
+static int execute_branch(Instruction instruction, State *state){
   int32_t extendedOffset = (CREATE_MASK(23, 0) & instruction) << 2;
 
   if (extendedOffset & (1 << 25)) {
@@ -329,8 +320,18 @@ int execute_branch(Instruction instruction, State *state){
   }
   
   state->regPC += extendedOffset;
-  state->branchFlag = 1;
+  // state->branchFlag = 1;
   return 0;
+}
+
+Register *getRegPointer(int reg, State *currentState, Instruction instruction){
+  Register *regPtr = &currentState->reg0;
+  // getting the 4 bits of the instruction
+  // which correspond to the register which
+  // starts at bit reg
+  int regAddress = ((1 << 4) - 1) & (instruction >> (reg - 4 + 1));
+  regPtr += regAddress;
+  return regPtr;
 }
 
 int execute(Instruction instruction, State *state, InstructionType type) {
