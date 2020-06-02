@@ -40,7 +40,7 @@ typedef struct CurrentState{
   // CPSR register
   Register regCPSR;
 
-  Memory memory[MEMORY_SIZE];
+  uint8_t memory[MEMORY_SIZE];
 
 } State;
 
