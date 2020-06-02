@@ -29,13 +29,13 @@ typedef Register (*shift_function)(Register, uint32_t);
 	OPERATOR_NONSHIFT(or, |)
 OPERATOR_NONSHIFT(mov, *0+)
 
-	static Register add(int isCarry, State *state, Register operand1, Register operand2) {
-		if (isCarry) {
-			setC(state, ((operand2 > 0) && (operand1 > INT_MAX - operand2 ))
-					|| ((operand2 < 0) && (operand1 < INT_MIN - operand2)));
-		} //sets C if there is an overflow or underflow and S is set
-		return operand1 +operand2;
-	}
+static Register add(int isCarry, State *state, Register operand1, Register operand2) {
+	if (isCarry) {
+		setC(state, ((operand2 > 0) && (operand1 > INT_MAX - operand2 ))
+				|| ((operand2 < 0) && (operand1 < INT_MIN - operand2)));
+	} //sets C if there is an overflow or underflow and S is set
+	return operand1 +operand2;
+}
 
 static Register sub(int isCarry, State *state, Register operand1, Register operand2) {
 	if (isCarry) {
@@ -53,20 +53,20 @@ static Register rsb(int isCarry, State *state, Register operand1, Register opera
 	OPERATOR_SHIFT(lsl, <<)
 OPERATOR_SHIFT(lsr, >>)
 
-	static Register asr(Register value, uint32_t shift){
-		if (shift > 32) {
-			shift = 32;
-		}
-
-		int sign = value & (1 << 31);
-		value = value >> shift;
-
-		if (sign) {
-			return value | ~((1 << (32 - shift)) - 1); // CREATE_MASK(31, (32 - shift));
-		}
-
-		return value;
+static Register asr(Register value, uint32_t shift){
+	if (shift > 32) {
+		shift = 32;
 	}
+
+	int sign = value & (1 << 31);
+	value = value >> shift;
+
+	if (sign) {
+		return value | ~((1 << (32 - shift)) - 1); // CREATE_MASK(31, (32 - shift));
+	}
+
+	return value;
+}
 
 static Register ror(Register value, uint32_t shift){
 	uint32_t shifted, rotated;
@@ -133,7 +133,8 @@ int execute_data_processing(Instruction instruction, State *state) {
 	operand1 = *getRegPointer(19, state, instruction);
 	destination = getRegPointer(15, state, instruction);
 
-	switch(instruction & CREATE_MASK(24,21)) {
+	int opcode = (instruction & CREATE_MASK(24, 21)) >> 21;
+	switch(opcode) {
 		case 0: 
 			operator.operation.operationWithoutCarry = and;
 			operator.isWritten = 1;
