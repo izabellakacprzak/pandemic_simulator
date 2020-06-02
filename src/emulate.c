@@ -13,8 +13,8 @@ int loadToMemory(State *currentStatePtr, char *filepath){
   sourceFile = fopen(filepath, "rb");
 
   if(!sourceFile){
-    perror("Error opening file");
-    exit(EXIT_FAILURE);
+	  printf("Error: Can't open file");
+	  exit(EXIT_FAILURE);
   }
 
   int i = 0;
@@ -22,14 +22,13 @@ int loadToMemory(State *currentStatePtr, char *filepath){
   while(!feof(sourceFile)){
 
     if(i >= MEMORY_SIZE){
-      perror("The memory is full.");
-      exit(EXIT_FAILURE);
+      printf("Error: out of bounds memory access at address 0x%08x", i);
     }
 
-    fread(&currentStatePtr->memory[i + 3], 1, 1, sourceFile);
-    fread(&currentStatePtr->memory[i + 2], 1, 1, sourceFile);
-    fread(&currentStatePtr->memory[i + 1], 1, 1, sourceFile);
     fread(&currentStatePtr->memory[i], 1, 1, sourceFile);
+    fread(&currentStatePtr->memory[i + 1], 1, 1, sourceFile);
+    fread(&currentStatePtr->memory[i + 2], 1, 1, sourceFile);
+    fread(&currentStatePtr->memory[i + 3], 1, 1, sourceFile);
     i += 4;
   }
 

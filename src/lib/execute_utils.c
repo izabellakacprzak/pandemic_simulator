@@ -262,9 +262,9 @@ int execute_multiply(Instruction instruction, State *state){
 int invalidMemoryAccess(int memAddress){
 	if(memAddress < 0 || memAddress > MEMORY_SIZE){
               printf("Error: Out of bounds memory access at address 0x%08x\n", memAddress);
-              return 0;
+              return 1;
 	}
-	return 1;
+	return 0;
 }
 
 int execute_data_transfer(Instruction instruction, State *state) {
@@ -294,13 +294,13 @@ int execute_data_transfer(Instruction instruction, State *state) {
 			|| invalidMemoryAccess(regAddress + 2)
 			|| invalidMemoryAccess(regAddress + 3))
 	      return 1;
-      *destReg = state->memory[3 - (regAddress % 4) + (regAddress / 4) * 4];
+      *destReg = state->memory[regAddress];
 
-      *destReg += state->memory[3 - ((regAddress + 1) % 4) + ((regAddress + 1) / 4) * 4] << 8;
+      *destReg += state->memory[regAddress + 1] << 8;
 
-      *destReg += state->memory[3 - ((regAddress + 2) % 4) + ((regAddress + 2) / 4) * 4] << 16;
+      *destReg += state->memory[regAddress + 2] << 16;
 
-      *destReg += state->memory[3 - ((regAddress + 3) % 4) + ((regAddress + 3) / 4) * 4] << 24;
+      *destReg += state->memory[regAddress + 3] << 24;
     } else {
       // storing
       memAddress = *baseReg + offset;
@@ -309,10 +309,10 @@ int execute_data_transfer(Instruction instruction, State *state) {
 		      || invalidMemoryAccess(memAddress + 2)
 		      || invalidMemoryAccess(memAddress + 3))
 	      return 1;
-      state->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
-      state->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
-      state->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
-      state->memory[memAddress + 3] = CREATE_MASK(7, 0) & (*destReg >> 24);
+      state->memory[memAddress + 3] = CREATE_MASK(7, 0) & *destReg;
+      state->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 8);
+      state->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 16);
+      state->memory[memAddress] = CREATE_MASK(7, 0) & (*destReg >> 24);
     }
   } else {
     // post-indexing
@@ -324,13 +324,13 @@ int execute_data_transfer(Instruction instruction, State *state) {
 			|| invalidMemoryAccess(regAddress + 2)
 			|| invalidMemoryAccess(regAddress + 3))
 	      return 1;
-      *destReg = state->memory[3 - (regAddress % 4) + (regAddress / 4) * 4];
+      *destReg = state->memory[regAddress];
 
-      *destReg += state->memory[3 - ((regAddress + 1) % 4) + ((regAddress + 1) / 4) * 4] << 8;
+      *destReg += state->memory[regAddress + 1] << 8;
 
-      *destReg += state->memory[3 - ((regAddress + 2) % 4) + ((regAddress + 2) / 4) * 4] << 16;
+      *destReg += state->memory[regAddress + 2] << 16;
 
-      *destReg += state->memory[3 - ((regAddress + 3) % 4) + ((regAddress + 3) / 4) * 4] << 24;
+      *destReg += state->memory[regAddress + 3] << 24;
 
       *baseReg += offset;
     } else {
@@ -341,10 +341,10 @@ int execute_data_transfer(Instruction instruction, State *state) {
                       || invalidMemoryAccess(memAddress + 2)
                       || invalidMemoryAccess(memAddress + 3))
               return 1;
-      state->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
-      state->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
-      state->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
-      state->memory[memAddress + 3] = CREATE_MASK(7, 0) & (*destReg >> 24);
+      state->memory[memAddress + 3] = CREATE_MASK(7, 0) & *destReg;
+      state->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 8);
+      state->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 16);
+      state->memory[memAddress] = CREATE_MASK(7, 0) & (*destReg >> 24);
       *baseReg += offset;
     }
   }
@@ -361,7 +361,7 @@ int execute_branch(Instruction instruction, State *state){
 
   state->regPC += extendedOffset;
   if(state->regPC < 0 || state->regPC >= MEMORY_SIZE){
-	  printf("Error: Out of bounds memory access at address 0x%8x", state->regPC);
+	  printf("Error: Out of bounds memory access at address 0x%08x", state->regPC);
 	  return 1;
   }
   //state->branchFlag = 1;

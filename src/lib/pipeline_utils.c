@@ -22,13 +22,13 @@ void terminate(State *currentState){
 
 	// prints the values of non-zero memory locations
         printf("Non-zero memory:\n");
-	int32_t memoryValue = 0;
+	uint32_t memoryValue = 0;
         for(int i = 0; i < MEMORY_SIZE; i+=4){
 		// combining four 8-bit long ints into one 32-bit long
-		memoryValue = currentState->memory[i];
-		memoryValue += (currentState->memory[i+1] << 8);
-		memoryValue += (currentState->memory[i+2] << 16);
-		memoryValue += (currentState->memory[i+3] << 24);
+		memoryValue = (currentState->memory[i] << 24);
+		memoryValue += (currentState->memory[i+1] << 16);
+		memoryValue += (currentState->memory[i+2] << 8);
+		memoryValue += currentState->memory[i+3];
                 if(memoryValue != 0){
                         printf("0x%08x: 0x%08x\n", i, memoryValue);
                 }
@@ -51,7 +51,7 @@ void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr){
   uint8_t fourth = currentStatePtr->memory[currentStatePtr->regPC + 3];
 
     
-  currentPipelinePtr->fetched = (first << 24) | (second << 16) | (third << 8) | fourth;
+  currentPipelinePtr->fetched = first | (second << 8) | (third << 16) | (fourth << 24);
   currentStatePtr->regPC += 4;
 }
 
