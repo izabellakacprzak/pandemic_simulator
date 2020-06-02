@@ -71,7 +71,7 @@ static Register asr(Register value, uint32_t shift){
 }
 
 static Register ror(Register value, uint32_t shift){
-  uint32_t shifted, rotated;
+  Register shifted, rotated;
   shift %= 32;
 
   shifted = value >> shift;
@@ -93,14 +93,15 @@ static Register get_offset_register(int carry, Instruction instruction, State *s
   shift_function shifts[4] = {lsl, lsr, asr, ror};
   shift_function selectedShift = shifts[(instruction & CREATE_MASK(6, 5)) >> 5];
 
-  uint32_t amount;
+  // amount could be a Register or an immediate
+  Register amount;
   
   // Check 4th bit
   if (instruction & (1 << 4)) {
-    // 4th bit is 1
+    // 4th bit is 1  -> amount is a Register
     amount = *getRegPointer(11, state, instruction);
   } else {
-    // 4th bit is 0
+    // 4th bit is 0  -> amount is an immediate
     amount = (instruction & CREATE_MASK(11, 7)) >> 7;
   }
 

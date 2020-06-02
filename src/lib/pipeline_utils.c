@@ -49,10 +49,10 @@ void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr){
   currentPipelinePtr->decoded = currentPipelinePtr->fetched;
 
   // Fetching next instruction and incrementing PC
-  uint8_t first = currentStatePtr->memory[currentStatePtr->regPC];
-  uint8_t second = currentStatePtr->memory[currentStatePtr->regPC + 1];
-  uint8_t third = currentStatePtr->memory[currentStatePtr->regPC + 2];
-  uint8_t fourth = currentStatePtr->memory[currentStatePtr->regPC + 3];
+  Memory first = currentStatePtr->memory[currentStatePtr->regPC];
+  Memory second = currentStatePtr->memory[currentStatePtr->regPC + 1];
+  Memory third = currentStatePtr->memory[currentStatePtr->regPC + 2];
+  Memory fourth = currentStatePtr->memory[currentStatePtr->regPC + 3];
 
     
   currentPipelinePtr->fetched = (first << 24) | (second << 16) | (third << 8) | fourth;
