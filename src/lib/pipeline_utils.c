@@ -9,16 +9,16 @@
 
 void terminate(State *currentState){
 	printf("Registers:\n");
-        Register *regPtr = &currentState->reg0;
+        Register reg;
 	// prints the values stored a registers from 0 - 12
         for(int i = 0; i < 13; i++){
-                printf("$%-3d:%11d (0x%08x)\n", i, *regPtr, *regPtr);
-                regPtr++;
+	  reg = currentState->registers.regArray[i];
+          printf("$%-3d:%11d (0x%08x)\n", i, reg, reg);
         }
 
 	// prints the values stored at registers PC and CPSR
-	printf("PC  :%11d (0x%08x)\n", currentState->regPC, currentState->regPC);
-	printf("CPSR:%11d (0x%08x)\n", currentState->regCPSR, currentState->regCPSR);
+	printf("PC  :%11d (0x%08x)\n", currentState->registers.regStruct.regPC, currentState->registers.regStruct.regPC);
+	printf("CPSR:%11d (0x%08x)\n", currentState->registers.regStruct.regCPSR, currentState->registers.regStruct.regCPSR);
 
 	// prints the values of non-zero memory locations
         printf("Non-zero memory:\n");
@@ -45,14 +45,15 @@ void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr){
   currentPipelinePtr->decoded = currentPipelinePtr->fetched;
 
   // Fetching next instruction and incrementing PC
-  uint8_t first = currentStatePtr->memory[currentStatePtr->regPC];
-  uint8_t second = currentStatePtr->memory[currentStatePtr->regPC + 1];
-  uint8_t third = currentStatePtr->memory[currentStatePtr->regPC + 2];
-  uint8_t fourth = currentStatePtr->memory[currentStatePtr->regPC + 3];
+  Register pcVal = currentStatePtr->registers.regStruct.regPC;
+  uint8_t first = currentStatePtr->memory[pcVal];
+  uint8_t second = currentStatePtr->memory[pcVal + 1];
+  uint8_t third = currentStatePtr->memory[pcVal + 2];
+  uint8_t fourth = currentStatePtr->memory[pcVal + 3];
 
     
   currentPipelinePtr->fetched = (first << 24) | (second << 16) | (third << 8) | fourth;
-  currentStatePtr->regPC += 4;
+  currentStatePtr->registers.regStruct.regPC += 4;
 }
 
 //Returns an enum type specifying the type of the given instruction
@@ -105,11 +106,12 @@ int determineValidity(Instruction instruction, State *statePtr){
   int validity = 0;
 
   condition = condition >> 28;
+  Register cpsr = statePtr->registers.regStruct.regCPSR;
 
-  uint32_t setZ	= statePtr->regCPSR & Z_MASK;
+  uint32_t setZ	= cpsr & Z_MASK;
   uint32_t clearZ = ~(setZ);
-  uint32_t stateOfN = statePtr->regCPSR >> 31;
-  uint32_t stateOfV = (statePtr->regCPSR << 3) >> 31;
+  uint32_t stateOfN = cpsr >> 31;
+  uint32_t stateOfV = (cpsr << 3) >> 31;
 
   // checks for all possible conditions and updates validity accordingly
   switch(condition) {
@@ -148,9 +150,9 @@ int setCPSR(Instruction instruction){
 void setZ(State *statePtr, int result){
 
   if(!result){
-    statePtr->regCPSR = Z_MASK | statePtr->regCPSR;
+    statePtr->registers.regStruct.regCPSR = Z_MASK | statePtr->registers.regStruct.regCPSR;
   } else{
-    statePtr->regCPSR = ~Z_MASK & statePtr->regCPSR;
+    statePtr->registers.regStruct.regCPSR = ~Z_MASK & statePtr->registers.regStruct.regCPSR;
   }
 
 }
@@ -159,9 +161,9 @@ void setZ(State *statePtr, int result){
 void setN(State *statePtr, int result){
 
   if(result & N_MASK){
-    statePtr->regCPSR = N_MASK | statePtr->regCPSR;
+    statePtr->registers.regStruct.regCPSR = N_MASK | statePtr->registers.regStruct.regCPSR;
   } else{
-    statePtr->regCPSR = ~N_MASK & statePtr->regCPSR;    
+    statePtr->registers.regStruct.regCPSR = ~N_MASK & statePtr->registers.regStruct.regCPSR;    
   }
   
 }
@@ -173,9 +175,9 @@ void setN(State *statePtr, int result){
 void setC(State *statePtr, int value){
 
   if(value){
-    statePtr->regCPSR = C_MASK | statePtr->regCPSR;
+    statePtr->registers.regStruct.regCPSR = C_MASK | statePtr->registers.regStruct.regCPSR;
   } else{
-    statePtr->regCPSR = ~C_MASK & statePtr->regCPSR;
+    statePtr->registers.regStruct.regCPSR = ~C_MASK & statePtr->registers.regStruct.regCPSR;
   }
   
 }

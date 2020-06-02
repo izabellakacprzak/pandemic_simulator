@@ -210,13 +210,11 @@ int execute_data_processing(Instruction instruction, State *state) {
 
 
 Register *getRegPointer(int reg, State *currentState, Instruction instruction){
-	Register *regPtr = &currentState->reg0;
 	// getting the 4 bits of the instruction
 	// which correspond to the register which
 	// starts at bit reg
 	int regAddress = ((1 << 4) - 1) & (instruction >> (reg - 4 + 1));
-	regPtr += regAddress;
-	return regPtr;
+	return &(currentState->registers.regArray[regAddress]);
 }
 
 
@@ -328,7 +326,7 @@ int execute_branch(Instruction instruction, State *state){
     extendedOffset = extendedOffset | ~((1 << 26) - 1);
   }
   
-  state->regPC += extendedOffset;
+  state->registers.regStruct.regPC += extendedOffset;
   state->branchFlag = 1;
   return 0;
 }
