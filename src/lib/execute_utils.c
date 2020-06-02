@@ -364,13 +364,11 @@ static int execute_branch(Instruction instruction, State *state){
 }
 
 Register *getRegPointer(int reg, State *currentState, Instruction instruction){
-  Register *regPtr = currentState->registers;
   // getting the 4 bits of the instruction
   // which correspond to the register which
   // starts at bit reg
   int regAddress = ((1 << 4) - 1) & (instruction >> (reg - 4 + 1));
-  regPtr += regAddress;
-  return regPtr;
+  return &currentState->registers[regAddress];
 }
 
 int execute(Instruction instruction, State *state, InstructionType type) {
