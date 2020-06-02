@@ -41,6 +41,8 @@ typedef struct CurrentState{
   Register regCPSR;
 
   int8_t memory[MEMORY_SIZE];
+
+  int branchFlag;
 } State;
 
 // structure for representing the currently
@@ -101,34 +103,5 @@ void setN(State *statePtr, int result);
 
 // sets the Z flag iff the result is zero
 void setZ(State *statePtr, int result);
-
-// determines whether the CPSR flags should be updated
-// takes the 20th bit of an instruction
-int setCPSR(Instruction instruction);
-
-// determines whether the multiply instrucion should perform
-// multiply and accumulate or multiply only
-// takes the 21st bit of an instruction
-int getA(Instruction instruction);
-
-// determines whether Offset is interpreted as a shifted register
-// or as an unsigned 12 bit imm offset
-// takes the 25th bit of an instrucion
-int getI(Instruction instruction);
-
-// determines  whether the offset is added/subtracted to the base register
-// before transferring the data or after
-// takes the 24th bit of an instruction
-int getP(Instruction instruction);
-
-// determines whether the offset is added to or
-// subtracted from the base register
-// takes the 23th bit of instruction
-int getU(Instruction instruction);
-
-//determines whether the word is loaded from memory
-// or stored into
-//takes the 20th bit of an instruction
-int getL(Instruction instruction);
 
 #endif // PIPELINE_UTILS_H

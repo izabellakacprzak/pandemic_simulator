@@ -134,16 +134,6 @@ int determineValidity(Instruction instruction, State *statePtr){
 
 }
 
-// determines whether the CPSR flags should be updated
-// takes the 20th bit of an instruction
-int setCPSR(Instruction instruction){
-
-  return instruction & (1 << 20);
-  
-}
-
-
-
 // sets the Z flag iff the result is zero
 void setZ(State *statePtr, int result){
 
@@ -182,57 +172,4 @@ void setC(State *statePtr, int value){
 
 
 
-// Should we have different names opposed to getX?
-
-
-
-// determines whether the multiply instruction should perform
-// multiply and accumulate or multiply only
-// takes the 21st bit of an instruction
-int getA(Instruction instruction){
-
-  return instruction & (1 << 21);
-  
-}
-
-
-
-// determines whether Offset is interpreted as a shifted register
-// or as an unsigned 12 bit imm offset
-// takes the 25th bit of an instruction
-int getI(Instruction instruction){
-
-  return instruction & (1 << 25);
-
-}
-
-// determines  whether the offset is added/subtracted to the base register
-// before transferring the data or after
-// takes the 24th bit of an instruction
-int getP(Instruction instruction){
-
-  return instruction & (1 << 24);
-  
-}
-
-
-// determines whether the offset is added to or
-// subtracted from the base register
-// takes the 23th bit of instruction
-int getU(Instruction instruction){
-
-  return instruction & (1 << 23);
-  
-}
-
-
-//determines whether the word is loaded from memory
-// or stored into
-//takes the 20th bit of an instruction
-//currently the same instruction as setCPSR - should we have both for clarity sake?
-int getL(Instruction instruction){
-
-  return instruction & (1 << 20);
-
-}
 
