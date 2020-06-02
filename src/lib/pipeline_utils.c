@@ -12,17 +12,17 @@ void terminate(State *currentState){
         Register *regPtr = &currentState->reg0;
 	// prints the values stored a registers from 0 - 12
         for(int i = 0; i < 13; i++){
-                printf("$%-3d:%11u (0x%08x)\n", i, *regPtr, *regPtr);
+                printf("$%-3d:%11d (0x%08x)\n", i, *regPtr, *regPtr);
                 regPtr++;
         }
 
 	// prints the values stored at registers PC and CPSR
-	printf("PC  :%11u (0x%08x)\n", currentState->regPC, currentState->regPC);
-	printf("CPSR:%11u (0x%08x)\n", currentState->regCPSR, currentState->regCPSR);
+	printf("PC  :%11d (0x%08x)\n", currentState->regPC, currentState->regPC);
+	printf("CPSR:%11d (0x%08x)\n", currentState->regCPSR, currentState->regCPSR);
 
 	// prints the values of non-zero memory locations
         printf("Non-zero memory:\n");
-	uint32_t memoryValue = 0;
+	int32_t memoryValue = 0;
         for(int i = 0; i < MEMORY_SIZE; i+=4){
 		// combining four 8-bit long ints into one 32-bit long
 		memoryValue = currentState->memory[i];
@@ -136,7 +136,7 @@ int determineValidity(Instruction instruction, State *statePtr){
 
 // determines whether the CPSR flags should be updated
 // takes the 20th bit of an instruction
-uint32_t setCPSR(Instruction instruction){
+int setCPSR(Instruction instruction){
 
   return instruction & (1 << 20);
   
@@ -189,7 +189,7 @@ void setC(State *statePtr, int value){
 // determines whether the multiply instruction should perform
 // multiply and accumulate or multiply only
 // takes the 21st bit of an instruction
-uint32_t getA(Instruction instruction){
+int getA(Instruction instruction){
 
   return instruction & (1 << 21);
   
@@ -200,7 +200,7 @@ uint32_t getA(Instruction instruction){
 // determines whether Offset is interpreted as a shifted register
 // or as an unsigned 12 bit imm offset
 // takes the 25th bit of an instruction
-uint32_t getI(Instruction instruction){
+int getI(Instruction instruction){
 
   return instruction & (1 << 25);
 
@@ -209,7 +209,7 @@ uint32_t getI(Instruction instruction){
 // determines  whether the offset is added/subtracted to the base register
 // before transferring the data or after
 // takes the 24th bit of an instruction
-uint32_t getP(Instruction instruction){
+int getP(Instruction instruction){
 
   return instruction & (1 << 24);
   
@@ -219,7 +219,7 @@ uint32_t getP(Instruction instruction){
 // determines whether the offset is added to or
 // subtracted from the base register
 // takes the 23th bit of instruction
-uint32_t getU(Instruction instruction){
+int getU(Instruction instruction){
 
   return instruction & (1 << 23);
   
@@ -230,7 +230,7 @@ uint32_t getU(Instruction instruction){
 // or stored into
 //takes the 20th bit of an instruction
 //currently the same instruction as setCPSR - should we have both for clarity sake?
-uint32_t getL(Instruction instruction){
+int getL(Instruction instruction){
 
   return instruction & (1 << 20);
 

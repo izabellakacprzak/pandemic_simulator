@@ -59,18 +59,12 @@ int main(int argc, char **argv) {
 	
   // fetching the second instruction
   //fetchInstruction(currentStatePtr, currentPipelinePtr);
-
-  // keeping track of the PC
-  Register currentPC;
 	
   do {
 
     // fetching a new instruction
     // passing the decoded into executed
     fetchInstruction(currentStatePtr, currentPipelinePtr);
-
-    // keeping what the PC was before execution
-    currentPC = currentState.regPC;
     
     // decoding the instruction from currentPipeline.decoded
     decodedInstruction = determineType(currentPipeline.decoded);
@@ -79,11 +73,13 @@ int main(int argc, char **argv) {
     // is valid (checking the condition code)
     // and if so executing
     if(determineValidity(currentPipeline.decoded, currentStatePtr)){
+      
       execute(currentPipeline.decoded, currentStatePtr, decodedInstruction);
 
       // if there is a branch (regPC has changed) reset the pipeline
-      if (currentPC != currentState.regPC) {
+      if (currentState.branchFlag) {
 	fetchInstruction(currentStatePtr, currentPipelinePtr);
+	currentState.branchFlag = 0;
       }
     }
 		

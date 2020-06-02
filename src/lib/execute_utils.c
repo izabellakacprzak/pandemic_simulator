@@ -1,9 +1,10 @@
 #include <stdint.h>
 #include <stdlib.h>
-#include "execute_utils.h"
-#include "pipeline_utils.h"
 #include <stdio.h>
 #include <limits.h>
+
+#include "execute_utils.h"
+#include "pipeline_utils.h"
 
 #define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
 //creates a mask of 1s from start to end
@@ -133,7 +134,7 @@ int execute_data_processing(Instruction instruction, State *state) {
   operand1 = *getRegPointer(19, state, instruction);
   destination = getRegPointer(15, state, instruction);
   
-  switch(instruction & CREATE_MASK(24,21)) {
+  switch((instruction & CREATE_MASK(24,21)) >> 21) {
     case 0: 
       operator.operation.operationWithoutCarry = and;
       operator.isWritten = 1;
@@ -220,104 +221,116 @@ Register *getRegPointer(int reg, State *currentState, Instruction instruction){
 
 
 int execute_multiply(Instruction instruction, State *state){
-      //get destination register pointer - bits 19 to 16 in instr
-      // Rm - bits 3 to 0
-      // Rs - bits 11 to 8
+  //get destination register pointer - bits 19 to 16 in instr
+  // Rm - bits 3 to 0
+  // Rs - bits 11 to 8
       
-      Register *regRd = getRegPointer(19, state, instruction);
-      Register *regRs = getRegPointer(11, state, instruction);
-      Register *regRm = getRegPointer(3, state, instruction);
+  Register *regRd = getRegPointer(19, state, instruction);
+  Register *regRs = getRegPointer(11, state, instruction);
+  Register *regRm = getRegPointer(3, state, instruction);
 
       
-      // check whether to perform multiply and accumulate or
-      // multiply only - function for now in pipeline_utils
-      if(getA(instruction)){
+  // check whether to perform multiply and accumulate or
+  // multiply only - function for now in pipeline_utils
+  if(getA(instruction)){
 
-	// set destination register to Rm x Rs + Rn
-	// Rn - bits 15 to 12
+    // set destination register to Rm x Rs + Rn
+    // Rn - bits 15 to 12
 
-	Register *regRn = getRegPointer(15, state, instruction);
+    Register *regRn = getRegPointer(15, state, instruction);
 
-	*regRd = (*regRm) * (*regRs) + (*regRn);	
+    *regRd = (*regRm) * (*regRs) + (*regRn);	
 
-      } else{
+  } else{
 
-	//set destination register to Rm x Rs
-        *regRd = (*regRm) * (*regRs);
+    //set destination register to Rm x Rs
+    *regRd = (*regRm) * (*regRs);
 	
-      }
+  }
 
-      if(setCPSR(instruction)){
+  if(setCPSR(instruction)){
 
-	//set result to the value in destination register
-	int result = *regRd;
-	setZ(state, result);
-	setN(state, result);
+    //set result to the value in destination register
+    int result = *regRd;
+    setZ(state, result);
+    setN(state, result);
 
-      }
+  }
 
-      // return 1 if successful;
-      return 1;
+  // return 1 if successful;
+  return 1;
 }
 
 int execute_data_transfer(Instruction instruction, State *state) {
-
   int offset = instruction & ((1 << 12) - 1);
-	// here the function which calculates the offset
-	// depending on the I bit of the instruction
-  
-	Register *destReg = getRegPointer(15, state, instruction);
-	Register *baseReg = getRegPointer(19, state, instruction);
-	
-	int memAddress = 0;
+  // here the function which calculates the offset
+  // depending on the I bit of the instruction
 
-	if(!getU(instruction)){
-		// subtracting offset
-		offset = -offset;
-	}
-	if(getI(instruction)){
-		offset = get_offset_register(0, instruction, state);
-	}	
-	if(getP(instruction)){
-		// pre-indexing
-		if(getL(instruction)){
-			// loading
-			*destReg = state->memory[(*baseReg + offset)/4];
-			*destReg += state->memory[(*baseReg + offset + 1)/8] << 8;
-			*destReg += state->memory[(*baseReg + offset + 2)/8] << 16;
-			*destReg += state->memory[(*baseReg + offset + 3)/8] << 24;
-		} else {
-			// storing
-			memAddress = *baseReg + offset;
-			state->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
-			state->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
-			state->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
-			state->memory[memAddress + 3] = CREATE_MASK(7, 0) & (*destReg >> 24);
-		}
-	} else {
-		// post-indexing
-		if(getL(instruction)){
-			// loading
-			*destReg = state->memory[*baseReg];
-			*baseReg += offset;
-		} else {
-			// storing
-			state->memory[*baseReg] = *destReg;
-			*baseReg += offset;
-		}
-	}
-	return 1;
+  Register *destReg = getRegPointer(15, state, instruction);
+  Register *baseReg = getRegPointer(19, state, instruction);
+
+  int memAddress = 0;
+  int regAddress = 0;
+
+  if(!getU(instruction)){
+    // subtracting offset
+    offset = -offset;
+  }
+  if(getI(instruction)){
+    offset = get_offset_register(0, instruction, state);
+  }
+
+  if(getP(instruction)){
+    // pre-indexing	
+    if(getL(instruction)){
+      // loading
+      regAddress = *baseReg + offset;
+      *destReg = state->memory[3 - (regAddress % 4) + (regAddress / 4) * 4];
+      *destReg += state->memory[3 - ((regAddress + 1) % 4) + ((regAddress + 1) / 4) * 4] << 8;
+      *destReg += state->memory[3 - ((regAddress + 2) % 4) + ((regAddress + 2) / 4) * 4] << 16;
+      *destReg += state->memory[3 - ((regAddress + 3) % 4) + ((regAddress + 3) / 4) * 4] << 24;
+    } else {
+      // storing
+      memAddress = *baseReg + offset;
+      state->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
+      state->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
+      state->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
+      state->memory[memAddress + 3] = CREATE_MASK(7, 0) & (*destReg >> 24);
+    }
+  } else {
+    // post-indexing
+    if(getL(instruction)){
+      // loading
+      regAddress = *baseReg;
+      *destReg = state->memory[3 - (regAddress % 4) + (regAddress / 4) * 4];
+      *destReg += state->memory[3 - ((regAddress + 1) % 4) + ((regAddress + 1) / 4) * 4] << 8;
+      *destReg += state->memory[3 - ((regAddress + 2) % 4) + ((regAddress + 2) / 4) * 4] << 16;
+      *destReg += state->memory[3 - ((regAddress + 3) % 4) + ((regAddress + 3) / 4) * 4] << 24;
+      *baseReg += offset;
+    } else {
+      // storing
+      memAddress = *baseReg;
+      state->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
+      state->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
+      state->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
+      state->memory[memAddress + 3] = CREATE_MASK(7, 0) & (*destReg >> 24);
+      *baseReg += offset;
+    }
+  }
+  return 0;
+
 }
 
 int execute_branch(Instruction instruction, State *state){
   int32_t extendedOffset = (CREATE_MASK(23, 0) & instruction) << 2;
 
-  if (instruction & (1 << 25)) {
+  if (extendedOffset & (1 << 25)) {
     extendedOffset = extendedOffset | ~((1 << 26) - 1);
   }
   
   state->regPC += extendedOffset;
-  return 1;
+  state->branchFlag = 1;
+  return 0;
 }
 
 int execute(Instruction instruction, State *state, InstructionType type) {
