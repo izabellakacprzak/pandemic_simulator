@@ -13,8 +13,8 @@ int loadToMemory(State *currentStatePtr, char *filepath){
   sourceFile = fopen(filepath, "rb");
 
   if(!sourceFile){
-	  printf("Error: Can't open file");
-	  exit(EXIT_FAILURE);
+    printf("Error: Can't open file");
+    exit(EXIT_FAILURE);
   }
 
   int i = 0;
@@ -78,8 +78,8 @@ int main(int argc, char **argv) {
       // if there is a branch (regPC has changed) reset the pipeline
 
       //if (currentState.branchFlag) {
-	//fetchInstruction(currentStatePtr, currentPipelinePtr);
-	//currentState.branchFlag = 0;
+      //fetchInstruction(currentStatePtr, currentPipelinePtr);
+      //currentState.branchFlag = 0;
       //}
     }
 		

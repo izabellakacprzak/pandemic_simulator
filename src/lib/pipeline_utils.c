@@ -1,6 +1,6 @@
 /* 
    Note: memoryValue must be changed if Memory typedef is changed.
- */
+*/
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -11,50 +11,50 @@
 #define N_MASK (1 << 31)
 #define C_MASK (1 << 29)
 
-void terminate(State *currentState){
-	printf("Registers:\n");
-	// prints the values stored a registers from 0 - 12
-        for(int i = 0; i < 13; i++){
-                printf("$%-3d:%11d (0x%08x)\n", i, currentState->registers[i], currentState->registers[i]);
-        }
+void terminate(State *statePtr){
+  printf("Registers:\n");
+  // prints the values stored a registers from 0 - 12
+  for(int i = 0; i < 13; i++){
+    printf("$%-3d:%11d (0x%08x)\n", i, statePtr->registers[i], statePtr->registers[i]);
+  }
 
-	// prints the values stored at registers PC and CPSR
-	printf("PC  :%11d (0x%08x)\n", currentState->regPC, currentState->regPC);
-	printf("CPSR:%11d (0x%08x)\n", currentState->regCPSR, currentState->regCPSR);
+  // prints the values stored at registers PC and CPSR
+  printf("PC  :%11d (0x%08x)\n", statePtr->regPC, statePtr->regPC);
+  printf("CPSR:%11d (0x%08x)\n", statePtr->regCPSR, statePtr->regCPSR);
 
-	// prints the values of non-zero memory locations
-        printf("Non-zero memory:\n");
-	uint32_t memoryValue = 0;
-        for(int i = 0; i < MEMORY_SIZE; i+=4){
-		// combining four 8-bit long ints into one 32-bit long
-		memoryValue = (currentState->memory[i] << 24);
-		memoryValue += (currentState->memory[i+1] << 16);
-		memoryValue += (currentState->memory[i+2] << 8);
-		memoryValue += currentState->memory[i+3];
-                if(memoryValue != 0){
-                        printf("0x%08x: 0x%08x\n", i, memoryValue);
-                }
-		memoryValue = 0;
-        }
+  // prints the values of non-zero memory locations
+  printf("Non-zero memory:\n");
+  uint32_t memoryValue = 0;
+  for(int i = 0; i < MEMORY_SIZE; i+=4){
+    // combining four 8-bit long ints into one 32-bit long
+    memoryValue = (statePtr->memory[i] << 24);
+    memoryValue += (statePtr->memory[i+1] << 16);
+    memoryValue += (statePtr->memory[i+2] << 8);
+    memoryValue += statePtr->memory[i+3];
+    if(memoryValue != 0){
+      printf("0x%08x: 0x%08x\n", i, memoryValue);
+    }
+    memoryValue = 0;
+  }
 }
 
 // fetches an instruction from memory at the regPC address
 // putting it into currentState.fetched
 // shifts the pipeline and increments the PC
-void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr){
+void fetchInstruction(State *statePtr, Pipeline *pipelinePtr){
   // Shifting the pipeline
   //currentPipelinePtr->executed = currentPipelinePtr->decoded;
-  currentPipelinePtr->decoded = currentPipelinePtr->fetched;
+  pipelinePtr->decoded = pipelinePtr->fetched;
 
   // Fetching next instruction and incrementing PC
-  Memory first = currentStatePtr->memory[currentStatePtr->regPC];
-  Memory second = currentStatePtr->memory[currentStatePtr->regPC + 1];
-  Memory third = currentStatePtr->memory[currentStatePtr->regPC + 2];
-  Memory fourth = currentStatePtr->memory[currentStatePtr->regPC + 3];
+  Memory first = statePtr->memory[statePtr->regPC];
+  Memory second = statePtr->memory[statePtr->regPC + 1];
+  Memory third = statePtr->memory[statePtr->regPC + 2];
+  Memory fourth = statePtr->memory[statePtr->regPC + 3];
 
     
-  currentPipelinePtr->fetched = first | (second << 8) | (third << 16) | (fourth << 24);
-  currentStatePtr->regPC += 4;
+  pipelinePtr->fetched = first | (second << 8) | (third << 16) | (fourth << 24);
+  statePtr->regPC += 4;
 }
 
 //Returns an enum type specifying the type of the given instruction
@@ -75,7 +75,7 @@ InstructionType determineType(Instruction instruction){
   }
 
   //DATA_PROCESSING with immediate constant - 25th bit is set
-   if((1 << 25) & instruction){
+  if((1 << 25) & instruction){
     return DATA_PROCESSING;
   }
 
@@ -171,7 +171,3 @@ void setC(State *statePtr, int value){
   }
   
 }
-
-
-
-
