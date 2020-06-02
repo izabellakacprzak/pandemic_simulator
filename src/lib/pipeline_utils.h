@@ -29,6 +29,7 @@ typedef struct State{
   
   Register registers[REGISTERS_SIZE];
   Memory memory[MEMORY_SIZE];
+  int branchFlag;
 } State;
 
 // structure for representing the currently

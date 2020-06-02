@@ -349,7 +349,8 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
 
 static int execute_branch(Instruction instruction, State *statePtr){
   int32_t extendedOffset = (CREATE_MASK(23, 0) & instruction) << 2;
-
+  Register oldPC = statePtr->regPC;
+  
   if (extendedOffset & (1 << 25)) {
     extendedOffset = extendedOffset | ~((1 << 26) - 1);
   }
@@ -358,8 +359,11 @@ static int execute_branch(Instruction instruction, State *statePtr){
 
   if(statePtr->regPC < 0 || statePtr->regPC >= MEMORY_SIZE){
     printf("Error: Out of bounds memory access at address 0x%08x", statePtr->regPC);
+    //undoes this branch as it is invalid
+    statePtr->regPC = oldPC; 
     return 1;
   }
+  statePtr->branchFlag = 1;
   return 0;
 }
 
