@@ -78,7 +78,7 @@ static Register ror(Register value, uint32_t shift){
 }
 
 // start of execute functions
-int execute_halt(Instruction intruction, State *state){
+int execute_halt(Instruction instruction, State *state){
   return 4;
 }
 

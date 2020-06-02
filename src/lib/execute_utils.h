@@ -15,17 +15,17 @@ typedef struct Operator {
 // is the 4 bits of instruction starting from bit reg
 Register *getRegPointer(int reg, State *currentState, Instruction instruction);
 
-int execute_halt(Instruction intruction, State *state);
+int execute_halt(Instruction instruction, State *state);
 
 Register get_offset_register(int carry, Instruction instruction, State *state);
 
-int execute_data_processing(Instruction intruction, State *state);
+int execute_data_processing(Instruction instruction, State *state);
 
-int execute_multiply(Instruction intruction, State *state);
+int execute_multiply(Instruction instruction, State *state);
 
-int execute_data_transfer(Instruction intruction, State *state);
+int execute_data_transfer(Instruction instruction, State *state);
 
-int execute_branch(Instruction intruction, State *state);
+int execute_branch(Instruction instruction, State *state);
 
 int execute(Instruction instruction, State *state, InstructionType type);
 

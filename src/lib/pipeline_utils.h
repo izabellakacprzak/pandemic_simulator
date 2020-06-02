@@ -62,7 +62,7 @@ typedef enum instr_type{
 } InstructionType;
 
 // enum representing condition codes
-// as hexadecinal numbers
+// as hexadecimal numbers
 typedef enum condition_code{
 	       eq = 0x0,   // 0b0000
 	       ne = 0x1,   // 0b0001
@@ -106,14 +106,14 @@ void setZ(State *statePtr, int result);
 // takes the 20th bit of an instruction
 uint32_t setCPSR(Instruction instruction);
 
-// determines whether the multiply instrucion should perform
+// determines whether the multiply instruction should perform
 // multiply and accumulate or multiply only
 // takes the 21st bit of an instruction
 uint32_t getA(Instruction instruction);
 
 // determines whether Offset is interpreted as a shifted register
 // or as an unsigned 12 bit imm offset
-// takes the 25th bit of an instrucion
+// takes the 25th bit of an instruction
 uint32_t getI(Instruction instruction);
 
 // determines  whether the offset is added/subtracted to the base register

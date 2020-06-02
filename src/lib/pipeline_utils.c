@@ -16,7 +16,7 @@ void terminate(State *currentState){
                 regPtr++;
         }
 
-	// ptints the values stored at registers PC and CPSR
+	// prints the values stored at registers PC and CPSR
 	printf("PC  :%11u (0x%08x)\n", currentState->regPC, currentState->regPC);
 	printf("CPSR:%11u (0x%08x)\n", currentState->regCPSR, currentState->regCPSR);
 
@@ -24,7 +24,7 @@ void terminate(State *currentState){
         printf("Non-zero memory:\n");
 	uint32_t memoryValue = 0;
         for(int i = 0; i < MEMORY_SIZE; i+=4){
-		// combinitng four 8-bit long ints into one 32-bit long
+		// combining four 8-bit long ints into one 32-bit long
 		memoryValue = currentState->memory[i];
 		memoryValue += (currentState->memory[i+1] << 8);
 		memoryValue += (currentState->memory[i+2] << 16);
@@ -44,7 +44,7 @@ void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr){
   //currentPipelinePtr->executed = currentPipelinePtr->decoded;
   currentPipelinePtr->decoded = currentPipelinePtr->fetched;
 
-  // Fetching next instruction and incramenting PC
+  // Fetching next instruction and incrementing PC
   uint8_t first = currentStatePtr->memory[currentStatePtr->regPC];
   uint8_t second = currentStatePtr->memory[currentStatePtr->regPC + 1];
   uint8_t third = currentStatePtr->memory[currentStatePtr->regPC + 2];
@@ -168,7 +168,7 @@ void setN(State *statePtr, int result){
 
 // sets or clears the C flag based on the value passed
 // there are too many conditions which determine whether C should be set or cleared
-// might be cleaner if we have this funvtion and determine during the Data Processing execution
+// might be cleaner if we have this function and determine during the Data Processing execution
 // whether we should set or clear C
 void setC(State *statePtr, int value){
 
@@ -186,7 +186,7 @@ void setC(State *statePtr, int value){
 
 
 
-// determines whether the multiply instrucion should perform
+// determines whether the multiply instruction should perform
 // multiply and accumulate or multiply only
 // takes the 21st bit of an instruction
 uint32_t getA(Instruction instruction){
@@ -199,7 +199,7 @@ uint32_t getA(Instruction instruction){
 
 // determines whether Offset is interpreted as a shifted register
 // or as an unsigned 12 bit imm offset
-// takes the 25th bit of an instrucion
+// takes the 25th bit of an instruction
 uint32_t getI(Instruction instruction){
 
   return instruction & (1 << 25);
