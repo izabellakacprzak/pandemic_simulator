@@ -11,6 +11,16 @@ typedef struct Operator {
   } operation;
 } Operator;
 
+typedef enum flags{
+    S = 20,
+    L = 20,
+    A = 21,
+    U = 23,
+    P = 24,
+    I = 25
+} Flags;
+
+
 // return a pointer to a register whose address
 // is the 4 bits of instruction starting from bit reg
 Register *getRegPointer(int reg, State *currentState, Instruction instruction);

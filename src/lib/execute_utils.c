@@ -20,6 +20,8 @@ static Register name(const Register value, const uint32_t shift)\
     return value operator shift;\
   }
 
+#define GET_FLAG(flag, instruction) (instruction & (1 << flag))
+
 typedef int (*execution_function)(Instruction, State*);
 typedef Register (*shift_function)(Register, uint32_t);
 
@@ -128,7 +130,7 @@ static Register callOperator(int sFlag, State *state, const Operator *operator, 
 int execute_data_processing(Instruction instruction, State *state) {
   Register operand1, operand2;
   Register *destination;
-  int sFlag = instruction & (1 << 20);
+  int sFlag = GET_FLAG(S, instruction);
   Operator operator = {0};
 
   operand1 = *getRegPointer(19, state, instruction);
@@ -182,7 +184,7 @@ int execute_data_processing(Instruction instruction, State *state) {
   }
 
   // checking the I flag
-  if (instruction & (1 << 25)) {
+  if (GET_FLAG(I,instruction)) {
     // operand2 is an immediate constant
     operand2 = instruction & CREATE_MASK(7, 0);
     // rotate  = rotate * 2
@@ -231,7 +233,7 @@ int execute_multiply(Instruction instruction, State *state){
       
   // check whether to perform multiply and accumulate or
   // multiply only - function for now in pipeline_utils
-  if(getA(instruction)){
+  if(GET_FLAG(A, instruction)){
 
     // set destination register to Rm x Rs + Rn
     // Rn - bits 15 to 12
@@ -246,7 +248,7 @@ int execute_multiply(Instruction instruction, State *state){
 	
   }
 
-  if(setCPSR(instruction)){
+    if(GET_FLAG(S, instruction)){
 
     //set result to the value in destination register
     int result = *regRd;
@@ -276,17 +278,17 @@ int execute_data_transfer(Instruction instruction, State *state) {
   int memAddress = 0;
   int regAddress = 0;
 
-  if(!getU(instruction)){
+  if(!(GET_FLAG(U, instruction))){
     // subtracting offset
     offset = -offset;
   }
-  if(getI(instruction)){
+  if(GET_FLAG(I, instruction)){
     offset = get_offset_register(0, instruction, state);
   }
 
-  if(getP(instruction)){
+  if(GET_FLAG(P, instruction)){
     // pre-indexing	
-    if(getL(instruction)){
+    if(GET_FLAG(L, instruction)){
       // loading
       regAddress = *baseReg + offset;
       if(invalidMemoryAccess(regAddress)
@@ -316,7 +318,7 @@ int execute_data_transfer(Instruction instruction, State *state) {
     }
   } else {
     // post-indexing
-    if(getL(instruction)){
+    if(GET_FLAG(L, instruction)){
       // loading
       regAddress = *baseReg;
       if(invalidMemoryAccess(regAddress)
