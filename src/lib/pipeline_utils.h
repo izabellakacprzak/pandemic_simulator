@@ -7,6 +7,11 @@
 #define PIPELINE_UTILS_H
 
 #define MEMORY_SIZE 32768
+#define REGISTERS_SIZE 17
+
+// defining registers for ease of use
+#define regPC registers[15]
+#define regCPSR registers[16]
 
 typedef uint32_t Instruction;
 typedef int32_t Register;
@@ -14,33 +19,15 @@ typedef uint8_t Memory;
 
 // structure for representing the current state of the memory and all registers
 typedef struct CurrentState{
-  // general purpose registers
-  Register reg0;
-  Register reg1;
-  Register reg2;
-  Register reg3;
-  Register reg4;
-  Register reg5;
-  Register reg6;
-  Register reg7;
-  Register reg8;
-  Register reg9;
-  Register reg10;
-  Register reg11;
-  Register reg12;
+  /*
+    registers[0-12] -> general purpose
+    registers[13]   -> SP register (ignored for this exercise)
+    registers[14]   -> LR register (ignored for this exercise)
+    registers[15]   -> PC register
+    registers[16]   -> CPSR register
+   */
   
-  // SP register (ignored for this exercise)
-  Register reg13;
-  
-  // LR register (ignored for this exercise)
-  Register reg14;
-  
-  // PC register
-  Register regPC;
-  
-  // CPSR register
-  Register regCPSR;
-
+  Register registers[REGISTERS_SIZE];
   Memory memory[MEMORY_SIZE];
 } State;
 
