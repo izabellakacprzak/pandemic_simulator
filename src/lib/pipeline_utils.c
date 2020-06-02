@@ -1,3 +1,7 @@
+/* 
+   Note: memoryValue must be changed if Memory typedef is changed.
+ */
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -45,10 +49,10 @@ void fetchInstruction(State *currentStatePtr, Pipeline *currentPipelinePtr){
   currentPipelinePtr->decoded = currentPipelinePtr->fetched;
 
   // Fetching next instruction and incrementing PC
-  uint8_t first = currentStatePtr->memory[currentStatePtr->regPC];
-  uint8_t second = currentStatePtr->memory[currentStatePtr->regPC + 1];
-  uint8_t third = currentStatePtr->memory[currentStatePtr->regPC + 2];
-  uint8_t fourth = currentStatePtr->memory[currentStatePtr->regPC + 3];
+  Memory first = currentStatePtr->memory[currentStatePtr->regPC];
+  Memory second = currentStatePtr->memory[currentStatePtr->regPC + 1];
+  Memory third = currentStatePtr->memory[currentStatePtr->regPC + 2];
+  Memory fourth = currentStatePtr->memory[currentStatePtr->regPC + 3];
 
     
   currentPipelinePtr->fetched = first | (second << 8) | (third << 16) | (fourth << 24);

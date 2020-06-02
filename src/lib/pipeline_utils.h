@@ -10,6 +10,7 @@
 
 typedef uint32_t Instruction;
 typedef int32_t Register;
+typedef uint8_t Memory;
 
 // structure for representing the current state of the memory and all registers
 typedef struct CurrentState{
@@ -40,8 +41,7 @@ typedef struct CurrentState{
   // CPSR register
   Register regCPSR;
 
-  uint8_t memory[MEMORY_SIZE];
-
+  Memory memory[MEMORY_SIZE];
 } State;
 
 // structure for representing the currently
