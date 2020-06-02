@@ -35,7 +35,7 @@ static Register add(int isCarry, State *state, Register operand1, Register opera
     setC(state, ((operand2 > 0) && (operand1 > INT_MAX - operand2 ))
 	 || ((operand2 < 0) && (operand1 < INT_MIN - operand2)));
   } //sets C if there is an overflow or underflow and S is set
-  return operand1 +operand2;
+  return operand1 + operand2;
 }
 
 static Register sub(int isCarry, State *state, Register operand1, Register operand2) {
@@ -80,7 +80,7 @@ static Register ror(Register value, uint32_t shift){
 
 // start of execute functions
 int execute_halt(Instruction instruction, State *state){
-  return 4;
+  return 0;
 }
 
 // if you want to change the carry bit then carry = 1
@@ -133,7 +133,7 @@ int execute_data_processing(Instruction instruction, State *state) {
 
   operand1 = *getRegPointer(19, state, instruction);
   destination = getRegPointer(15, state, instruction);
-  
+
   switch((instruction & CREATE_MASK(24,21)) >> 21) {
     case 0: 
       operator.operation.operationWithoutCarry = and;
@@ -177,7 +177,7 @@ int execute_data_processing(Instruction instruction, State *state) {
       operator.isWritten = 1;
       break;
     default:
-      perror("ERROR: invalid operand");
+      printf("ERROR: invalid operand\n");
       return 1;
   }
 
@@ -228,7 +228,6 @@ int execute_multiply(Instruction instruction, State *state){
   Register *regRd = getRegPointer(19, state, instruction);
   Register *regRs = getRegPointer(11, state, instruction);
   Register *regRm = getRegPointer(3, state, instruction);
-
       
   // check whether to perform multiply and accumulate or
   // multiply only - function for now in pipeline_utils
@@ -238,7 +237,6 @@ int execute_multiply(Instruction instruction, State *state){
     // Rn - bits 15 to 12
 
     Register *regRn = getRegPointer(15, state, instruction);
-
     *regRd = (*regRm) * (*regRs) + (*regRn);	
 
   } else{
@@ -257,14 +255,20 @@ int execute_multiply(Instruction instruction, State *state){
 
   }
 
-  // return 1 if successful;
-  return 1;
+  // return 0 if successful;
+  return 0;
+}
+
+int invalidMemoryAccess(int memAddress){
+	if(memAddress < 0 || memAddress > MEMORY_SIZE){
+              printf("Error: Out of bounds memory access at address 0x%08x\n", memAddress);
+              return 0;
+	}
+	return 1;
 }
 
 int execute_data_transfer(Instruction instruction, State *state) {
   int offset = instruction & ((1 << 12) - 1);
-  // here the function which calculates the offset
-  // depending on the I bit of the instruction
 
   Register *destReg = getRegPointer(15, state, instruction);
   Register *baseReg = getRegPointer(19, state, instruction);
@@ -285,13 +289,26 @@ int execute_data_transfer(Instruction instruction, State *state) {
     if(getL(instruction)){
       // loading
       regAddress = *baseReg + offset;
+      if(invalidMemoryAccess(regAddress)
+			|| invalidMemoryAccess(regAddress + 1)
+			|| invalidMemoryAccess(regAddress + 2)
+			|| invalidMemoryAccess(regAddress + 3))
+	      return 1;
       *destReg = state->memory[3 - (regAddress % 4) + (regAddress / 4) * 4];
+
       *destReg += state->memory[3 - ((regAddress + 1) % 4) + ((regAddress + 1) / 4) * 4] << 8;
+
       *destReg += state->memory[3 - ((regAddress + 2) % 4) + ((regAddress + 2) / 4) * 4] << 16;
+
       *destReg += state->memory[3 - ((regAddress + 3) % 4) + ((regAddress + 3) / 4) * 4] << 24;
     } else {
       // storing
       memAddress = *baseReg + offset;
+      if(invalidMemoryAccess(memAddress)
+		      || invalidMemoryAccess(memAddress + 1)
+		      || invalidMemoryAccess(memAddress + 2)
+		      || invalidMemoryAccess(memAddress + 3))
+	      return 1;
       state->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
       state->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
       state->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
@@ -302,14 +319,28 @@ int execute_data_transfer(Instruction instruction, State *state) {
     if(getL(instruction)){
       // loading
       regAddress = *baseReg;
+      if(invalidMemoryAccess(regAddress)
+			|| invalidMemoryAccess(regAddress + 1)
+			|| invalidMemoryAccess(regAddress + 2)
+			|| invalidMemoryAccess(regAddress + 3))
+	      return 1;
       *destReg = state->memory[3 - (regAddress % 4) + (regAddress / 4) * 4];
+
       *destReg += state->memory[3 - ((regAddress + 1) % 4) + ((regAddress + 1) / 4) * 4] << 8;
+
       *destReg += state->memory[3 - ((regAddress + 2) % 4) + ((regAddress + 2) / 4) * 4] << 16;
+
       *destReg += state->memory[3 - ((regAddress + 3) % 4) + ((regAddress + 3) / 4) * 4] << 24;
+
       *baseReg += offset;
     } else {
       // storing
       memAddress = *baseReg;
+      if(invalidMemoryAccess(memAddress)
+                      || invalidMemoryAccess(memAddress + 1)
+                      || invalidMemoryAccess(memAddress + 2)
+                      || invalidMemoryAccess(memAddress + 3))
+              return 1;
       state->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
       state->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
       state->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
@@ -327,9 +358,13 @@ int execute_branch(Instruction instruction, State *state){
   if (extendedOffset & (1 << 25)) {
     extendedOffset = extendedOffset | ~((1 << 26) - 1);
   }
-  
+
   state->regPC += extendedOffset;
-  state->branchFlag = 1;
+  if(state->regPC < 0 || state->regPC >= MEMORY_SIZE){
+	  printf("Error: Out of bounds memory access at address 0x%8x", state->regPC);
+	  return 1;
+  }
+  //state->branchFlag = 1;
   return 0;
 }
 

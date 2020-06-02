@@ -77,10 +77,10 @@ int main(int argc, char **argv) {
       execute(currentPipeline.decoded, currentStatePtr, decodedInstruction);
 
       // if there is a branch (regPC has changed) reset the pipeline
-      if (currentState.branchFlag) {
-	fetchInstruction(currentStatePtr, currentPipelinePtr);
-	currentState.branchFlag = 0;
-      }
+      //if (currentState.branchFlag) {
+	//fetchInstruction(currentStatePtr, currentPipelinePtr);
+	//currentState.branchFlag = 0;
+      //}
     }
 		
   } while (decodedInstruction != HALT);
