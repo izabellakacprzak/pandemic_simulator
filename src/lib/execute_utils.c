@@ -16,7 +16,7 @@
   }
 
 #define OPERATOR_SHIFT(name, operator)					\
-  static Register name(const Register value, const uint32_t shift)	\
+  static Register name(const uint32_t value, const uint32_t shift)	\
   {									\
     return value operator shift;					\
   }
@@ -24,7 +24,7 @@
 #define GET_FLAG(flag, instruction) (instruction & (1 << flag))
 
 typedef int (*execution_function)(Instruction, State*);
-typedef Register (*shift_function)(Register, uint32_t);
+typedef Register (*shift_function)(uint32_t, uint32_t);
 
 // defining operator functions for use in execute_data_processing
 //   arithmetic
@@ -73,7 +73,7 @@ static Register rsb(int isCarry, State *statePtr, Register operand1, Register op
 OPERATOR_SHIFT(lsl, <<)
 OPERATOR_SHIFT(lsr, >>)
 
-  static Register asr(Register value, uint32_t shift){
+static Register asr(uint32_t value, uint32_t shift){
   if (shift > 32) {
     shift = 32;
   }
@@ -88,7 +88,7 @@ OPERATOR_SHIFT(lsr, >>)
   return value;
 }
 
-static Register ror(Register value, uint32_t shift){
+static Register ror(uint32_t value, uint32_t shift){
   Register shifted, rotated;
   shift %= 32;
 
@@ -270,7 +270,7 @@ static int execute_multiply(Instruction instruction, State *statePtr){
   return 0;
 }
 
-int invalidMemoryAccess(int memAddress){
+static int invalidMemoryAccess(uint32_t memAddress){
   if(memAddress < 0 || memAddress > MEMORY_SIZE){
     printf("Error: Out of bounds memory access at address 0x%08x\n", memAddress);
     return 1;
@@ -287,14 +287,15 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
   int memAddress = 0;
   int regAddress = 0;
 
-  if(!(GET_FLAG(U, instruction))){
-    // subtracting offset
-    offset = -offset;
-  }
   if(GET_FLAG(I, instruction)){
     offset = get_offset_register(0, instruction, statePtr);
   }
 
+  if(!(GET_FLAG(U, instruction))){
+    // subtracting offset
+    offset = -offset;
+  }
+  
   if(GET_FLAG(P, instruction)){
     // pre-indexing	
     if(GET_FLAG(L, instruction)){
