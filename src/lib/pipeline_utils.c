@@ -88,9 +88,9 @@ InstructionType determineType(Instruction instruction){
 }
 
 // determines the condition code of a given instruction
-ConditionCode determineCondition(Instruction instruction){
+static ConditionCode determineCondition(Instruction instruction){
   // takes first 4 bits of instruction
-  return instruction & ~((1 << 29) - 1);
+  return (instruction >> 28) & ((1 << 4) - 1);
 }
 
 // returns 1 if the condition code is satisfied
@@ -99,8 +99,6 @@ int determineValidity(Instruction instruction, State *statePtr){
 
   ConditionCode condition = determineCondition(instruction);
   int validity = 0;
-
-  condition = condition >> 28;
 
   uint32_t setZ	= statePtr->regCPSR & Z_MASK;
   uint32_t clearZ = !(setZ);

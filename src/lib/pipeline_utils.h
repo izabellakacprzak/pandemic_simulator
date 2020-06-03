@@ -70,9 +70,6 @@ void terminate(State *statePtr);
 //Returns an enum type specifying the type of the given instruction
 InstructionType determineType(Instruction instruction);
 
-// Determines the condition code of a given instruction
-ConditionCode determineCondition(Instruction instruction);
-
 // returns 1 if the condition code is satisfied
 // by the current instruction, 0 otherwise
 int determineValidity(Instruction instruction, State *statePtr);
