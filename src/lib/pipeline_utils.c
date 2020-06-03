@@ -3,7 +3,6 @@
 */
 
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include "pipeline_utils.h"
 

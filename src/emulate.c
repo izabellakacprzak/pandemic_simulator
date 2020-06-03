@@ -1,11 +1,9 @@
 #include <stdlib.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
 #include "pipeline_utils.h"
 #include "execute_utils.h"
 
-#define MASK_16 ((1 << 16) - 1)
 
 // loads the instructions read from a file into memory
 int loadToMemory(State *currentStatePtr, char *filepath){
