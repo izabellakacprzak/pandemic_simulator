@@ -15,7 +15,6 @@ typedef uint8_t Memory;
 /* Struct for the current state of the memory
    and the registers of the emulator */
 typedef struct State {
-  
   /* registers[0-12] -> general purpose
      registers[13]   -> SP register (ignored for this exercise)
      registers[14]   -> LR register (ignored for this exercise)
@@ -28,33 +27,27 @@ typedef struct State {
   /* Branch flag, set if a branch instruction has been exectued;
      clear by default */
   int branchFlag;
-  
 } State;
 
 /* Struct for the simulation of an ARM pipeline */
 typedef struct Pipeline {
-  
   Instruction fetched;
   Instruction decoded;
-  
 } Pipeline;
 
-/*  Enum for the 4 types of instructions
+/*  Enum for the 4 types of instructions included in this exercise
     plus the all-0 - HALT - instruction */
-typedef enum InstructionType {
-			      
+typedef enum InstructionType {		      
   BRANCH,
   DATA_TRANSFER,
   DATA_PROCESSING,
   MULTIPLY,
-  HALT
-  
+  HALT 
 } InstructionType;
 
 /* Enum for the condition suffixes with their 
    respective codes represented as hexadecimal numbers */
-typedef enum ConditionCode {
-			    
+typedef enum ConditionCode {			    
   eq = 0x0,   // 0b0000
   ne = 0x1,   // 0b0001
   ge = 0xA,   // 0b1010
@@ -62,7 +55,6 @@ typedef enum ConditionCode {
   gt = 0xC,   // 0b1100
   le = 0xD,   // 0b1101
   al = 0xE    // 0b1110
-  
 } ConditionCode;
 
 /* Upon termination prints out the state of the registers 

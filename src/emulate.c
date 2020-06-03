@@ -5,8 +5,7 @@
 #include "execute_utils.h"
 
 /* Loads the instructions from a file with the specified filepath into memory */
-int loadToMemory(State *currentStatePtr, char *filepath){
-
+int loadToMemory(State *currentStatePtr, char *filepath) {
   FILE *sourceFile;
   sourceFile = fopen(filepath, "rb");
 
@@ -18,7 +17,7 @@ int loadToMemory(State *currentStatePtr, char *filepath){
   int i = 0;
 
   while(!feof(sourceFile)) {
-
+    
     if(i >= MEMORY_SIZE) {
       printf("Error: out of bounds memory access at address 0x%08x", i);
     }
@@ -29,13 +28,12 @@ int loadToMemory(State *currentStatePtr, char *filepath){
     fread(&currentStatePtr->memory[i + 3], 1, 1, sourceFile);
     i += 4;
   }
-
+  
   return fclose(sourceFile);
 }
 
 /* Emulates the execution of an ARM binary file */
 int main(int argc, char **argv) {
-
   assert (argc == 2);
 
   /* Initializes a structure which represents 
@@ -48,7 +46,6 @@ int main(int argc, char **argv) {
   Pipeline currentPipeline = { 0 };
   Pipeline *currentPipelinePtr = &currentPipeline;
   InstructionType decodedInstruction;
-
  
   loadToMemory(currentStatePtr, argv[1]);
 
@@ -58,7 +55,6 @@ int main(int argc, char **argv) {
   /* The emulator loop which will run until a
       decoded instruction is all-0*/
   do {
-
     fetchInstruction(currentStatePtr, currentPipelinePtr);
     
     decodedInstruction = determineType(currentPipeline.decoded);
@@ -66,7 +62,6 @@ int main(int argc, char **argv) {
     /* Checks the validity of the previously decoded instruction 
        and if valid - executes it */
     if(determineValidity(currentPipeline.decoded, currentStatePtr)) {
-      
       execute(currentPipeline.decoded, currentStatePtr, decodedInstruction);
 
       /* Checks whether a branch instruction has been executed
