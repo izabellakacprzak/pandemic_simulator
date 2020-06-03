@@ -15,12 +15,12 @@ void terminate(State *statePtr){
   printf("Registers:\n");
   // prints the values stored a registers from 0 - 12
   for(int i = 0; i < 13; i++){
-    printf("$%-3d:%11d (0x%08x)\n", i, statePtr->registers[i], statePtr->registers[i]);
+    printf("$%-3d: %10d (0x%08x)\n", i, statePtr->registers[i], statePtr->registers[i]);
   }
 
   // prints the values stored at registers PC and CPSR
-  printf("PC  :%11d (0x%08x)\n", statePtr->regPC, statePtr->regPC);
-  printf("CPSR:%11d (0x%08x)\n", statePtr->regCPSR, statePtr->regCPSR);
+  printf("PC  : %10d (0x%08x)\n", statePtr->regPC, statePtr->regPC);
+  printf("CPSR: %10d (0x%08x)\n", statePtr->regCPSR, statePtr->regCPSR);
 
   // prints the values of non-zero memory locations
   printf("Non-zero memory:\n");

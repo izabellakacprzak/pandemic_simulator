@@ -35,14 +35,14 @@ OPERATOR_NONSHIFT(mov, *0+)
 
   static Register add(int isCarry, State *statePtr, Register operand1, Register operand2) {
   if (isCarry) {
-    setC(statePtr, ((operand2 > 0) && (operand1 > INT_MAX - operand2 )));
+    setC(statePtr, ((operand1 + operand2) < operand1));
   } //sets C if there is an overflow and S is set
   return operand1 + operand2;
 }
 
 static Register sub(int isCarry, State *statePtr, Register operand1, Register operand2) {
   if (isCarry) {
-    setC(statePtr, ((operand2 > 0) && (operand1 < INT_MIN + operand2)));
+    setC(statePtr, ((unsigned) operand1 < (unsigned) operand2));
   } //sets C if there is underflow and S is set
   return operand1 - operand2;
 }
@@ -261,7 +261,7 @@ int invalidMemoryAccess(int memAddress){
 }
 
 static int execute_data_transfer(Instruction instruction, State *statePtr) {
-  int offset = instruction & ((1 << 12) - 1);
+  Register offset = instruction & ((1 << 12) - 1);
 
   Register *destReg = getRegPointer(15, statePtr, instruction);
   Register *baseReg = getRegPointer(19, statePtr, instruction);
@@ -302,10 +302,10 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
 	 || invalidMemoryAccess(memAddress + 2)
 	 || invalidMemoryAccess(memAddress + 3))
 	return 1;
-      statePtr->memory[memAddress + 3] = CREATE_MASK(7, 0) & *destReg;
-      statePtr->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 8);
-      statePtr->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 16);
-      statePtr->memory[memAddress] = CREATE_MASK(7, 0) & (*destReg >> 24);
+      statePtr->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
+      statePtr->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
+      statePtr->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
+      statePtr->memory[memAddress + 3] = CREATE_MASK(7, 0) & (*destReg >> 24);
     }
   } else {
     // post-indexing
@@ -334,10 +334,10 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
 	 || invalidMemoryAccess(memAddress + 2)
 	 || invalidMemoryAccess(memAddress + 3))
 	return 1;
-      statePtr->memory[memAddress + 3] = CREATE_MASK(7, 0) & *destReg;
-      statePtr->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 8);
-      statePtr->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 16);
-      statePtr->memory[memAddress] = CREATE_MASK(7, 0) & (*destReg >> 24);
+      statePtr->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
+      statePtr->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
+      statePtr->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
+      statePtr->memory[memAddress + 3] = CREATE_MASK(7, 0) & (*destReg >> 24);
       *baseReg += offset;
     }
   }
