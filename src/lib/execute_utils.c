@@ -33,18 +33,36 @@ OPERATOR_NONSHIFT(eor, ^)
 OPERATOR_NONSHIFT(or, |)
 OPERATOR_NONSHIFT(mov, *0+)
 
-  static Register add(int isCarry, State *statePtr, Register operand1, Register operand2) {
+static Register add(int isCarry, State *statePtr, Register operand1, Register operand2) {
+  Register result = operand1 + operand2;
+
   if (isCarry) {
-    setC(statePtr, ((operand1 + operand2) < operand1));
+    if (operand1 > 0 && operand2 > 0) {
+      setC(statePtr, result < 0);
+    } else if (operand1 < 0 && operand2 < 0) {
+      setC(statePtr, result > 0);
+    } else {
+      setC(statePtr, 0);
+    }
+    
   } //sets C if there is an overflow and S is set
-  return operand1 + operand2;
+  return result;
 }
 
 static Register sub(int isCarry, State *statePtr, Register operand1, Register operand2) {
+  Register result = operand1 - operand2;
+
   if (isCarry) {
-    setC(statePtr, ((unsigned) operand1 < (unsigned) operand2));
+    if (operand1 < 0 && operand2 > 0) {
+      setC(statePtr, !(result < 0));
+    } else if (operand1 > 0 && operand2 < 0) {
+      setC(statePtr, !(result > 0));
+    } else {
+      setC(statePtr, !(operand1 < operand2));
+    }
+    
   } //sets C if there is underflow and S is set
-  return operand1 - operand2;
+  return result;
 }
 
 static Register rsb(int isCarry, State *statePtr, Register operand1, Register operand2) {

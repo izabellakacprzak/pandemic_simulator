@@ -103,7 +103,7 @@ int determineValidity(Instruction instruction, State *statePtr){
   condition = condition >> 28;
 
   uint32_t setZ	= statePtr->regCPSR & Z_MASK;
-  uint32_t clearZ = ~(setZ);
+  uint32_t clearZ = !(setZ);
   uint32_t stateOfN = statePtr->regCPSR >> 31;
   uint32_t stateOfV = (statePtr->regCPSR << 3) >> 31;
 
