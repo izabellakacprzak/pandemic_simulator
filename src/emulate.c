@@ -4,22 +4,22 @@
 #include "pipeline_utils.h"
 #include "execute_utils.h"
 
-
-// loads the instructions read from a file into memory
+/* Loads the instructions from a file with the specified filepath into memory */
 int loadToMemory(State *currentStatePtr, char *filepath){
+
   FILE *sourceFile;
   sourceFile = fopen(filepath, "rb");
 
-  if(!sourceFile){
+  if(!sourceFile) {
     printf("Error: Can't open file");
     exit(EXIT_FAILURE);
   }
 
   int i = 0;
 
-  while(!feof(sourceFile)){
+  while(!feof(sourceFile)) {
 
-    if(i >= MEMORY_SIZE){
+    if(i >= MEMORY_SIZE) {
       printf("Error: out of bounds memory access at address 0x%08x", i);
     }
 
@@ -33,56 +33,53 @@ int loadToMemory(State *currentStatePtr, char *filepath){
   return fclose(sourceFile);
 }
 
-
+/* Emulates the execution of an ARM binary file */
 int main(int argc, char **argv) {
+
   assert (argc == 2);
 
-  // a structure representing the current state including memory and registers
+  /* Initializes a structure which represents 
+     the current state of the memory and the registers */
   State currentState = { 0 };
   State *currentStatePtr = &currentState;
 
-  // a structure representing the instructions
-  // currently being fetched, decoded and executed
+  /* Initializes a structure which represents the instructions
+     which are currently being fetched, decoded and executed */
   Pipeline currentPipeline = { 0 };
   Pipeline *currentPipelinePtr = &currentPipeline;
-
   InstructionType decodedInstruction;
 
-  // loading all the instructions from the given file into memory
+ 
   loadToMemory(currentStatePtr, argv[1]);
 
-  // fetching the first instruction
+  /* Fetches the first instruction before the creation of the emulator loop */
   fetchInstruction(currentStatePtr, currentPipelinePtr);
-	
-  // fetching the second instruction
-  //fetchInstruction(currentStatePtr, currentPipelinePtr);
-	
+
+  /* The emulator loop which will run until a
+      decoded instruction is all-0*/
   do {
 
-    // fetching a new instruction
-    // passing the decoded into executed
     fetchInstruction(currentStatePtr, currentPipelinePtr);
     
-    // decoding the instruction from currentPipeline.decoded
     decodedInstruction = determineType(currentPipeline.decoded);
 		
-    // checking if the previously decoded instruction
-    // is valid (checking the condition code)
-    // and if so executing
-    if(determineValidity(currentPipeline.decoded, currentStatePtr)){
+    /* Checks the validity of the previously decoded instruction 
+       and if valid - executes it */
+    if(determineValidity(currentPipeline.decoded, currentStatePtr)) {
       
       execute(currentPipeline.decoded, currentStatePtr, decodedInstruction);
 
-      // if there is a branch (regPC has changed) reset the pipeline
-
+      /* Checks whether a branch instruction has been executed
+         and if so - resets the pipeline*/
       if (currentState.branchFlag) {
 	fetchInstruction(currentStatePtr, currentPipelinePtr);
 	currentState.branchFlag = 0;
-      }
-    }
-		
-  } while (decodedInstruction != HALT);
+      } 
+    }		
+  } while(decodedInstruction != HALT);
 
+  /* Upon termination prints out the state of the registers 
+     and the contents of any non-zero memory location */
   terminate(currentStatePtr);
 
   return EXIT_SUCCESS;
