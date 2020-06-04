@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
   fetchInstruction(currentStatePtr, currentPipelinePtr);
 
   /* The emulator loop which will run until a
-      decoded instruction is all-0*/
+      decoded instruction is all-0 */
   do {
     fetchInstruction(currentStatePtr, currentPipelinePtr);
     
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
       execute(currentPipeline.decoded, currentStatePtr, decodedInstruction);
 
       /* Checks whether a branch instruction has been executed
-         and if so - resets the pipeline*/
+         and if so - resets the pipeline */
       if (currentState.branchFlag) {
 	fetchInstruction(currentStatePtr, currentPipelinePtr);
 	currentState.branchFlag = 0;

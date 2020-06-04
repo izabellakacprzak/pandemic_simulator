@@ -18,7 +18,7 @@
     return value operator shift;				     \
   }
 
-/* Gets the flag in a given instruction*/
+/* Gets the flag in a given instruction */
 #define GET_FLAG(flag, instruction) (instruction & (1 << flag))
 
 typedef int (*execution_function)(Instruction, State*);
@@ -30,16 +30,16 @@ OPERATOR_NONSHIFT(and, &)
 OPERATOR_NONSHIFT(eor, ^)
 OPERATOR_NONSHIFT(or, |)
 OPERATOR_NONSHIFT(mov, *0+)
-/* Shifts*/  
+/* Shifts */  
 OPERATOR_SHIFT(lsl, <<)
 OPERATOR_SHIFT(lsr, >>)
   
 /* Performs addition; sets the C flag if there is an overflow 
    and the S flag is set */
-static Register add(int SFlag, State *statePtr, Register operand1, Register operand2) {
+static Register add(int sFlag, State *statePtr, Register operand1, Register operand2) {
   Register result = operand1 + operand2;
 
-  if(SFlag) {
+  if(sFlag) {
     if(operand1 > 0 && operand2 > 0) {
       setC(statePtr, result < 0);
     } else if(operand1 < 0 && operand2 < 0) {
@@ -53,10 +53,10 @@ static Register add(int SFlag, State *statePtr, Register operand1, Register oper
 
 /* Performs subtraction; sets the C flag if there is underflow 
    and the S flag is set */
-static Register sub(int SFlag, State *statePtr, Register operand1, Register operand2) {
+static Register sub(int sFlag, State *statePtr, Register operand1, Register operand2) {
   Register result = operand1 - operand2;
 
-  if(SFlag) {
+  if(sFlag) {
     if(operand1 < 0 && operand2 > 0) {
       setC(statePtr, !(result < 0));
     } else if(operand1 > 0 && operand2 < 0) {
@@ -70,8 +70,8 @@ static Register sub(int SFlag, State *statePtr, Register operand1, Register oper
 
 /* Performs subtraction but switches operand1 and operand2
    by calling sub */
-static Register rsb(int SFlag, State *statePtr, Register operand1, Register operand2) {
-  return sub(SFlag, statePtr, operand2, operand1);
+static Register rsb(int sFlag, State *statePtr, Register operand1, Register operand2) {
+  return sub(sFlag, statePtr, operand2, operand1);
 }
 
 /* Performs arithmetic shift right to the value,
@@ -102,7 +102,7 @@ static Register ror(uint32_t value, uint32_t shift) {
 }
 
 /* Calculates and returns the second operand (bits 11-0) as a shifted register;
-   sets the C flag to the carry bit if the carry variable is 1*/
+   sets the C flag to the carry bit if the carry variable is 1 */
 static Register get_offset_register(int carry, Instruction instruction, State *statePtr) {
   Register value = *getRegPointer(3, statePtr, instruction);
 
@@ -171,7 +171,7 @@ static int execute_halt(Instruction instruction, State *statePtr) {
 static int execute_data_processing(Instruction instruction, State *statePtr) {
   Register operand1, operand2;
   Register *destination;
-  int SFlag = GET_FLAG(S, instruction);
+  int sFlag = GET_FLAG(S, instruction);
   Operator operator = {0};
 
   operand1 = *getRegPointer(19, statePtr, instruction);
@@ -233,7 +233,7 @@ static int execute_data_processing(Instruction instruction, State *statePtr) {
     operand2 = ror(operand2, rotate);
   } else {
     /* Set carry if it's not an arithmetic function and the S flag is set */
-    operand2 = get_offset_register(!operator.isArithmetic && SFlag, instruction, statePtr);
+    operand2 = get_offset_register(!operator.isArithmetic && sFlag, instruction, statePtr);
   }
 
   Register res = callOperator(SFlag, statePtr, &operator, operand1, operand2); 
@@ -244,7 +244,7 @@ static int execute_data_processing(Instruction instruction, State *statePtr) {
   /* If the S flag is set - set the condition codes, 
      the C flag is set in the operator function 
      or the loading of operand2 */
-  if(SFlag) {
+  if(sFlag) {
     setN(statePtr, res);
     setZ(statePtr, res);
   }
@@ -361,7 +361,7 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
 
       *baseReg += offset;
     } else {
-      /* storing */
+      /* Storing */
       memAddress = *baseReg;
       
       if(invalidMemoryAccess(memAddress)

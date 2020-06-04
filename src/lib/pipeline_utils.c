@@ -39,7 +39,7 @@ void fetchInstruction(State *statePtr, Pipeline *pipelinePtr) {
   /* Shifting the pipeline */
   pipelinePtr->decoded = pipelinePtr->fetched;
 
-  /* Fetching next instruction and incrementing PC */
+  /* Fetching the next instruction and incrementing PC */
   Memory first = statePtr->memory[statePtr->regPC];
   Memory second = statePtr->memory[statePtr->regPC + 1];
   Memory third = statePtr->memory[statePtr->regPC + 2];
@@ -50,8 +50,8 @@ void fetchInstruction(State *statePtr, Pipeline *pipelinePtr) {
   statePtr->regPC += 4;
 }
 
-/* This fuction supports only 4 of the 15 instrucions 
-   in the ARM instruction set; the rest are ignored for this exercise*/
+/* This function supports only 4 of the 15 instructions 
+   in the ARM instruction set; the rest are ignored for this exercise */
 InstructionType determineType(Instruction instruction) {
   /* HALT - the all-0 instruction */
   if(instruction == 0x0) {
@@ -98,7 +98,7 @@ int determineValidity(Instruction instruction, State *statePtr) {
   uint32_t stateOfN = statePtr->regCPSR >> 31;
   uint32_t stateOfV = (statePtr->regCPSR << 3) >> 31;
 
-  /* Checks for all possible conditionsthe condition
+  /* Checks whether the condition is fulfilled
      and updates validity accordingly */
   switch(condition) {
   case eq: validity = setZ;
