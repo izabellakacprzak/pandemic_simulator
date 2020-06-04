@@ -236,7 +236,7 @@ static int execute_data_processing(Instruction instruction, State *statePtr) {
     operand2 = get_offset_register(!operator.isArithmetic && sFlag, instruction, statePtr);
   }
 
-  Register res = callOperator(SFlag, statePtr, &operator, operand1, operand2); 
+  Register res = callOperator(sFlag, statePtr, &operator, operand1, operand2); 
   if(operator.isWritten) {
     *destination = res;
   }
