@@ -4,7 +4,7 @@
 
 // takes current instruction and sets a register at bit,
 //   or just takes bit and can be used as a mask
-static Instruction setRegister(Instruction *currentInstruction, int bit) {
+static Instruction setRegister(int regNum, int bit) {
   return 0;
 }
 

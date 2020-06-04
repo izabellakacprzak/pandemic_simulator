@@ -103,7 +103,7 @@ static Register ror(uint32_t value, uint32_t shift) {
 
 /* Calculates and returns the second operand (bits 11-0) as a shifted register;
    sets the C flag to the carry bit if the carry variable is 1 */
-static Register get_offset_register(int carry, Instruction instruction, State *statePtr) {
+static Register getOffsetRegister(int carry, Instruction instruction, State *statePtr) {
   Register value = *getRegPointer(3, statePtr, instruction);
 
   /* Checks bits 6-5 to find what shift to use on the register value */
@@ -164,11 +164,11 @@ static int invalidMemoryAccess(uint32_t memAddress){
 
 /* Execute functions for each instruction type */
 
-static int execute_halt(Instruction instruction, State *statePtr) {
+static int executeHalt(Instruction instruction, State *statePtr) {
   return 0;
 }
 
-static int execute_data_processing(Instruction instruction, State *statePtr) {
+static int executeDataProcessing(Instruction instruction, State *statePtr) {
   Register operand1, operand2;
   Register *destination;
   int sFlag = GET_FLAG(S, instruction);
@@ -233,7 +233,7 @@ static int execute_data_processing(Instruction instruction, State *statePtr) {
     operand2 = ror(operand2, rotate);
   } else {
     /* Set carry if it's not an arithmetic function and the S flag is set */
-    operand2 = get_offset_register(!operator.isArithmetic && sFlag, instruction, statePtr);
+    operand2 = getOffsetRegister(!operator.isArithmetic && sFlag, instruction, statePtr);
   }
 
   Register res = callOperator(sFlag, statePtr, &operator, operand1, operand2); 
@@ -251,7 +251,7 @@ static int execute_data_processing(Instruction instruction, State *statePtr) {
   return 0;
 }
 
-static int execute_multiply(Instruction instruction, State *statePtr) {
+static int executeMultiply(Instruction instruction, State *statePtr) {
   /* Calculate the pointers for the registers:
      Rd - bits 19 to 16 
      Rn - bits 15 to 12
@@ -283,7 +283,7 @@ static int execute_multiply(Instruction instruction, State *statePtr) {
   return 0;
 }
 
-static int execute_data_transfer(Instruction instruction, State *statePtr) {
+static int executeDataTransfer(Instruction instruction, State *statePtr) {
   Register offset = instruction & ((1 << 12) - 1);
 
   Register *destReg = getRegPointer(15, statePtr, instruction);
@@ -294,7 +294,7 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
 
   /* If the I flag is set - offset is interpreted as a shifted register */
   if(GET_FLAG(I, instruction)) {
-    offset = get_offset_register(0, instruction, statePtr);
+    offset = getOffsetRegister(0, instruction, statePtr);
   }
 
   /* If the U flag is clear - the offset is 
@@ -380,7 +380,7 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
   return 0;
 }
 
-static int execute_branch(Instruction instruction, State *statePtr) {
+static int executeBranch(Instruction instruction, State *statePtr) {
   int32_t extendedOffset = (CREATE_MASK(23, 0) & instruction) << 2;
   Register oldPC = statePtr->regPC;
   
@@ -406,11 +406,11 @@ int execute(Instruction instruction, State *statePtr, InstructionType type) {
 
   /* Initialises an array with function pointers for each instruction type
      based on the value of their respective InstructionType enum */
-  executions[0] = execute_branch;
-  executions[1] = execute_data_transfer;
-  executions[2] = execute_data_processing;
-  executions[3] = execute_multiply;
-  executions[4] = execute_halt;
+  executions[0] = executeBranch;
+  executions[1] = executeDataTransfer;
+  executions[2] = executeDataProcessing;
+  executions[3] = executeMultiply;
+  executions[4] = executeHalt;
   
   return (executions[type](instruction, statePtr));
 }
