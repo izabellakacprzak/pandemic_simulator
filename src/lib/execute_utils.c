@@ -1,94 +1,98 @@
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <limits.h>
-
 #include "execute_utils.h"
 #include "pipeline_utils.h"
 
-//creates a mask of 1s from start to end
+/* Creates a mask of 1s from start to end */
 #define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
 
-#define OPERATOR_NONSHIFT(name, operator)				\
-  static Register name(const Register operand1, const Register operand2) \
-  {									\
-    return operand1 operator operand2;					\
+/* Creates a function out of an inbuilt arithmetic operator */
+#define OPERATOR_NONSHIFT(name, operator)				   \
+  static Register name(const Register operand1, const Register operand2) { \
+    return operand1 operator operand2;				           \
   }
 
-#define OPERATOR_SHIFT(name, operator)					\
-  static Register name(const uint32_t value, const uint32_t shift)	\
-  {									\
-    return value operator shift;					\
+/* Creates a function out of a shift operator */
+#define OPERATOR_SHIFT(name, operator)				     \
+  static Register name(const uint32_t value, const uint32_t shift) { \
+    return value operator shift;				     \
   }
 
+/* Gets the flag in a given instruction */
 #define GET_FLAG(flag, instruction) (instruction & (1 << flag))
 
 typedef int (*execution_function)(Instruction, State*);
 typedef Register (*shift_function)(uint32_t, uint32_t);
 
-// defining operator functions for use in execute_data_processing
-//   arithmetic
+/* Definitions of the operator functions used in execute_data_processing */
+/* Arithmetic */
 OPERATOR_NONSHIFT(and, &)
 OPERATOR_NONSHIFT(eor, ^)
 OPERATOR_NONSHIFT(or, |)
 OPERATOR_NONSHIFT(mov, *0+)
-
-static Register add(int isCarry, State *statePtr, Register operand1, Register operand2) {
+/* Shifts */  
+OPERATOR_SHIFT(lsl, <<)
+OPERATOR_SHIFT(lsr, >>)
+  
+/* Performs addition; sets the C flag if there is an overflow 
+   and the S flag is set */
+static Register add(int sFlag, State *statePtr, Register operand1, Register operand2) {
   Register result = operand1 + operand2;
 
-  if (isCarry) {
-    if (operand1 > 0 && operand2 > 0) {
+  if(sFlag) {
+    if(operand1 > 0 && operand2 > 0) {
       setC(statePtr, result < 0);
-    } else if (operand1 < 0 && operand2 < 0) {
+    } else if(operand1 < 0 && operand2 < 0) {
       setC(statePtr, result > 0);
     } else {
       setC(statePtr, 0);
-    }
-    
-  } //sets C if there is an overflow and S is set
+    }    
+  }
   return result;
 }
 
-static Register sub(int isCarry, State *statePtr, Register operand1, Register operand2) {
+/* Performs subtraction; sets the C flag if there is underflow 
+   and the S flag is set */
+static Register sub(int sFlag, State *statePtr, Register operand1, Register operand2) {
   Register result = operand1 - operand2;
 
-  if (isCarry) {
-    if (operand1 < 0 && operand2 > 0) {
+  if(sFlag) {
+    if(operand1 < 0 && operand2 > 0) {
       setC(statePtr, !(result < 0));
-    } else if (operand1 > 0 && operand2 < 0) {
+    } else if(operand1 > 0 && operand2 < 0) {
       setC(statePtr, !(result > 0));
     } else {
       setC(statePtr, !(operand1 < operand2));
     }
-    
-  } //sets C if there is underflow and S is set
+  } 
   return result;
 }
 
-static Register rsb(int isCarry, State *statePtr, Register operand1, Register operand2) {
-  return sub(isCarry, statePtr, operand2, operand1);
+/* Performs subtraction but switches operand1 and operand2
+   by calling sub */
+static Register rsb(int sFlag, State *statePtr, Register operand1, Register operand2) {
+  return sub(sFlag, statePtr, operand2, operand1);
 }
 
-//  shifts
-OPERATOR_SHIFT(lsl, <<)
-OPERATOR_SHIFT(lsr, >>)
-
-static Register asr(uint32_t value, uint32_t shift){
-  if (shift > 32) {
+/* Performs arithmetic shift right to the value,
+   preserves the sign bit */
+static Register asr(uint32_t value, uint32_t shift) {
+  if(shift > 32) {
     shift = 32;
   }
 
   int sign = value & (1 << 31);
   value = value >> shift;
-
-  if (sign) {
-    return value | ~((1 << (32 - shift)) - 1); // CREATE_MASK(31, (32 - shift));
+  
+  if(sign) {
+    return value | ~((1 << (32 - shift)) - 1);
   }
-
   return value;
 }
 
-static Register ror(uint32_t value, uint32_t shift){
+/* Performs rotate right to the value by rotating cyclically 
+   with bit 0 shifting into bit 31 */
+static Register ror(uint32_t value, uint32_t shift) {
   Register shifted, rotated;
   shift %= 32;
 
@@ -97,48 +101,41 @@ static Register ror(uint32_t value, uint32_t shift){
   return shifted | rotated;
 }
 
-// start of execute functions
-
-static int execute_halt(Instruction instruction, State *statePtr){
-  return 0;
-}
-
-// if you want to change the carry bit then carry = 1
-// loads register offset given an instruction and state by checking bits 11-0
-static Register get_offset_register(int carry, Instruction instruction, State *statePtr){
+/* Calculates and returns the second operand (bits 11-0) as a shifted register;
+   sets the C flag to the carry bit if the carry variable is 1 */
+static Register getOffsetRegister(int carry, Instruction instruction, State *statePtr) {
   Register value = *getRegPointer(3, statePtr, instruction);
 
-  // check bits 6-5 to find what shift to use on register value
+  /* Checks bits 6-5 to find what shift to use on the register value */
   shift_function shifts[4] = {lsl, lsr, asr, ror};
   shift_function selectedShift = shifts[(instruction & CREATE_MASK(6, 5)) >> 5];
 
-  // amount could be a Register or an immediate
+  /* Amount could be either a Register or an immediate */
   Register amount;
   
-  // Check 4th bit
-  if (instruction & (1 << 4)) {
-    // 4th bit is 1  -> amount is a Register
+  /* Checks whether the 4th bit is set: 
+     if set - amount is a Register, else - immediate */
+  if(instruction & (1 << 4)) {
     amount = *getRegPointer(11, statePtr, instruction);
   } else {
-    // 4th bit is 0  -> amount is an immediate
     amount = (instruction & CREATE_MASK(11, 7)) >> 7;
   }
 
-  if (carry) {
+  if(carry) {
     int carryBit;
-    
-    if (selectedShift == lsl) {
+
+    if(selectedShift == lsl) {
       carryBit = (instruction & (1 << (32 - amount))) >> (32 - amount);
     } else {
       carryBit = (instruction & (1 << (amount - 1))) >> (amount - 1);
     }
-
+    
     setC(statePtr, carryBit);
   }
-
   return selectedShift(value, amount);
 }
 
+/* Checks the type of the operator and calls it */
 static Register callOperator(int sFlag, State *statePtr, const Operator *operator,
 			     Register operand1, Register operand2) {
   if (operator->isArithmetic) {
@@ -148,7 +145,30 @@ static Register callOperator(int sFlag, State *statePtr, const Operator *operato
   return operator->operation.operationWithoutCarry(operand1, operand2);
 }
 
-static int execute_data_processing(Instruction instruction, State *statePtr) {
+/* Returns a pointer to a register 
+   whose address starts at bit reg and is 4 bits long */
+Register *getRegPointer(int reg, State *statePtr, Instruction instruction){
+  int regAddress = ((1 << 4) - 1) & (instruction >> (reg - 4 + 1));
+  return &statePtr->registers[regAddress];
+}
+
+/* Checks whether an out of bounds error has been performed */
+static int invalidMemoryAccess(uint32_t memAddress){
+  if(memAddress < 0 || memAddress > MEMORY_SIZE){
+    printf("Error: Out of bounds memory access at address 0x%08x\n", memAddress);
+    return 1;
+  }
+  return 0;
+}
+
+
+/* Execute functions for each instruction type */
+
+static int executeHalt(Instruction instruction, State *statePtr) {
+  return 0;
+}
+
+static int executeDataProcessing(Instruction instruction, State *statePtr) {
   Register operand1, operand2;
   Register *destination;
   int sFlag = GET_FLAG(S, instruction);
@@ -200,85 +220,70 @@ static int execute_data_processing(Instruction instruction, State *statePtr) {
     operator.isWritten = 1;
     break;
   default:
-    printf("ERROR: invalid operand\n");
+    printf("ERROR: Invalid operand\n");
     return 1;
   }
 
-  // checking the I flag
-  if (GET_FLAG(I,instruction)) {
-    // operand2 is an immediate constant
+  /* Checks whether the 4th bit is set: 
+     if set - operand2 is an immediate constant, else - a shifted register */
+  if(GET_FLAG(I,instruction)) {
     operand2 = instruction & CREATE_MASK(7, 0);
-    // rotate  = rotate * 2
+    /* rotate  = rotate * 2 */
     uint32_t rotate = (instruction & CREATE_MASK(11, 8)) >> 7;
-
     operand2 = ror(operand2, rotate);
   } else {
-    // find operand2 using a register to shift, set carry if not an arithmetic function and flags to be written
-    operand2 = get_offset_register(!operator.isArithmetic && sFlag, instruction, statePtr);
+    /* Set carry if it's not an arithmetic function and the S flag is set */
+    operand2 = getOffsetRegister(!operator.isArithmetic && sFlag, instruction, statePtr);
   }
 
   Register res = callOperator(sFlag, statePtr, &operator, operand1, operand2); 
-  if (operator.isWritten) {
+  if(operator.isWritten) {
     *destination = res;
   }
 
-  if (sFlag) { //if S is set
+  /* If the S flag is set - set the condition codes, 
+     the C flag is set in the operator function 
+     or the loading of operand2 */
+  if(sFlag) {
     setN(statePtr, res);
     setZ(statePtr, res);
-    //setC done in operator functions or operand2 loading
   }
-  
   return 0;
 }
 
-static int execute_multiply(Instruction instruction, State *statePtr){
-  //get destination register pointer - bits 19 to 16 in instr
-  // Rm - bits 3 to 0
-  // Rs - bits 11 to 8
+static int executeMultiply(Instruction instruction, State *statePtr) {
+  /* Calculate the pointers for the registers:
+     Rd - bits 19 to 16 
+     Rn - bits 15 to 12
+     Rs - bits 11 to 8
+     Rs - bits 3 to 0 */
       
   Register *regRd = getRegPointer(19, statePtr, instruction);
   Register *regRs = getRegPointer(11, statePtr, instruction);
   Register *regRm = getRegPointer(3, statePtr, instruction);
       
-  // check whether to perform multiply and accumulate or
-  // multiply only - function for now in pipeline_utils
-  if(GET_FLAG(A, instruction)){
-
-    // set destination register to Rm x Rs + Rn
-    // Rn - bits 15 to 12
-
+  
+  /* If the A flag is set - perform multiply and accumulate
+     if clear - perform multiply only */
+  if(GET_FLAG(A, instruction)) {
     Register *regRn = getRegPointer(15, statePtr, instruction);
     *regRd = (*regRm) * (*regRs) + (*regRn);	
-
-  } else{
-
-    //set destination register to Rm x Rs
-    *regRd = (*regRm) * (*regRs);
-	
+  } else {
+    *regRd = (*regRm) * (*regRs);	
   }
 
-  if(GET_FLAG(S, instruction)){
 
-    //set result to the value in destination register
-    int result = *regRd;
+  int result = *regRd;
+
+  /* If the S flag is set - set the condition code */
+  if(GET_FLAG(S, instruction)) {
     setZ(statePtr, result);
     setN(statePtr, result);
-
-  }
-
-  // return 0 if successful;
-  return 0;
-}
-
-static int invalidMemoryAccess(uint32_t memAddress){
-  if(memAddress < 0 || memAddress > MEMORY_SIZE){
-    printf("Error: Out of bounds memory access at address 0x%08x\n", memAddress);
-    return 1;
   }
   return 0;
 }
 
-static int execute_data_transfer(Instruction instruction, State *statePtr) {
+static int executeDataTransfer(Instruction instruction, State *statePtr) {
   Register offset = instruction & ((1 << 12) - 1);
 
   Register *destReg = getRegPointer(15, statePtr, instruction);
@@ -287,25 +292,33 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
   int memAddress = 0;
   int regAddress = 0;
 
-  if(GET_FLAG(I, instruction)){
-    offset = get_offset_register(0, instruction, statePtr);
+  /* If the I flag is set - offset is interpreted as a shifted register */
+  if(GET_FLAG(I, instruction)) {
+    offset = getOffsetRegister(0, instruction, statePtr);
   }
 
-  if(!(GET_FLAG(U, instruction))){
-    // subtracting offset
+  /* If the U flag is clear - the offset is 
+     subtracted from the base register
+     else - it's added */
+  if(!(GET_FLAG(U, instruction))) {
     offset = -offset;
   }
-  
-  if(GET_FLAG(P, instruction)){
-    // pre-indexing	
-    if(GET_FLAG(L, instruction)){
-      // loading
+
+  /* If the P flag is set - the offset is added to the base register
+     before transferring the date (pre-indexing), 
+     if clear - after (post-) */
+  if(GET_FLAG(P, instruction)) {
+    /* If the L flag is set the word is loaded from memory,
+       if clear - the word is stored into memory */
+    if(GET_FLAG(L, instruction)) {
       regAddress = *baseReg + offset;
+      
       if(invalidMemoryAccess(regAddress)
 	 || invalidMemoryAccess(regAddress + 1)
 	 || invalidMemoryAccess(regAddress + 2)
 	 || invalidMemoryAccess(regAddress + 3))
 	return 1;
+      
       *destReg = statePtr->memory[regAddress];
 
       *destReg += statePtr->memory[regAddress + 1] << 8;
@@ -314,8 +327,8 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
 
       *destReg += statePtr->memory[regAddress + 3] << 24;
     } else {
-      // storing
       memAddress = *baseReg + offset;
+      
       if(invalidMemoryAccess(memAddress)
 	 || invalidMemoryAccess(memAddress + 1)
 	 || invalidMemoryAccess(memAddress + 2)
@@ -327,15 +340,17 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
       statePtr->memory[memAddress + 3] = CREATE_MASK(7, 0) & (*destReg >> 24);
     }
   } else {
-    // post-indexing
-    if(GET_FLAG(L, instruction)){
-      // loading
+    /* Post-indexing */
+    if(GET_FLAG(L, instruction)) {
+      /* Loading */
       regAddress = *baseReg;
+      
       if(invalidMemoryAccess(regAddress)
 	 || invalidMemoryAccess(regAddress + 1)
 	 || invalidMemoryAccess(regAddress + 2)
 	 || invalidMemoryAccess(regAddress + 3))
 	return 1;
+      
       *destReg = statePtr->memory[regAddress];
 
       *destReg += statePtr->memory[regAddress + 1] << 8;
@@ -346,13 +361,15 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
 
       *baseReg += offset;
     } else {
-      // storing
+      /* Storing */
       memAddress = *baseReg;
+      
       if(invalidMemoryAccess(memAddress)
 	 || invalidMemoryAccess(memAddress + 1)
 	 || invalidMemoryAccess(memAddress + 2)
 	 || invalidMemoryAccess(memAddress + 3))
 	return 1;
+      
       statePtr->memory[memAddress] = CREATE_MASK(7, 0) & *destReg;
       statePtr->memory[memAddress + 1] = CREATE_MASK(7, 0) & (*destReg >> 8);
       statePtr->memory[memAddress + 2] = CREATE_MASK(7, 0) & (*destReg >> 16);
@@ -361,10 +378,9 @@ static int execute_data_transfer(Instruction instruction, State *statePtr) {
     }
   }
   return 0;
-
 }
 
-static int execute_branch(Instruction instruction, State *statePtr){
+static int executeBranch(Instruction instruction, State *statePtr) {
   int32_t extendedOffset = (CREATE_MASK(23, 0) & instruction) << 2;
   Register oldPC = statePtr->regPC;
   
@@ -374,9 +390,10 @@ static int execute_branch(Instruction instruction, State *statePtr){
 
   statePtr->regPC += extendedOffset;
 
-  if(statePtr->regPC < 0 || statePtr->regPC >= MEMORY_SIZE){
+  /* Checks whether an out of bounds error has been performed */
+  if(statePtr->regPC < 0 || statePtr->regPC >= MEMORY_SIZE) {
     printf("Error: Out of bounds memory access at address 0x%08x", statePtr->regPC);
-    //undoes this branch as it is invalid
+    /* Undoes the branch as it is invalid */
     statePtr->regPC = oldPC; 
     return 1;
   }
@@ -384,26 +401,16 @@ static int execute_branch(Instruction instruction, State *statePtr){
   return 0;
 }
 
-Register *getRegPointer(int reg, State *statePtr, Instruction instruction){
-  // getting the 4 bits of the instruction
-  // which correspond to the register which
-  // starts at bit reg
-  int regAddress = ((1 << 4) - 1) & (instruction >> (reg - 4 + 1));
-  return &statePtr->registers[regAddress];
-}
-
 int execute(Instruction instruction, State *statePtr, InstructionType type) {
-  //instruction to be executed, machine state, boolean on whether to execute, instruction type
   execution_function executions[5];
 
-  //initialises the array with function pointers for each instruction type
-  //based on the ordering of instr_type enum
-  executions[0] = execute_branch;
-  executions[1] = execute_data_transfer;
-  executions[2] = execute_data_processing;
-  executions[3] = execute_multiply;
-  executions[4] = execute_halt;
+  /* Initialises an array with function pointers for each instruction type
+     based on the value of their respective InstructionType enum */
+  executions[0] = executeBranch;
+  executions[1] = executeDataTransfer;
+  executions[2] = executeDataProcessing;
+  executions[3] = executeMultiply;
+  executions[4] = executeHalt;
   
   return (executions[type](instruction, statePtr));
-  //executes the function corresponding to the type of instruction by the enum's value
 }

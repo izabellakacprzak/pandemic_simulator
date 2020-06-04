@@ -1,9 +1,4 @@
-/* 
-   Note: memoryValue must be changed if Memory typedef is changed.
-*/
-
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include "pipeline_utils.h"
 
@@ -11,42 +6,40 @@
 #define N_MASK (1 << 31)
 #define C_MASK (1 << 29)
 
-void terminate(State *statePtr){
+void terminate(State *statePtr) {
+  /* Prints the values stored in the general purpose registers */
   printf("Registers:\n");
-  // prints the values stored a registers from 0 - 12
-  for(int i = 0; i < 13; i++){
+  for(int i = 0; i < 13; i++) {
     printf("$%-3d: %10d (0x%08x)\n", i, statePtr->registers[i], statePtr->registers[i]);
   }
 
-  // prints the values stored at registers PC and CPSR
+  /* Prints the values stored in registers PC and CPSR */
   printf("PC  : %10d (0x%08x)\n", statePtr->regPC, statePtr->regPC);
   printf("CPSR: %10d (0x%08x)\n", statePtr->regCPSR, statePtr->regCPSR);
 
-  // prints the values of non-zero memory locations
+  /* Prints the contents in any non-zero memory location */
   printf("Non-zero memory:\n");
   uint32_t memoryValue = 0;
-  for(int i = 0; i < MEMORY_SIZE; i+=4){
-    // combining four 8-bit long ints into one 32-bit long
-    memoryValue = (statePtr->memory[i] << 24);
+  for(int i = 0; i < MEMORY_SIZE; i+=4) {
+    
+    /* Combines four 8-bit long ints into one 32-bit long */
+    memoryValue  = (statePtr->memory[i] << 24);
     memoryValue += (statePtr->memory[i+1] << 16);
     memoryValue += (statePtr->memory[i+2] << 8);
     memoryValue += statePtr->memory[i+3];
-    if(memoryValue != 0){
+    
+    if(memoryValue != 0) {
       printf("0x%08x: 0x%08x\n", i, memoryValue);
     }
     memoryValue = 0;
   }
 }
 
-// fetches an instruction from memory at the regPC address
-// putting it into currentState.fetched
-// shifts the pipeline and increments the PC
-void fetchInstruction(State *statePtr, Pipeline *pipelinePtr){
-  // Shifting the pipeline
-  //currentPipelinePtr->executed = currentPipelinePtr->decoded;
+void fetchInstruction(State *statePtr, Pipeline *pipelinePtr) {
+  /* Shifting the pipeline */
   pipelinePtr->decoded = pipelinePtr->fetched;
 
-  // Fetching next instruction and incrementing PC
+  /* Fetching the next instruction and incrementing PC */
   Memory first = statePtr->memory[statePtr->regPC];
   Memory second = statePtr->memory[statePtr->regPC + 1];
   Memory third = statePtr->memory[statePtr->regPC + 2];
@@ -57,55 +50,56 @@ void fetchInstruction(State *statePtr, Pipeline *pipelinePtr){
   statePtr->regPC += 4;
 }
 
-//Returns an enum type specifying the type of the given instruction
-InstructionType determineType(Instruction instruction){
-  //HALT = all-0 instruction all bits are 0
-  if(instruction == 0x0){
+/* This function supports only 4 of the 15 instructions 
+   in the ARM instruction set; the rest are ignored for this exercise */
+InstructionType determineType(Instruction instruction) {
+  /* HALT - the all-0 instruction */
+  if(instruction == 0x0) {
     return HALT;
   }
 
-  //BRANCH - 27th bit is set
-  if((1 << 27) & instruction){
+  /* BRANCH - 27th bit is set */
+  if((1 << 27) & instruction) {
     return BRANCH;
   }
 
-  //DATA_TRANSFER - 26th bit is set
-  if((1 << 26) & instruction){
+  /* DATA_TRANSFER - 26th bit is set */
+  if((1 << 26) & instruction) {
     return DATA_TRANSFER;
   }
 
-  //DATA_PROCESSING with immediate constant - 25th bit is set
-  if((1 << 25) & instruction){
+  /* DATA_PROCESSING with immediate constant - 25th bit is set */
+  if((1 << 25) & instruction) {
     return DATA_PROCESSING;
   }
 
+  /* MULTIPLY - the 4th and 7th bit are set */
   if((1 << 7) & instruction && (1<<4) & instruction) {
     return MULTIPLY;
   }
 
+  /* Otherwise the instruction is DATA_PROCESSING */
   return DATA_PROCESSING;
-
 }
 
-// determines the condition code of a given instruction
-static ConditionCode determineCondition(Instruction instruction){
-  // takes first 4 bits of instruction
+/* Returns the first 4 bits in a given instruction - the condition code */
+static ConditionCode determineCondition(Instruction instruction) {
   return (instruction >> 28) & ((1 << 4) - 1);
 }
 
-// returns 1 if the condition code is satisfied
-// by the current instruction, 0 otherwise
-int determineValidity(Instruction instruction, State *statePtr){
 
+int determineValidity(Instruction instruction, State *statePtr) {
   ConditionCode condition = determineCondition(instruction);
   int validity = 0;
 
+  /* Determines the state of the Z, N and V flags of the CPSR */
   uint32_t setZ	= statePtr->regCPSR & Z_MASK;
   uint32_t clearZ = !(setZ);
   uint32_t stateOfN = statePtr->regCPSR >> 31;
   uint32_t stateOfV = (statePtr->regCPSR << 3) >> 31;
 
-  // checks for all possible conditions and updates validity accordingly
+  /* Checks whether the condition is fulfilled
+     and updates validity accordingly */
   switch(condition) {
   case eq: validity = setZ;
     break;
@@ -125,41 +119,29 @@ int determineValidity(Instruction instruction, State *statePtr){
   }
 
   return validity;
-
 }
 
-// sets the Z flag iff the result is zero
-void setZ(State *statePtr, int result){
-
+void setZ(State *statePtr, int result) { 
   if(!result){
     statePtr->regCPSR = Z_MASK | statePtr->regCPSR;
   } else{
     statePtr->regCPSR = ~Z_MASK & statePtr->regCPSR;
   }
-
 }
 
-// sets the N flag to the 31st bit of the result
-void setN(State *statePtr, int result){
 
+void setN(State *statePtr, int result) { 
   if(result & N_MASK){
     statePtr->regCPSR = N_MASK | statePtr->regCPSR;
   } else{
     statePtr->regCPSR = ~N_MASK & statePtr->regCPSR;    
   }
-  
 }
 
-// sets or clears the C flag based on the value passed
-// there are too many conditions which determine whether C should be set or cleared
-// might be cleaner if we have this function and determine during the Data Processing execution
-// whether we should set or clear C
-void setC(State *statePtr, int value){
-
+void setC(State *statePtr, int value) {
   if(value){
     statePtr->regCPSR = C_MASK | statePtr->regCPSR;
   } else{
     statePtr->regCPSR = ~C_MASK & statePtr->regCPSR;
   }
-  
 }
