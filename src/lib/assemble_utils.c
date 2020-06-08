@@ -9,7 +9,7 @@ static Instruction setRegister(int regNum, int bit) {
 }
 
 // all of these probably take char *nextInstruction or nothing at all
-static Instruction setDataProcessing() {
+static Instruction setDataProcessing(char *nextInstruction, ) {
   return 0;
 }
 
