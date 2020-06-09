@@ -1,6 +1,6 @@
 CC      = gcc
 CFLAGS  = -Wall -Ilib -g -D_DEFAULT_SOURCE -std=c99 -pedantic
-LDLIBS  = -Llib -lemulateutils -Lassemblelib -lassembleutils
+LDLIBS  = -Llib -lemulateutils -Lassemblelib -lassembleutils -Lcombinedlib -lcombinedutils
 BUILD	= libs emulate assemble
 
 .SUFFIXES: .c .o
@@ -16,6 +16,7 @@ emulate: emulate.o
 libs:
 	cd lib; make
 	cd assemblelib; make
+	cd combinedlib; make
 
 clean:
 	rm -f $(wildcard *.o)
@@ -23,3 +24,4 @@ clean:
 	rm -f emulate
 	cd lib; make clean
 	cd assemblelib; make clean
+	cd combinedlib; make clean

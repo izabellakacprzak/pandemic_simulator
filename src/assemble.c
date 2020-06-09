@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include "assemblelib/combined_utils.h"
+#include "combinedlib/combined_utils.h"
 #include "assemblelib/assemble_utils.h"
 #include "assemblelib/text_utils.h"
 
