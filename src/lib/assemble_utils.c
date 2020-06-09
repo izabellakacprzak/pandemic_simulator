@@ -32,3 +32,11 @@ static Instruction setHalt() {
 Instruction assemble(Dictionary *symbolTable, char *nextInstruction) {
   return 0;
 }
+
+char *getProgramError(errorCode e) {
+  errorType errors[2];
+  errors[INVALID_INSTRUCTION].code = INVALID_INSTRUCTION;
+  errors[INVALID_INSTRUCTION].message = "Invalid instruction";
+  //if we have more program error types add them above
+  return errors[e].message;
+}
