@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include "combined_utils.h"
+#include "assemblelib/combined_utils.h"
 #include "assemble_utils.h"
 
 /* Creates a mask of 1s from start to end */
