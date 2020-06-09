@@ -6,10 +6,23 @@
 
 /* Creates a mask of 1s from start to end */
 #define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
+#define MAX_INSTRUCTION_SIZE 511
 
 // loads the next instruction line into an array of chars (given)
 int loadNextInstruction(char *destArray, FILE *sourceFile) {
-  return EXIT_FAILURE;
+  if (!sourceFile) {
+    printf("Could not access file");
+    return EXIT_FAILURE;
+  }
+
+  if (feof(sourceFile)) {
+    printf("Could not read new line");
+    return -1;
+  }
+  
+  fgets(destArray, MAX_INSTRUCTION_SIZE, sourceFile);
+  
+  return EXIT_SUCCESS;
 }
 
 int writeNextInstruction(Instruction next, FILE *outputFile) {
