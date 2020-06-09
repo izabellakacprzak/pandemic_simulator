@@ -8,9 +8,67 @@
 /* Creates a mask of 1s from start to end */
 #define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
 #define MAX_INSTRUCTION_SIZE 511
+#define MAX_INSTRUCTION_PARAMS 5
 
-// loads the next instruction line into an array of chars (given)
-int loadNextInstruction(char *destArray, FILE *sourceFile) {
+// takes an instruction and leaves it in the form:
+//   char** = {label, arg1, arg2 ...}
+//  > assumes line is in correct format
+//  > destArray may not be the same size as before,
+//      now is char destArray[MAX_INSTRUCTION_PARAMS][MAX_INSTRUCTION_SIZE]
+static int instructionTok(char **destArray, const char *line) {
+  char newDestArray[MAX_INSTRUCTION_PARAMS][MAX_INSTRUCTION_SIZE];
+
+  int i = 0;
+  while (line[i] != ' ' && line[i] != ':' && line[i] != '\0') {
+    i++;
+  }
+
+  if (line[i] == '\0') {
+    return EXIT_FAILURE;
+  }
+
+  // new function label case
+  if (line[i] == ':') {
+    strncpy(newDestArray[0], line, i + 1);
+    return EXIT_SUCCESS;
+  }
+
+  strncpy(newDestArray[0], line, i);
+  
+  int start = i + 1;   // current start place in line
+  i = 0;
+  int j = 1;           // argument number (destArray[j][])
+  while (line[i] != '\0') {
+    if (line[i] == ',') {
+      strncpy(newDestArray[j], line + start, i);
+      start += i + 1;
+      i = 0;
+      j++;
+      
+    } else if (line[i] == '[') {
+      while (line[i] != ']') {
+	i++;
+      }
+    }
+
+    i++;
+  }
+
+  strncpy(newDestArray[j], line + start, i);
+
+  if (j > MAX_INSTRUCTION_PARAMS) {
+    return EXIT_FAILURE;
+  }
+
+  destArray = newDestArray;
+  return EXIT_SUCCESS;
+}
+
+// loads the next instruction line into an array of chars (line)
+//   then tokenises into the destArray
+//  > destArray may not be the same size as before,
+//      now is char destArray[MAX_INSTRUCTION_PARAMS][MAX_INSTRUCTION_SIZE]
+int loadNextInstruction(char **destArray, FILE *sourceFile) {
   if (!sourceFile) {
     printf("Could not access file");
     return EXIT_FAILURE;
@@ -20,10 +78,11 @@ int loadNextInstruction(char *destArray, FILE *sourceFile) {
     printf("Could not read new line");
     return -1;
   }
+
+  char line[MAX_INSTRUCTION_SIZE];
+  fgets(line, MAX_INSTRUCTION_SIZE, sourceFile);
   
-  fgets(destArray, MAX_INSTRUCTION_SIZE, sourceFile);
-  
-  return EXIT_SUCCESS;
+  return instructionTok(destArray, line);
 }
 
 int writeNextInstruction(Instruction next, FILE *outputFile) {
