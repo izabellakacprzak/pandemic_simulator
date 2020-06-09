@@ -57,6 +57,7 @@ int isAlphaNumeric(char c) {
  */
 int main(int argc, char **argv) {
   assert (argc == 3);
+
   errorCode currentStatus = OK;
   char *source = argv[1], *dest = argv[2];
   FILE *sourceFile, *destFile;
