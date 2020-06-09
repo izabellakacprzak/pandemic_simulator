@@ -40,6 +40,6 @@ int main(int argc, char **argv) {
   // second pass  -> write instructions
 
   FILE *output = fopen("output.bin", "wb");
-  writeNextInstruction(204, output); 
+  writeNextInstruction(54560, output); 
   return EXIT_SUCCESS;
 }

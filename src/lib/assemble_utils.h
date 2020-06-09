@@ -18,4 +18,6 @@ struct Dictionary {
 
 Instruction assemble(struct Dictionary *symbolTable, const char *nextInstruction);
 
+int contains(char *value, const char **array);
+
 #endif // ASSEMBLE_UTILS_H
