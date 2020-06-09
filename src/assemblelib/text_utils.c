@@ -45,3 +45,30 @@ int isNumeric(char c) {
 int isAlphaNumeric(char c) {
   return isAlpha(c) || isNumeric(c);
 }
+
+int isLabel(char *line) {
+  char *currentChar = line;
+  int label = 0;
+  if (isAlpha(*currentChar)){
+    //first character of a label must be alphabetical
+    while (*(currentChar + 1) != '\0') {
+      currentChar++;
+      if (isAlphaNumeric(*currentChar)) {
+	continue; //nothing to be done
+      } else if (*currentChar == ':') {
+	//should be the end
+	if (*(currentChar + 1) == '\0'){
+	  label = 1;
+	} else {
+	  break; //not a valid label
+	}
+      } else {
+	break; //not a valid label
+      }
+    }
+  } else {
+    //all instructions should start with an alphabetical character
+    return -1;
+  }
+  return label;
+}

@@ -18,7 +18,6 @@ int main(int argc, char **argv) {
   FILE *sourceFile, *destFile;
   int eof;
   char *currentLine = calloc(512, sizeof(char));
-  char *currentChar;
   FATAL_SYS((currentLine = NULL));
 
   Address curr_address = 0;
@@ -27,34 +26,16 @@ int main(int argc, char **argv) {
   sourceFile = fopen(source, "r");
   FATAL_SYS((sourceFile == NULL)); //file loading failed
   eof = loadNextInstruction(currentLine, sourceFile);
-  int label = 0;
+  int label;
+  
   while (!eof) {
     //check if the line is a label
-    currentChar = currentLine;
-    label = 0;
-    if (isAlpha(*currentChar)){
-      //first character of a label must be alphabetical
-      while (*(currentChar + 1) != '\0') {
-	currentChar++;
-	if (isAlphaNumeric(*currentChar)) {
-	  continue; //nothing to be done
-	} else if (*currentChar == ':') {
-	  //should be the end
-	  if (*(currentChar + 1) == '\0'){
-	    label = 1;
-	  } else {
-	    break; //not a valid label
-	  }
-	} else {
-	  break; //not a valid label
-	}
-      }
-    } else {
-      //all instructions should start with an alphabetical character
-      FATAL_PROG(1,INVALID_INSTRUCTION);
-    }
-    if (label) {
+    label = isLabel(currentLine);
+    if (label == 1) {
       //ADD LABEL TO THE DICTIONARY
+    } else if (label == -1) {
+      //invalid instruction detected
+      FATAL_PROG(1,INVALID_INSTRUCTION);
     }
     eof = loadNextInstruction(currentLine, sourceFile);
     curr_address = curr_address + 4; //address incremented by 4

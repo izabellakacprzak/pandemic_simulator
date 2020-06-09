@@ -17,4 +17,5 @@ int isNumeric(char c);
 
 int isAlphaNumeric(char c);
 
+int isLabel(char *line);
 #endif

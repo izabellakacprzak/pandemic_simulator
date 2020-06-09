@@ -87,8 +87,8 @@ int contains(char *value, const char **array){
   return 0;
 }
 
+/*
 Instruction assemble(struct Dictionary *symbolTable, const char *nextInstruction) {
-  /*
     char *opcode;
     char *rest = nextInstruction;
 
@@ -103,10 +103,11 @@ Instruction assemble(struct Dictionary *symbolTable, const char *nextInstruction
     } else{
     return setBranch();
     }
-  */
+  
 
   return 0;
 }
+*/
 
 char *getProgramError(errorCode e) {
   errorType errors[2];
