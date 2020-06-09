@@ -77,10 +77,28 @@ int main(int argc, char **argv) {
     eof = loadNextInstruction(currentLine, sourceFile);
     curr_address = curr_address + 4; //address incremented by 4
   }
-  
+
+  FATAL_SYS((fclose(sourceFile) != 0));
 
   // second pass  -> write instructions
-  
+  curr_address = 0;
+
+  //source reopened to go back to the top of the file
+  sourceFile = fopen(source, "r");
+  FATAL_SYS((sourceFile == NULL));
+  destFile = fopen(dest, "w");
+  FATAL_SYS((destFile == NULL));
+
+  eof = loadNextInstruction(currentLine, sourceFile);
+  int result;
+  while (!eof) {
+    //result assemble(dict, currentLine);
+    //binary writer writes to dest
+    eof = loadNextInstruction(currentLine, sourceFile);
+  }
+
+  FATAL_SYS((fclose(sourceFile) != 0));
+  FATAL_SYS((fclose(destFile) != 0));
   return EXIT_SUCCESS;
 
  fatalError:
