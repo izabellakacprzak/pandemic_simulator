@@ -1,17 +1,15 @@
 #include <stdint.h>
 #include <string.h>
-#include "combined_utils.h"
-#include "assemble_utils.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "combined_utils.h"
 #include "assemble_utils.h"
+#include "tree.h"
 
-#define IS_ALPHA(x) (x >= 'a' && x<= 'z')
 #define POS(x) (x - 'a')
-#define ALPHABET_SIZE (26)
+
 
 const char *DATA_PROCESSING[15] = {"and", "eor", "sub", "rsb", "add", "orr",
 				   "mov", "tst", "teq", "cmp", "lsl"};
@@ -25,75 +23,6 @@ static Instruction setBits(uint32_t value, int bit, Instruction instr) {
   return instr |= (value << bit);;
 }
 
-Dictionary *createDictionary(void){
-  return createNode();
-}
-
-void freeDict(Dictionary *root){
-  freeNode(root);
-}
-
-int find(Dictionary *root, const char *word) {
-  if(!root){
-    return 0;
-  }
-  if(!*word){
-    return root -> mnemonicFlag;
-  }
-  if(!IS_ALPHA(*word)){
-    return 0;
-  }
-  if(!root->children[POS(*word)]){
-    return 0;
-  }
-  return find(root->children[POS(*word)], word + 1);
-}
-int insert(Dictionary *root, const char *word) {
-
-  if(!*word){
-    return root -> mnemonicFlag = 1;
-  }
-  if(!IS_ALPHA(*word)){
-    return 0;
-  }
-  if(!root->children[POS(*word)]){
-    root->children[POS(*word)] = createNode();
-  }
-  return insert(root->children[POS(*word)], word + 1);
-
-}
-
-Dictionary *create_node(void) {
-
-  Dictionary *node = calloc(1, sizeof *node);
-  if(node == NULL){
-    perror("Node allocation failed");
-    exit(EXIT_FAILURE);
-  }
-
-  node -> children = calloc(ALPHABET_SIZE, sizeof (*node->children));
-  if(!node-> children){
-    perror("Children array allocation failed");
-    exit(EXIT_FAILURE);
-  }
-  node -> mnemonicFlag = 0;
-
-  return node;
-}
-
-void free_node(Dictionary *root) {
-
-  if(!root){
-    return;
-  }
-
-  for(int i = 0; i < ALPHABET_SIZE; i++){
-    free_node(root->children[i]);
-  }
-
-  free(root -> children);
-  free(root);
-}
 
 // all of these probably take char *nextInstruction or nothing at all
 static Instruction setDataProcessing() {

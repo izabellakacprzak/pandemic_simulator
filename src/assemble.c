@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include "assemblelib/combined_utils.h"
-#include "assemble_utils.h"
+#include "assemblelib/assemble_utils.h"
 
 /* Creates a mask of 1s from start to end */
 #define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))

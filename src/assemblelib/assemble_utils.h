@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include "combined_utils.h"
+#include "tree.h"
 
 #ifndef ASSEMBLE_UTILS_H
 #define ASSEMBLE_UTILS_H
@@ -28,34 +29,9 @@ typedef struct err {
 #define FATAL_SYS(pred) \
   do { if (pred) {currentStatus = EC_FROM_SYS_ERROR(errno); goto fatalError;} } while (0)
 
-
-// not sure if something like this is needed
-// - but the symbol table will probably be a struct?
-typedef struct Dictionary {
-  struct Dictionary **children;
-
-  Address address;
-
-  //If set the word is a mnemonic symbol,
-  // by default - 0;
-  int mnemonicFlag;
-} Dictionary;
-
 Instruction assemble(struct Dictionary *symbolTable, const char *nextInstruction);
 
 int contains(char *value, const char **array);
-
-Dictionary *createDict(void);
-
-void freeDict(Dictionary *dict);
-
-Dictionary *createNode(void);
-
-void freeNode(Dictionary *root);
-
-int find(Dictionary *root, const char *word);
-
-int insert(Dictionary *root, const char *word);
 
 char *getProgramError(errorCode e);
 
