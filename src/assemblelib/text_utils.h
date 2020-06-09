@@ -1,1 +1,20 @@
-//text utils
+
+#ifndef TEXT_UTILS
+#define TEXT_UTILS
+
+#include <stdio.h>
+#include "combined_utils.h"
+
+#define MAX_INSTRUCTION_SIZE 511
+
+int loadNextInstruction(char *destArray, FILE *sourceFile);
+
+int writeNextInstruction(Instruction next, FILE *outputFile);
+
+int isAlpha(char c);
+
+int isNumeric(char c);
+
+int isAlphaNumeric(char c);
+
+#endif
