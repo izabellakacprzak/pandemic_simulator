@@ -6,13 +6,13 @@ typedef uint32_t Instruction;
 
 // enum representing all 4 instruction types
 // plus the all-0 - HALT instruction
-typedef enum instr_type{
-  BRANCH,
-  DATA_TRANSFER,
-  DATA_PROCESSING,
-  MULTIPLY,
-  HALT
-} InstructionType;
+//typedef enum instr_type{
+//  BRANCH = {"b"};,
+//  DATA_TRANSFER,
+//  DATA_PROCESSING,
+//  MULTIPLY,
+//  HALT
+//} InstructionType;
 
 // enum representing condition codes
 // as hexadecimal numbers

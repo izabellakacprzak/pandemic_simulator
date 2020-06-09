@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -g -D_DEFAULT_SOURCE -std=c99 -pedantic
 LIB = libemulateutils.a
-LIBOBJS = execute_utils.o pipeline_utils.o assemble_utils.o
+LIBOBJS = assemble_utils.o execute_utils.o pipeline_utils.o
 BUILD = $(LIB)
 
 all: $(BUILD)
