@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <errno.h>
-#include "combined_utils.h"
+#include "../combinedlib/combined_utils.h"
 #include "tree.h"
 
 #ifndef ASSEMBLE_UTILS_H

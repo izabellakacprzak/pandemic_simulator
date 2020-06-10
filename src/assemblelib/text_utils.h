@@ -3,7 +3,7 @@
 #define TEXT_UTILS
 
 #include <stdio.h>
-#include "combined_utils.h"
+#include "../combinedlib/combined_utils.h"
 
 #define MAX_INSTRUCTION_SIZE 511
 

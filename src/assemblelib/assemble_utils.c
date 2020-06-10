@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "combined_utils.h"
+#include "../combinedlib/combined_utils.h"
 #include "assemble_utils.h"
 #include "tree.h"
 
