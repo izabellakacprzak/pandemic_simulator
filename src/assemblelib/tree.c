@@ -1,72 +1,51 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "tree.h"
 
-Dictionary *create_node(void) {
+symbolNode *createNode(char* sym, Address addr) {
+    symbolNode *root = calloc(1, sizeof(symbolNode));
 
-  Dictionary *node = calloc(1, sizeof *node);
-  if(node == NULL){
-    perror("Node allocation failed");
-    exit(EXIT_FAILURE);
-  }
+    //duplicates the string and returns a pointer to the duplicate
+    //not sure if we need it but will be safer?
+    root->symbol = strdup(sym);
+    root->address = addr;
 
-  node -> children = calloc(ALPHABET_SIZE, sizeof (*node->children));
-  if(!node-> children){
-    perror("Children array allocation failed");
-    exit(EXIT_FAILURE);
-  }
-  node -> mnemonicFlag = 0;
-
-  return node;
+    return root;
 }
 
-void free_node(Dictionary *root) {
+symbolNode *insert(symbolNode* root, char* sym, Address addr) {
+    if(root == NULL){
+        return createNode(sym, addr);
+    } else if(strcmp(root->symbol, sym) > 0){
+        root->left = insert(root->left, sym, addr);
+    } else if(strcmp(root->symbol, sym) < 0){
+        root->right = insert(root->right, sym, addr);
+    } else{
+        return NULL;
+    }
 
-  if(!root){
-    return;
-  }
-
-  for(int i = 0; i < ALPHABET_SIZE; i++){
-    free_node(root->children[i]);
-  }
-
-  free(root -> children);
-  free(root);
+    return root;
 }
 
-Dictionary *createDictionary(void){
-  return create_node();
+// returns the node which hold the corresponding symbol
+// or NULL if not in the table
+symbolNode *search(symbolNode *root, char* sym) {
+    if(strcmp(root->symbol, sym) == 0 || root == NULL){
+        return root;
+    }else if(strcmp(root->symbol, sym) > 0){
+        return search(root->left, sym);
+    }else{
+        return search(root->right, sym);
+    }
 }
 
-void freeDict(Dictionary *root){
-  free_node(root);
-}
+void freeTable(symbolNode *root) {
+    if(root == NULL){
+        return;
+    }
+    freeTable(root->left);
+    freeTable(root->right);
 
-int find(Dictionary *root, const char *word) {
-  if(!root){
-    return 0;
-  }
-  if(!*word){
-    return root -> mnemonicFlag;
-  }
-  if(!IS_ALPHA(*word)){
-    return 0;
-  }
-  if(!root->children[POS(*word)]){
-    return 0;
-  }
-  return find(root->children[POS(*word)], word + 1);
-}
-
-int insert(Dictionary *root, const char *word) {
-
-  if(!*word){
-    return root -> mnemonicFlag = 1;
-  }
-  if(!IS_ALPHA(*word)){
-    return 0;
-  }
-  if(!root->children[POS(*word)]){
-    root->children[POS(*word)] = create_node();
-  }
-  return insert(root->children[POS(*word)], word + 1);
-
+    free(root);
 }

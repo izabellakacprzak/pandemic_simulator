@@ -1,6 +1,7 @@
-#include <stdint.h>
 #ifndef COMBINED_UTILS_H
 #define COMBINED_UTILS_H
+
+#include <stdint.h>
 
 typedef uint32_t Instruction;
 

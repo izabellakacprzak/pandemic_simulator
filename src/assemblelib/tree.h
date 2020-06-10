@@ -1,34 +1,24 @@
 #ifndef TREE
 #define TREE
 
-#include "assemble_utils.h"
-#include <stdlib.h>
-#include <stdio.h>
+#include <stdint.h>
 
-#define ALPHABET_SIZE (26)
-#define ALPHABET_SIZE (26)
-// not sure if something like this is needed
-// - but the symbol table will probably be a struct?
-typedef struct Dictionary {
-  struct Dictionary **children;
+typedef uint32_t Address;
 
+typedef struct symNodeStruct {
+  char* symbol;
   Address address;
+  struct symNodeStruct* left;
+  struct symNodeStruct* right;
+} symbolNode;
 
-  //If set the word is a mnemonic symbol,
-  // by default - 0;
-  int mnemonicFlag;
-} Dictionary;
+//function prototypes
+symbolNode* insert(symbolNode * root, char* sym, Address addr);
 
-Dictionary *createDict(void);
+symbolNode* search(symbolNode * root, char* sym);
 
-void freeDict(Dictionary *dict);
+void freeTable(symbolNode *root);
 
-Dictionary *createNode(void);
-
-void freeNode(Dictionary *root);
-
-int find(Dictionary *root, const char *word);
-
-int insert(Dictionary *root, const char *word);
+symbolNode *createNode(char* sym, Address addr);
 
 #endif

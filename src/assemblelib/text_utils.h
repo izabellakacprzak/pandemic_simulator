@@ -1,9 +1,10 @@
-
 #ifndef TEXT_UTILS
 #define TEXT_UTILS
 
 #include <stdio.h>
+
 #include "../combinedlib/combined_utils.h"
+#include "assemble_utils.h"
 
 #define MAX_INSTRUCTION_SIZE 511
 #define MAX_INSTRUCTION_PARAMS 5

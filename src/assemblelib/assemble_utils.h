@@ -1,14 +1,16 @@
-#include <stdint.h>
-#include <errno.h>
-#include "../combinedlib/combined_utils.h"
-#include "tree.h"
-
 #ifndef ASSEMBLE_UTILS_H
 #define ASSEMBLE_UTILS_H
 
+#include <stdint.h>
+#include <errno.h>
+
+#include "../combinedlib/combined_utils.h"
+#include "tree.h"
+
 #define MAX_INSTRUCTION_LENGTH 511
 
-typedef uint32_t Address;
+// this is needed for tree.h
+// typedef uint32_t Address;
 
 typedef enum errorCode {OK, INVALID_INSTRUCTION, SYS} errorCode;
 
@@ -29,7 +31,7 @@ typedef struct err {
 #define FATAL_SYS(pred) \
   do { if (pred) {currentStatus = EC_FROM_SYS_ERROR(errno); goto fatalError;} } while (0)
 
-Instruction assemble(struct Dictionary *symbolTable, const char *nextInstruction);
+Instruction assemble(symbolNode *symbolTable, const char *nextInstruction);
 
 int contains(char *value, const char **array);
 

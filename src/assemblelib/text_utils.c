@@ -1,7 +1,7 @@
+#include <stdlib.h>
 #include <string.h>
 
 #include "text_utils.h"
-#include "assemble_utils.h"
 
 /* Creates a mask of 1s from start to end */
 #define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
