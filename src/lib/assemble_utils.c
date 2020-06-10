@@ -243,16 +243,187 @@ static Instruction setMultiply(char **code) {
   return instruction;
 }
 
-static Instruction setDataTransfer() {
+static Instruction dataTransferImmediate(Instruction instruction, char **code) {
+  Address expression = (Address) strtol(strtok(code[2], "="), NULL, 0);
+
+  if (expression <= 0xFF) {
+    // treat as a mov instruction (condition code is al as well)
+    code[2][0] = '#';
+    instruction = setBits(al, 28, 0);
+    operandAssignment(instruction, code);
+    setBits(13, 21, instruction);
+    return instruction;
+  }
+
+  if (expression > 0xFFFFFFFF) {
+    printf("Invalid address provided");
+    return instruction;
+  }
+
+  // TODO:
+  // needs to place expression at the end of the assembled code and
+  //   use its memory position to calculate the offset
+  printf("DataTransfer immediate values not yet implemented");
+  return instruction;
+}
+
+#define MAX_EXPR_IN_BRACKETS 3
+#define MAX_INSTRUCTION_SIZE 511
+
+// takes an expression with or without [] brackets, returns the number of arguments in brackets
+// assumes destTok[MAX_EXPR_IN_BRACKETS][MAX_INSTRUCTION_SIZE]
+static int removeBrackets(char **destTok, char *expression) {
+  if (expression[0] != '[') {
+    return 0;
+  }
+
+  char *delims = ",]";
+  char *token = strtok(expression, delims);
+
+  int i = 0;
+  while (token && i <= MAX_EXPR_IN_BRACKETS) {
+    destTok[i] = token;
+    token = strtok(NULL, delims);
+    i++;
+  }
+
+  return i;
+}
+
+static Instruction setOffsetImmediate(uint32_t offset, Instruction instruction) {
+  // set I flag
+  instruction = setBits(1, 25, instruction);
+
+  return instruction;
+}
+
+/* // Optional:
+static Instruction setOffsetRegister() {
+
+}
+*/
+
+// of the form:
+//   <ldr/str> Rd, <address> (where <address> is 1-3 tokens)
+static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
 
   Instruction instruction = 0;
   
-  // set condition code
+  // set condition code and instruction identity bit
+  instruction = setBits(al, 28, instruction);
   instruction = setBits(1, 26, instruction);
+
+  // Set Rd register
+  int rd = strtol(strtok(code[1], "r"), NULL, 0);
+  instruction = setBits(rd, 12, instruction);
+
+  // default: U bit is set (to add offset)
+  instruction = setBits(1, 23, instruction);
+
+  if (!strcmp(code[0], "ldr")) {
+    /* code[0] is "ldr" */
+    // set the L bit
+    instruction = setBits(1, 20, instruction);
+
+    if (code[2][0] == '=') {
+      /* code[2] is an immediate value (only possible for ldr) */
+      instruction = setBits(1, 25, instruction);
+      return dataTransferImmediate(instruction, code);
+    }
+
+  } else if (strcmp(code[0], "str")) {
+    /* code[0] is not "ldr" or "str" */
+    printf("Invalid dataTransfer label.");
+    return instruction;
+  }
+
+  /* code[0] is "ldr" or "str" */
+
+  // will contain split code[2]
+  char **arg2 = calloc(MAX_EXPR_IN_BRACKETS*MAX_INSTRUCTION_SIZE, sizeof(char));
+
+  // TODO: initialise instruction tokens to NULL
+  if (!code[3]) {
+    // Pre-indexing: set P bit
+    instruction = setBits(1, 24, instruction);
+    
+    switch (removeBrackets(arg2, code[2])) {
+      case 0:
+	printf("Invalid dataTransfer formatting");
+	return instruction;
+
+      case 1:
+	/* arg2[0] is register address (Rn)
+	   offset is 0 */
+	break;
+	
+      case 2:
+	if (arg2[1][0] == '#') {
+	  /* arg2[0] is address register (Rn)
+	     arg2[1] is immediate offset */
+	  
+	} else if (arg2[1][0] == 'r') {
+	  /* Optional:
+	       arg2[0] is address register (Rn)
+	       arg2[1] is offset register (Rm) */
+	  
+	} else {
+	  printf("Invalid dataTransfer formatting");
+	  return instruction;
+	}
+	
+	break;
+	
+      case 3:
+	/* Optional:
+	     arg2[0] is register address (Rn)
+	     arg2[1] is offset register with sign ({+/-}Rm) (unset U bit (23) if negative)
+	     arg2[2] is a shift expression (eg. lsr #2) */
+
+	break;
+      default:
+	printf("Invalid dataTransfer formatting");
+      
+    } // end of switch
+    
+  } else if (!code[4]) {
+    // Post-indexing (P not set)
+
+    if (removeBrackets(arg2, code[2]) != 1) {
+      printf("Invalid dataTransfer formatting");
+      return instruction;
+    }
+    
+    if (code[3][0] == '#') {
+      /* code[2] is register address ([Rn]) (unbracketed in arg2[0])
+	 code[3] is immediate offset */
+
+    } else if (code[3][0] == 'r') {
+      /* Optional:
+           code[2] is register address ([Rn]) (unbracketed in arg2[0])
+	   code[3] is offset register (Rm) */
+
+    } else {
+      printf("Invalid dataTransfer formatting");
+    }
+
+  } else {
+    /* Optional (Post-indexing (P not set)):
+         code[2] is register address (Rn) (unbracketed in arg2[0])
+	 code[3] is offset register with sign ({+/-}Rm) (unset U bit (23) if negative)
+         code[4] is a shift expression (eg. lsl #2) */
+
+    if (removeBrackets(arg2, code[2]) != 1) {
+      printf("Invalid dataTransfer formatting");
+      return instruction;
+    }
+  }
+
+  int rn = strtol(strtok(arg2[0], "r"), NULL, 0);
+  instruction = setBits(rn, 16, instruction);
+  free(arg2);
   
-
-
-  return 0;
+  return instruction;
 }
 
 static Instruction setBranch(char **code) {
