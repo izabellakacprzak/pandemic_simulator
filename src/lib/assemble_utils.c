@@ -304,16 +304,33 @@ static Instruction setOffsetImmediate(int32_t offset, Instruction instruction) {
     offset = -offset;
   }
 
-  // TODO: implement for non-zero offset
+  // TODO: implement for non-zero offset (possibly with withResult())
 
   return instruction;
 }
 
-/* // Optional:
-static Instruction setOffsetRegister() {
+// Optional:
+//   shift is always a constant
+static Instruction setOffsetRegister(int shift, const char *type, int rm, Instruction instruction) {
+  // set Rm register
+  instruction = setBits(rm, 0, instruction);
 
+  if (shift < 0) {
+    // unset U bit if negative
+    instruction &= ~(1 << 23);
+    shift = -shift;
+  }
+
+  // bit 4 (shift by specified register) is not set, as shift is a constant
+  instruction = setBits(shift, 7, instruction);
+
+  // TODO: use type to set shift bits 6-5
+  if (!type) {
+    return instruction;
+  }
+
+  return instruction;
 }
-*/
 
 // of the form:
 //   <ldr/str> Rd, <address> (where <address> is 1-3 tokens)
@@ -352,8 +369,13 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
   /* code[0] is "ldr" or "str" */
 
   // will contain split code[2]
-  char **arg2 = calloc(MAX_EXPR_IN_BRACKETS*MAX_INSTRUCTION_SIZE, sizeof(char));
+  char **arg2 = calloc(MAX_EXPR_IN_BRACKETS * MAX_INSTRUCTION_SIZE, sizeof(char));
+
+  // declaring vars that may be used
   int32_t offset;
+  char *type;
+  int shift;
+  int rm;
 
   // TODO: initialise instruction tokens to NULL
   if (!code[3]) {
@@ -368,6 +390,7 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
       case 1:
 	/* arg2[0] is register address (Rn)
 	   offset is 0 */
+	
 	setOffsetImmediate(0, instruction);
 	break;
 	
@@ -375,6 +398,7 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
 	if (arg2[1][0] == '#') {
 	  /* arg2[0] is address register (Rn)
 	     arg2[1] is immediate offset */
+	  
 	  offset = strtol(strtok(arg2[1], "#"), NULL, 0);
 	  setOffsetImmediate(offset, instruction);
 	  
@@ -382,6 +406,10 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
 	  /* Optional:
 	       arg2[0] is address register (Rn)
 	       arg2[1] is offset register (Rm) */
+	  
+	  rm = strtol(strtok(arg2[1], "r"), NULL, 0);
+	  // shift set to 0 and type set to NULL
+	  instruction = setOffsetRegister(0, NULL, rm, instruction);
 	  
 	} else {
 	  printf("Invalid dataTransfer formatting");
@@ -395,6 +423,16 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
 	     arg2[0] is register address (Rn)
 	     arg2[1] is offset register with sign ({+/-}Rm) (unset U bit (23) if negative)
 	     arg2[2] is a shift expression (eg. lsr #2) */
+	type = strtok(arg2[2], " #");
+	shift = strtol(strtok(NULL, " #"), NULL, 0);
+	
+	if (arg2[1][0] == '-') {
+	  shift = -shift;
+	}
+
+	rm = strtol(strtok(arg2[1], "-+r"), NULL, 0);
+
+	instruction = setOffsetRegister(shift, type, rm, instruction);
 
 	break;
       default:
@@ -422,6 +460,10 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
            code[2] is register address ([Rn]) (unbracketed in arg2[0])
 	   code[3] is offset register (Rm) */
 
+      rm = strtol(strtok(code[3], "r"), NULL, 0);
+      // shift and type set to 0
+      instruction = setOffsetRegister(0, NULL, rm, instruction);
+
     } else {
       printf("Invalid dataTransfer formatting");
     }
@@ -436,6 +478,17 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
       printf("Invalid dataTransfer formatting");
       return instruction;
     }
+    
+    type = strtok(code[4], " #");
+    shift = strtol(strtok(NULL, " #"), NULL, 0);
+	
+    if (code[3][0] == '-') {
+      shift = -shift;
+    }
+
+    rm = strtol(strtok(code[3], "-+r"), NULL, 0);
+
+    instruction = setOffsetRegister(shift, type, rm, instruction);
   }
 
   // setting Rn register
