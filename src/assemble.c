@@ -27,12 +27,15 @@ int main(int argc, char **argv) {
   FATAL_SYS((sourceFile == NULL)); //file loading failed
   eof = loadNextInstruction(currentLine, sourceFile);
   int label;
+  //create an empty symbol table
+  symbolNode *symbolTable = NULL;
   
   while (!eof) {
     //check if the line is a label
-    label = isLabel(currentLine);
+    label = isLabel(currentLine[0]);
     if (label == 1) {
       //ADD LABEL TO THE DICTIONARY
+      symbolTable = insert(symbolTable, currentLine[0], curr_address);
     } else if (label == -1) {
       //invalid instruction detected
       FATAL_PROG(1,INVALID_INSTRUCTION);
@@ -55,7 +58,7 @@ int main(int argc, char **argv) {
   eof = loadNextInstruction(currentLine, sourceFile);
   int result;
   while (!eof) {
-    //result assemble(dict, currentLine);
+    //result assemble(symbolTable, currentLine);
     //binary writer writes to dest
     eof = loadNextInstruction(currentLine, sourceFile);
   }
@@ -67,6 +70,7 @@ int main(int argc, char **argv) {
  fatalError:
   //free any dynamically allocated memory
   free(currentLine);
+  freeTable(symbolTable);
 
   //print error message
 
