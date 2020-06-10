@@ -290,9 +290,21 @@ static int removeBrackets(char **destTok, char *expression) {
   return i;
 }
 
-static Instruction setOffsetImmediate(uint32_t offset, Instruction instruction) {
+static Instruction setOffsetImmediate(int32_t offset, Instruction instruction) {
   // set I flag
   instruction = setBits(1, 25, instruction);
+
+  if (offset == 0) {
+    return instruction;
+  }
+
+  if (offset < 0) {
+    // remove U bit if negative
+    instruction &= ~(1 << 23);
+    offset = -offset;
+  }
+
+  // TODO: implement for non-zero offset
 
   return instruction;
 }
@@ -341,6 +353,7 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
 
   // will contain split code[2]
   char **arg2 = calloc(MAX_EXPR_IN_BRACKETS*MAX_INSTRUCTION_SIZE, sizeof(char));
+  int32_t offset;
 
   // TODO: initialise instruction tokens to NULL
   if (!code[3]) {
@@ -355,12 +368,15 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
       case 1:
 	/* arg2[0] is register address (Rn)
 	   offset is 0 */
+	setOffsetImmediate(0, instruction);
 	break;
 	
       case 2:
 	if (arg2[1][0] == '#') {
 	  /* arg2[0] is address register (Rn)
 	     arg2[1] is immediate offset */
+	  offset = strtol(strtok(arg2[1], "#"), NULL, 0);
+	  setOffsetImmediate(offset, instruction);
 	  
 	} else if (arg2[1][0] == 'r') {
 	  /* Optional:
@@ -397,6 +413,9 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
     if (code[3][0] == '#') {
       /* code[2] is register address ([Rn]) (unbracketed in arg2[0])
 	 code[3] is immediate offset */
+      
+      offset = strtol(strtok(code[3], "#"), NULL, 0);
+      setOffsetImmediate(offset, instruction);
 
     } else if (code[3][0] == 'r') {
       /* Optional:
@@ -419,8 +438,10 @@ static Instruction setDataTransfer(/* symbolNode * ,*/char **code) {
     }
   }
 
+  // setting Rn register
   int rn = strtol(strtok(arg2[0], "r"), NULL, 0);
   instruction = setBits(rn, 16, instruction);
+  
   free(arg2);
   
   return instruction;
