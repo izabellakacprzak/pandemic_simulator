@@ -26,4 +26,8 @@ typedef enum condition_code{
   al = 0xE    // 0b1110
 } ConditionCode;
 
+/* Performs rotate right to the value by rotating cyclically 
+   with bit 0 shifting into bit 31 */
+static uint32_t ror(uint32_t value, uint32_t shift);
+
 #endif // COMBINED_UTILS_H
