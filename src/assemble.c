@@ -9,7 +9,8 @@
 /*
   argv[1] -> input file
   argv[2] -> output file
- */
+*/
+/* Implementation of a two-pass assembler */
 int main(int argc, char **argv) {
   assert (argc == 3);
 
@@ -20,36 +21,37 @@ int main(int argc, char **argv) {
   char **currentLine = calloc((MAX_INSTRUCTION_SIZE + 1)*(MAX_INSTRUCTION_PARAMS + 1), sizeof(char));
   FATAL_SYS((currentLine = NULL));
 
-  Address curr_address = 0;
+  Address currAddress = 0;
 
-  // first pass   -> construct dictionary
+  /* First pass -> creating the symbol table */
   sourceFile = fopen(source, "r");
   FATAL_SYS((sourceFile == NULL)); //file loading failed
   eof = loadNextInstruction(currentLine, sourceFile);
   int label;
-  //create an empty symbol table
+  
+  /* Create an empty symbol table */
   symbolNode *symbolTable = NULL;
   
-  while (!eof) {
-    //check if the line is a label
+  while(!eof) {
+    /* Check if the first token is a label */
     label = isLabel(currentLine[0]);
-    if (label == 1) {
-      //ADD LABEL TO THE DICTIONARY
-      symbolTable = insert(symbolTable, currentLine[0], curr_address);
-    } else if (label == -1) {
-      //invalid instruction detected
+    if(label == 1) {
+      symbolTable = insert(symbolTable, currentLine[0], currAddress);
+    } else if(label == -1) {
+      /* An invalid instruction is detected */
       FATAL_PROG(1,INVALID_INSTRUCTION);
     }
+    /* Load next instruction and increment address by 4 */
     eof = loadNextInstruction(currentLine, sourceFile);
-    curr_address = curr_address + 4; //address incremented by 4
+    currAddress = currAddress + 4;
   }
 
   FATAL_SYS((fclose(sourceFile) != 0));
 
-  // second pass  -> write instructions
-  curr_address = 0;
+  /* Second pass -> generate encoded instructions */
+  currAddress = 0;
 
-  //source reopened to go back to the top of the file
+  /* Reopen source file to go to the top */
   sourceFile = fopen(source, "r");
   FATAL_SYS((sourceFile == NULL));
   destFile = fopen(dest, "w");
@@ -57,7 +59,7 @@ int main(int argc, char **argv) {
 
   eof = loadNextInstruction(currentLine, sourceFile);
   int result;
-  while (!eof) {
+  while(!eof) {
     //result assemble(symbolTable, currentLine);
     //binary writer writes to dest
     eof = loadNextInstruction(currentLine, sourceFile);
@@ -68,11 +70,11 @@ int main(int argc, char **argv) {
   return EXIT_SUCCESS;
 
  fatalError:
-  //free any dynamically allocated memory
+  /* Free any dynamically alocated memory */
   free(currentLine);
   freeTable(symbolTable);
 
-  //print error message
+  /* Print an error message*/
 
   char *errorMessage;
   if (EC_IS_SYS_ERROR(currentStatus)) {
