@@ -90,17 +90,6 @@ static Register asr(uint32_t value, uint32_t shift) {
   return value;
 }
 
-/* Performs rotate right to the value by rotating cyclically 
-   with bit 0 shifting into bit 31 */
-static Register ror(uint32_t value, uint32_t shift) {
-  Register shifted, rotated;
-  shift %= 32;
-
-  shifted = value >> shift;
-  rotated = value << (32 - shift);
-  return shifted | rotated;
-}
-
 /* Calculates and returns the second operand (bits 11-0) as a shifted register;
    sets the C flag to the carry bit if the carry variable is 1 */
 static Register getOffsetRegister(int carry, Instruction instruction, State *statePtr) {

@@ -7,13 +7,13 @@ typedef uint32_t Instruction;
 
 // enum representing all 4 instruction types
 // plus the all-0 - HALT instruction
-//typedef enum instr_type{
-//  BRANCH = {"b"};,
-//  DATA_TRANSFER,
-//  DATA_PROCESSING,
-//  MULTIPLY,
-//  HALT
-//} InstructionType;
+typedef enum instr_type{
+  BRANCH,
+  DATA_TRANSFER,
+  DATA_PROCESSING,
+  MULTIPLY,
+  HALT
+} InstructionType;
 
 // enum representing condition codes
 // as hexadecimal numbers
@@ -29,6 +29,6 @@ typedef enum condition_code{
 
 /* Performs rotate right to the value by rotating cyclically 
    with bit 0 shifting into bit 31 */
-uint32_t ror(uint32_t value, uint32_t shift);
+int32_t ror(uint32_t value, uint32_t shift);
 
 #endif // COMBINED_UTILS_H

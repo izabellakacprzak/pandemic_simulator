@@ -2,13 +2,13 @@
 #define PIPELINE_UTILS_H
 
 #include <stdint.h>
+#include "../combinedlib/combined_utils.h"
 
 #define MEMORY_SIZE (1 << 15)
 #define REGISTERS_SIZE (17)
 #define regPC registers[15]
 #define regCPSR registers[16]
 
-typedef uint32_t Instruction;
 typedef int32_t Register;
 typedef uint8_t Memory;
 
@@ -34,28 +34,6 @@ typedef struct Pipeline {
   Instruction fetched;
   Instruction decoded;
 } Pipeline;
-
-/*  Enum for the 4 types of instructions included in this exercise
-    plus the all-0 - HALT - instruction */
-typedef enum InstructionType {		      
-  BRANCH,
-  DATA_TRANSFER,
-  DATA_PROCESSING,
-  MULTIPLY,
-  HALT 
-} InstructionType;
-
-/* Enum for the condition suffixes with their 
-   respective codes represented as hexadecimal numbers */
-typedef enum ConditionCode {			    
-  eq = 0x0,   // 0b0000
-  ne = 0x1,   // 0b0001
-  ge = 0xA,   // 0b1010
-  lt = 0xB,   // 0b1011
-  gt = 0xC,   // 0b1100
-  le = 0xD,   // 0b1101
-  al = 0xE    // 0b1110
-} ConditionCode;
 
 /* Upon termination prints out the state of the registers 
    and the contents of any non-zero memory location */

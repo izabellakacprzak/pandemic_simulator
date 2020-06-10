@@ -2,6 +2,7 @@
 #define EXECUTE_UTILS
 
 #include "pipeline_utils.h"
+#include "../combinedlib/combined_utils.h"
 
 /* Struct for calling the functions in the DATA_PROCESSING instruction - 
    determines the type of the operator, whether the result is written 

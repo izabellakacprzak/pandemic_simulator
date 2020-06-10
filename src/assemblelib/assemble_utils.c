@@ -10,12 +10,13 @@
 
 #define POS(x) (x - 'a')
 
-
+/*
 const char *DATA_PROCESSING[15] = {"and", "eor", "sub", "rsb", "add", "orr",
 				   "mov", "tst", "teq", "cmp", "lsl"};
 const char *MULTIPLY[5] = {"mul", "mla"};
 const char *DATA_TRANSFER[5] = {"str", "ldr"};
 const char *BRANCH[5] = {"b"};
+*/
 
 // set from bit to given value? not sure if a good idea to refactor like that
 //however it would be more versatile
