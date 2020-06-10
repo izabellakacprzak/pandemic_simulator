@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
   char *source = argv[1], *dest = argv[2];
   FILE *sourceFile, *destFile;
   int eof;
-  char *currentLine = calloc(512, sizeof(char));
+  char **currentLine = calloc((MAX_INSTRUCTION_SIZE + 1)*(MAX_INSTRUCTION_PARAMS + 1), sizeof(char));
   FATAL_SYS((currentLine = NULL));
 
   Address curr_address = 0;

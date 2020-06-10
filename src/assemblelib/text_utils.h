@@ -6,8 +6,9 @@
 #include "../combinedlib/combined_utils.h"
 
 #define MAX_INSTRUCTION_SIZE 511
+#define MAX_INSTRUCTION_PARAMS 5
 
-int loadNextInstruction(char *destArray, FILE *sourceFile);
+int loadNextInstruction(char **destArray, FILE *sourceFile);
 
 int writeNextInstruction(Instruction next, FILE *outputFile);
 
