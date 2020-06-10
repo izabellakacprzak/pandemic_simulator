@@ -103,41 +103,37 @@ int writeNextInstruction(Instruction next, FILE *outputFile) {
 	return 0;
 }
 
-int isAlpha(char c) {
-  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); 
-}
+/*Takes in a line, returns:
+  0 if the line is not a label
+  1 if the line is a label
+  -1 if the first character is not alphabetical (the instruction is invalid)
+ */
+int isLabel(char **line) {
+  char *currentChar = *line; //takes first token of the line
 
-int isNumeric(char c) {
-  return (c >= '0'&& c <= '9');  
-}
-
-int isAlphaNumeric(char c) {
-  return isAlpha(c) || isNumeric(c);
-}
-
-int isLabel(char *line) {
-  char *currentChar = line;
-  int label = 0;
-  if (isAlpha(*currentChar)){
+  if (IS_ALPHA(*currentChar)){
     //first character of a label must be alphabetical
     while (*(currentChar + 1) != '\0') {
       currentChar++;
-      if (isAlphaNumeric(*currentChar)) {
+      if (IS_ALPHANUMERIC(*currentChar)) {
 	continue; //nothing to be done
       } else if (*currentChar == ':') {
-	//should be the end
+	//should be the end of the string
 	if (*(currentChar + 1) == '\0'){
-	  label = 1;
+	  return 1; //first parameter is alphanumeric, terminated with a ':'
 	} else {
-	  break; //not a valid label
+	  return 0; //not a valid label as colon in middle of string
 	}
       } else {
-	break; //not a valid label
+	return 0; //not a label as there are invalid characters for a label
       }
     }
   } else {
     //all instructions should start with an alphabetical character
+    //should result in a fatal program error INVALID_INSTRUCTION
     return -1;
   }
-  return label;
+
+  //no ending ':' found on first parameter so no label
+  return 0;
 }

@@ -13,11 +13,16 @@ int loadNextInstruction(char **destArray, FILE *sourceFile);
 
 int writeNextInstruction(Instruction next, FILE *outputFile);
 
-int isAlpha(char c);
+#define IS_ALPHA(c) \
+  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
 
-int isNumeric(char c);
+#define IS_NUMERIC(c) \
+  (c >= '0' && c <= '9')
 
-int isAlphaNumeric(char c);
+#define IS_ALPHANUMERIC(c) \
+  ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
 
-int isLabel(char *line);
+
+
+int isLabel(char **line);
 #endif
