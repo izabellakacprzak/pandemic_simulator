@@ -244,12 +244,20 @@ static int setOffsetImmediate(int32_t offset, Instruction *instruction) {
   }
 
   if (offset < 0) {
-    // remove U bit if negative
+    // remove U bit if negative (TODO: effects opcode)
     *instruction &= ~(1 << 23);
     offset = -offset;
   }
 
-  // TODO: implement for non-zero offset (possibly with withResult())
+  int rotations = 0;
+  while((offset >> 8) != 0){
+    rotations++;
+    offset = (offset >> 1) | (offset << 31);
+  }
+  
+  // TODO: not sure if this is correct
+  *instruction = setBits(rotations/2, 8, *instruction);
+  *instruction = setBits(offset, 0, *instruction);
 
   return OK;
 }
@@ -266,7 +274,7 @@ static int setOffsetRegister(char **vars, Instruction *instruction) {
   *instruction = setBits(rm, 0, *instruction);
 
   if (vars[0][0] == '-') {
-    // unset U bit if negative
+    // unset U bit if negative (TODO: effects opcode)
     *instruction &= ~(1 << 23);
   }
 
@@ -274,12 +282,13 @@ static int setOffsetRegister(char **vars, Instruction *instruction) {
     // shift is 0, nothing further is needed
     return OK;
   }
-  
+
+  // TODO: also check for a register shift
   char *type = strtok(vars[1], " #");
   int shift = strtol(strtok(NULL, " #"), NULL, 0);
 
   if (shift > 31) {
-    return INVALID_INSTRUCTION;
+    return INVALID_SHIFT;
   }
 
   // bit 4 (shift by specified register) is not set, as shift is a constant
@@ -288,29 +297,29 @@ static int setOffsetRegister(char **vars, Instruction *instruction) {
   // set bits 6-5 depending on shift type
   if (!type) {
     // should only be for when shifts are 0
-    return INVALID_INSTRUCTION;
+    return INVALID_SHIFT;
   }
 
   if (!strcmp(type, "lsl")) {
-    *instruction = setBits(lsl_c, 5, *instruction);
+    *instruction = setBits(LSL, 5, *instruction);
     
   } else if (!strcmp(type, "lsr")) {
-    *instruction = setBits(lsr_c, 5, *instruction);
+    *instruction = setBits(LSR, 5, *instruction);
     
   } else if (!strcmp(type, "asr")) {
-    *instruction = setBits(asr_c, 5, *instruction);
+    *instruction = setBits(ASR, 5, *instruction);
     
   } else if (!strcmp(type, "ror")) {
-    *instruction = setBits(ror_c, 5, *instruction);
+    *instruction = setBits(ROR, 5, *instruction);
     
   } else {
-    return INVALID_INSTRUCTION;
+    return INVALID_SHIFT;
   }
 
   return OK;
 }
 
-// for ldr =<expr> type dataTransfer instructions
+// for ldr Rd,=<expr> type dataTransfer instructions
 static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instruction *instruction) {
   Address expression = (Address) strtol(strtok(code[2], "="), NULL, 0);
 
@@ -318,7 +327,7 @@ static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instru
     // treat as a mov instruction (condition code is al as well)
     code[2][0] = '#';
     *instruction = setBits(al, 28, 0);
-    *instruction = setBits(13, 21, *instruction);
+    *instruction = setBits(13, 21, *instruction); // TODO: MOV enum
     return OK; // TODO: operandAssignment(instruction, code);
   }
 
@@ -337,7 +346,7 @@ static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instru
 }
 
 // of the form:
-//   <ldr/str> Rd, <address> (where <address> is 1-3 tokens)
+//   <ldr/str> Rd,<address> (where <address> is 1-3 tokens)
 static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *ldrAddresses) {
 
   Instruction instructionVal = 0;

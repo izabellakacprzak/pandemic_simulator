@@ -15,7 +15,8 @@
 
 typedef enum errorCode {
   OK, 
-  INVALID_INSTRUCTION, 
+  INVALID_INSTRUCTION,
+  INVALID_SHIFT,
   SYS
 } errorCode;
 
@@ -43,10 +44,10 @@ typedef struct ldrAddresses {
 } ldrAddresses;
 
 typedef enum shift_codes {
-  lsl_c, 	// 0b00
-  lsr_c,	// 0b01
-  asr_c,	// 0b10
-  ror_c		// 0b11     
+  LSL, 	// 0b00
+  LSR,	// 0b01
+  ASR,	// 0b10
+  ROR	// 0b11     
 } shift_c;
 
 Instruction assemble(symbolNode *symbolTable, const char *nextInstruction);
