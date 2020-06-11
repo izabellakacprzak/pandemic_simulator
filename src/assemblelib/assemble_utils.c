@@ -214,29 +214,6 @@ static Instruction setMultiply(char **code) {
   return instruction;
 }
 
-static int dataTransferImmediate(Instruction *instruction, char **code) {
-  Address expression = (Address) strtol(strtok(code[2], "="), NULL, 0);
-
-  if (expression <= 0xFF) {
-    // treat as a mov instruction (condition code is al as well)
-    code[2][0] = '#';
-    *instruction = setBits(al, 28, 0);
-    *instruction = setBits(13, 21, *instruction);
-    return OK; // operandAssignment(instruction, code);
-  }
-
-  if (expression > 0xFFFFFFFF) {
-    printf("Invalid address provided");
-    return INVALID_INSTRUCTION;
-  }
-
-  // TODO:
-  // needs to place expression at the end of the assembled code and
-  //   use its memory position to calculate the offset
-  printf("DataTransfer immediate values not yet implemented");
-  return OK;
-}
-
 // takes an expression with or without [] brackets, returns the number of arguments in brackets
 // assumes destTok[MAX_EXPR_IN_BRACKETS][MAX_INSTRUCTION_SIZE]
 static int removeBrackets(char **destTok, char *expression) {
@@ -257,6 +234,7 @@ static int removeBrackets(char **destTok, char *expression) {
   return i;
 }
 
+// for dataTransfer instructions with a provided immediate offset
 static int setOffsetImmediate(int32_t offset, Instruction *instruction) {
   // set I flag
   *instruction = setBits(1, 25, *instruction);
@@ -276,27 +254,44 @@ static int setOffsetImmediate(int32_t offset, Instruction *instruction) {
   return OK;
 }
 
-// Optional:
+// Optional: for dataTransfer instructions with an offset contained in a register
 //   shift is always a constant
-static int setOffsetRegister(int shift, const char *type, int rm, Instruction *instruction) {
+static int setOffsetRegister(char **vars, Instruction *instruction) {
+  /* vars[0] is offset register with sign ({+/-}Rm) (unset U bit (23) if negative)
+     vars[1] is a shift expression (eg. lsr #2) */
+
+  int rm = strtol(strtok(vars[0], "-+r"), NULL, 0);
+
   // set Rm register
   *instruction = setBits(rm, 0, *instruction);
 
-  if (shift < 0) {
+  if (vars[0][0] == '-') {
     // unset U bit if negative
     *instruction &= ~(1 << 23);
-    shift = -shift;
+  }
+
+  if (!vars[1]) {
+    // shift is 0, nothing further is needed
+    return OK;
+  }
+  
+  char *type = strtok(vars[1], " #");
+  int shift = strtol(strtok(NULL, " #"), NULL, 0);
+
+  if (shift > 31) {
+    return INVALID_INSTRUCTION;
   }
 
   // bit 4 (shift by specified register) is not set, as shift is a constant
   *instruction = setBits(shift, 7, *instruction);
-
-  // TODO: use type to set shift bits 6-5
+  
+  // set bits 6-5 depending on shift type
   if (!type) {
-    printf("Invalid dataTransfer formatting");
+    // should only be for when shifts are 0
     return INVALID_INSTRUCTION;
-    
-  } else if (!strcmp(type, "lsl")) {
+  }
+
+  if (!strcmp(type, "lsl")) {
     *instruction = setBits(lsl_c, 5, *instruction);
     
   } else if (!strcmp(type, "lsr")) {
@@ -315,15 +310,38 @@ static int setOffsetRegister(int shift, const char *type, int rm, Instruction *i
   return OK;
 }
 
+// for ldr =<expr> type dataTransfer instructions
+static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instruction *instruction) {
+  Address expression = (Address) strtol(strtok(code[2], "="), NULL, 0);
+
+  if (expression <= 0xFF) {
+    // treat as a mov instruction (condition code is al as well)
+    code[2][0] = '#';
+    *instruction = setBits(al, 28, 0);
+    *instruction = setBits(13, 21, *instruction);
+    return OK; // TODO: operandAssignment(instruction, code);
+  }
+
+  if (expression > 0xFFFFFFFF) {
+    printf("Invalid address provided");
+    return INVALID_INSTRUCTION;
+  }
+
+  ldrAddresses->extraInstructions[ldrAddresses->length] = expression;
+  ldrAddresses->length++;
+  // TODO: get current location
+  Address currentAddress = 0;
+  int32_t offset = (ldrAddresses->lastAddress + (ldrAddresses->length * 4)) - (currentAddress + 8);
+
+  return setOffsetImmediate(offset, instruction);
+}
+
 // of the form:
 //   <ldr/str> Rd, <address> (where <address> is 1-3 tokens)
-static int  setDataTransfer(Instruction *instruction, char **code, ldrAddresses *ldrAddresses) {
+static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *ldrAddresses) {
 
   Instruction instructionVal = 0;
   instruction = &instructionVal;
-
-  // saves error codes
-  int err = OK;
   
   // set condition code and instruction identity bit
   instructionVal = setBits(al, 28, instructionVal);
@@ -343,8 +361,10 @@ static int  setDataTransfer(Instruction *instruction, char **code, ldrAddresses 
 
     if (code[2][0] == '=') {
       /* code[2] is an immediate value (only possible for ldr) */
+      // set I and P bits
       instructionVal = setBits(1, 25, instructionVal);
-      err = dataTransferImmediate(instruction, code);
+      instructionVal = setBits(1, 24, instructionVal);
+      return dataTransferImmediate(ldrAddresses, code, instruction);
     }
 
   } else if (strcmp(code[0], "str")) {
@@ -355,14 +375,16 @@ static int  setDataTransfer(Instruction *instruction, char **code, ldrAddresses 
 
   /* code[0] is "ldr" or "str" */
 
-  // will contain split code[2]
+  // will contain split code[2], initialised to NULL
   char **arg2 = calloc(MAX_EXPR_IN_BRACKETS * MAX_INSTRUCTION_SIZE, sizeof(char));
 
+  // saves error codes
+  int err = OK;
   // declaring vars that may be used
   int32_t offset;
+  int rm;
   char *type;
   int shift;
-  int rm;
 
   // TODO: initialise instruction tokens to NULL
   if (!code[3]) {
@@ -377,25 +399,21 @@ static int  setDataTransfer(Instruction *instruction, char **code, ldrAddresses 
       case 1:
 	/* arg2[0] is register address (Rn)
 	   offset is 0 */
-	
 	err = setOffsetImmediate(0, instruction);
 	
       case 2:
 	if (arg2[1][0] == '#') {
 	  /* arg2[0] is address register (Rn)
-	     arg2[1] is immediate offset */
-	  
+	     arg2[1] is immediate offset */	  
 	  offset = strtol(strtok(arg2[1], "#"), NULL, 0);
 	  err = setOffsetImmediate(offset, instruction);
 	  
 	} else if (arg2[1][0] == 'r') {
 	  /* Optional:
 	       arg2[0] is address register (Rn)
-	       arg2[1] is offset register (Rm) */
-	  
-	  rm = strtol(strtok(arg2[1], "r"), NULL, 0);
-	  // shift set to 0 and type set to NULL
-	  err = setOffsetRegister(0, NULL, rm, instruction);
+	       arg2[1] is offset register (Rm) 
+	       shift is 0, type is NULL (arg2[2] is NULL) */	  
+	  err = setOffsetRegister(arg2 + 1, instruction);
 	  
 	} else {
 	  printf("Invalid dataTransfer formatting");
@@ -407,15 +425,7 @@ static int  setDataTransfer(Instruction *instruction, char **code, ldrAddresses 
 	     arg2[0] is register address (Rn)
 	     arg2[1] is offset register with sign ({+/-}Rm) (unset U bit (23) if negative)
 	     arg2[2] is a shift expression (eg. lsr #2) */
-	type = strtok(arg2[2], " #");
-	shift = strtol(strtok(NULL, " #"), NULL, 0);
-	
-	if (arg2[1][0] == '-') {
-	  shift = -shift;
-	}
-
-	rm = strtol(strtok(arg2[1], "-+r"), NULL, 0);
-	err = setOffsetRegister(shift, type, rm, instruction);
+	err = setOffsetRegister(arg2 + 1, instruction);
 
       default:
 	printf("Invalid dataTransfer formatting");
@@ -442,10 +452,8 @@ static int  setDataTransfer(Instruction *instruction, char **code, ldrAddresses 
       /* Optional:
            code[2] is register address ([Rn]) (unbracketed in arg2[0])
 	   code[3] is offset register (Rm) */
-
-      rm = strtol(strtok(code[3], "r"), NULL, 0);
-      // shift and type set to 0
-      err = setOffsetRegister(0, NULL, rm, instruction);
+      // shift and type set to 0 (code[4] is NULL)
+      err = setOffsetRegister(code + 3, instruction);
 
     } else {
       printf("Invalid dataTransfer formatting");
@@ -463,15 +471,7 @@ static int  setDataTransfer(Instruction *instruction, char **code, ldrAddresses 
       return INVALID_INSTRUCTION;
     }
     
-    type = strtok(code[4], " #");
-    shift = strtol(strtok(NULL, " #"), NULL, 0);
-	
-    if (code[3][0] == '-') {
-      shift = -shift;
-    }
-
-    rm = strtol(strtok(code[3], "-+r"), NULL, 0);
-    err = setOffsetRegister(shift, type, rm, instruction);
+    err = setOffsetRegister(code + 3, instruction);
   }
 
   // setting Rn register
