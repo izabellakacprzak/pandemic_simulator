@@ -25,12 +25,12 @@ static Instruction setBits(uint32_t value, int bit, Instruction instr) {
 }
 
 
-void calculateOperand(Instruction instruction, char **code, int opIndex){
+int calculateOperand(Instruction *instruction, char **code, int opIndex){
 	int operand;
 	// is operand is an immediate value
 	if(code[opIndex][0] == '#'){
 		// set the I flag
-		instruction = setBits(1, 25, instruction);
+		*instruction = setBits(1, 25, *instruction);
 
 		operand = strtol(strtok(code[opIndex], "#"), NULL, 0);
 		
@@ -40,178 +40,202 @@ void calculateOperand(Instruction instruction, char **code, int opIndex){
 			operand = (operand >> 1) | (operand << 31);
 		}
 		// not sure if this is correct
-		instruction = setBits(rotations/2, 8, instruction);
-		instruction = setBits(operand, 0, instruction);
+		*instruction = setBits(rotations/2, 8, *instruction);
+		*instruction = setBits(operand, 0, *instruction);
 	}
 	// if operand is a shifter register
 	else{
 		int rm = atoi(strtok(code[opIndex], "r"));
 		// set bits 3 - 0 to the Rm register
-		instruction = setBits(rm, 0, instruction);
+		*instruction = setBits(rm, 0, *instruction);
 
 		// set the shift type bits (6 - 5)
 		if(!strcmp(code[opIndex + 1], "lsl")){
 			// the code is 00 so do nothing
 		}
 		else if(!strcmp(code[opIndex + 1], "lsr")){
-			instruction = setBits(1, 5, instruction);
+			*instruction = setBits(1, 5, *instruction);
 		}
 		else if(!strcmp(code[opIndex + 1], "asr")){
-			instruction = setBits(2, 5, instruction);
+			*instruction = setBits(2, 5, *instruction);
 		}
 		else if(!strcmp(code[opIndex + 1], "ror")){
-			instruction = setBits(3, 5, instruction);
+			*instruction = setBits(3, 5, *instruction);
 		}
 		else{
-			// undefined shift ??
+			// undefined shift
+			return INVALID_SHIFT;
 		}
 
 		// shiftin by a constant
 		if(code[opIndex + 2][0] == '#'){
 			// bit 4 is 0
 			// set bits 11 - 7 to the constant value by which we shift
-			instruction = setBits(strtol(strtok(code[opIndex + 2], "#"), NULL, 0), 7, instruction);
+			*instruction = setBits(strtol(strtok(code[opIndex + 2], "#"), NULL, 0), 7, *instruction);
 		}
 		// shifting by a register
 		else{
 			// bit 4 is 1
-			instruction = setBits(1, 4, instruction);
+			*instruction = setBits(1, 4, *instruction);
 			// set bits 11 - 7 to the register
-			instruction = setBits(atoi(strtok(code[opIndex + 2], "r")), 7, instruction);
+			*instruction = setBits(atoi(strtok(code[opIndex + 2], "r")), 7, *instruction);
 		}
 	}
+
+	return OK;
 }
 
 // sets bits for instructions that
 // compute results: and, eor, sub, rsb, add, orr
-int withResults(Instruction instruction, char **code){
+int withResults(Instruction *instruction, char **code){
 	int rd = atoi(strtok(code[1], "r"));
 	int rn = atoi(strtok(code[2], "r"));
 
 	// sets the operand field
 	// passing 3 as the operand in the code starts at string at index 3
-	calculateOperand(instruction, code, 3);
 
-	instruction = setBits(rd, 12, instruction);
-	instruction = setBits(rn , 16, instruction);
+	*instruction = setBits(rd, 12, *instruction);
+	*instruction = setBits(rn , 16, *instruction);
 
-	return 0;
+	return calculateOperand(instruction, code, 3);
 }
 
 // sets bits for instructions that
 // do single operand assignment: mov
-void operandAssignment(Instruction instruction, char **code){
+int operandAssignment(Instruction *instruction, char **code){
 	int rd = atoi(strtok(code[1], "r"));
 	
 	// sets the operand field
         // passing 2 as the operand in the code starts at string at index 2
-	calculateOperand(instruction, code, 2);
-	instruction = setBits(rd, 12, instruction);
+		
+	*instruction = setBits(rd, 12, *instruction);
+	
+	return calculateOperand(instruction, code, 2);
 }
 
 
 // sets bits for instructions that
 // do not compute results but
 // set the CPSR flags: tst, teq, cmp
-void noResults(Instruction instruction, char **code){
+int noResults(Instruction *instruction, char **code){
 	int rn = atoi(strtok(code[1], "r"));
 	
 	// sets the operand field
         // passing 2 as the operand in the code starts at string at index 2
-	calculateOperand(instruction, code, 2);
 
-	instruction = setBits(rn, 16, instruction);
-
-	instruction = setBits(1, 20, instruction);
+	*instruction = setBits(rn, 16, *instruction);
+	*instruction = setBits(1, 20, *instruction);
+	
+	return calculateOperand(instruction, code, 2);
 }
 
 
 // all of these probably take char *nextInstruction or nothing at all
-static Instruction setDataProcessing(char **code) {
-
-  Instruction instruction = 0;
+static int setDataProcessing(Instruction *instruction, char **code) {
 
   //sets condition code
-  instruction = setBits(al, 28, instruction);
- 
+  *instruction = setBits(al, 28, *instruction);
+  int isWithResults = 0;
+  int isOperandAssignment = 0;
+
+  int output = 0;
+
   // setting the opcode bits
   //if instruction is supposed to be tst, teq or cmp - set S - bit 20
   // otherwise it is clear (cleared upon initialisation)
   if(!strcmp(code[0], "and")){
-	  withResults(instruction, code);
+	  isWithResults = 1;
   }
   else if(!strcmp(code[0], "eor")){
-	  withResults(instruction, code);
-	  instruction = setBits(1, 21, instruction);
+	  isWithResults = 1;
+	  *instruction = setBits(eor, 21, *instruction);
   }
   else if(!strcmp(code[0], "sub")){
-	  withResults(instruction, code);
-	  instruction = setBits(2, 21, instruction);
+	  isWithResults = 1;
+	  *instruction = setBits(sub, 21, *instruction);
   }
   else if(!strcmp(code[0], "rsb")){
-	  withResults(instruction, code);
-	  instruction = setBits(3, 21, instruction);
+	  isWithResults = 1;
+	  *instruction = setBits(rsb, 21, *instruction);
   }
   else if(!strcmp(code[0], "add")){
-	  withResults(instruction, code);
-	  instruction = setBits(4, 21, instruction);
+	  isWithResults = 1;
+	  *instruction = setBits(add, 21, *instruction);
   }
   else if(!strcmp(code[0], "orr")){
-	  withResults(instruction, code);
-	  instruction = setBits(12, 21, instruction);
+	  isWithResults = 1;
+	  *instruction = setBits(orr, 21, *instruction);
   }
   else if(!strcmp(code[0], "mov")){
-	  operandAssignment(instruction, code);
-	  instruction = setBits(13, 21, instruction);
+	  isOperandAssignment = 1;
+	  *instruction = setBits(mov, 21, *instruction);
   }
   else if(!strcmp(code[0], "tst")){
-	  noResults(instruction, code);
-	  instruction = setBits(8, 21, instruction); 
+	  *instruction = setBits(tst, 21, *instruction); 
   }
   else if(!strcmp(code[0], "teq")){
-	  noResults(instruction, code);
-	  instruction = setBits(9, 21, instruction);
+	  *instruction = setBits(teq, 21, *instruction);
   }
   else if(!strcmp(code[0], "cmp")){
-	  noResults(instruction, code);
-	  instruction = setBits(10, 21, instruction);
+	  *instruction = setBits(cmp, 21, *instruction);
   }
 
-  return instruction;
+  if(isWithResults){
+	  output = withResults(instruction, code);
+  }
+  else if(isOperandAssignment){
+	  output = operandAssignment(instruction, code);
+  }
+  else{
+	  output = noResults(instruction, code);
+  }
+
+  return output;
 }
 
-void setRegistersMultiply(Instruction instruction, char **code){
+int setRegistersMultiply(Instruction *instruction, char **code){
+	// if invalid input (no register)
+	// output INVALID_INPUT error
+	if(code[1][0] != 'r' || code[2][0] != 'r' || code[3][0] != 'r')
+		return INVALID_INPUT;
+
 	int rd = atoi(strtok(code[1], "r"));
 	int rm = atoi(strtok(code[2], "r"));
 	int rs = atoi(strtok(code[3], "r"));
 
-	instruction = setBits(rd, 16, instruction);
-	instruction = instruction | rm;
-	instruction = setBits(rs, 8, instruction);
+	*instruction = setBits(rd, 16, *instruction);
+	*instruction = *instruction | rm;
+	*instruction = setBits(rs, 8, *instruction);
+
+	return OK;
 }
 
-static Instruction setMultiply(char **code) {
-  Instruction instruction = 0;
+static int setMultiply(Instruction *instruction, char **code) {
 
   // sets condition code
-  instruction = setBits(al, 18, instruction);
-  instruction = setBits(0x9, 4, instruction);
+  *instruction = setBits(al, 18, *instruction);
+  *instruction = setBits(0x9, 4, *instruction);
 
 
   // sets the register bits
   // and A bit if instructino is mla
   // there is no need to set S because instruction is initially all 0
   if(!strcmp(code[0], "mul")){
-	  setRegistersMultiply(instruction, code);
+	  return setRegistersMultiply(instruction, code);
   }
   else if(!strcmp(code[0], "mla")){
-	  instruction = setBits(1, 21, instruction);
-	  setRegistersMultiply(instruction, code);
+	  // if invalid input (no register)
+	  // output INVALID_INPUT error
+	  if(code[4][0] != 'r')
+		  return INVALID_INPUT;
+	  *instruction = setBits(1, 21, *instruction);
 	  int rn = atoi(strtok(code[4], "r"));
-	  instruction = setBits(rn, 12, instruction);
+	  *instruction = setBits(rn, 12, *instruction);
+	  return setRegistersMultiply(instruction, code); 
   }
-
-  return instruction;
+  else{
+	  return INVALID_INPUT;
+  }
 }
 
 static int dataTransferImmediate(Instruction *instruction, char **code) {
