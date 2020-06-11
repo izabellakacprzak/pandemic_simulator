@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   
   while(!eof) {
     /* Check if the first token is a label */
-    label = isLabel(currentLine[0]);
+    label = isLabel(currentLine);
     if(label == 1) {
       symbolTable = insert(symbolTable, currentLine[0], currAddress);
     } else if(label == -1) {
