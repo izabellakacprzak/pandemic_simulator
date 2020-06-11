@@ -6,6 +6,11 @@
 #include "assemblelib/assemble_utils.h"
 #include "assemblelib/text_utils.h"
 
+assemblyInstruction getDataFromOperation(char *operation) {
+  assemblyInstruction out = {0};
+  return out;
+}
+
 /*
   argv[1] -> input file
   argv[2] -> output file
@@ -33,16 +38,20 @@ int main(int argc, char **argv) {
   currentStatus = loadNextInstruction(currentLine, sourceFile);
   FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
   int label;
-  
+  treeData data;
   while(currentStatus != END_OF_FILE) {
     /* Check if the first token is a label */
     label = isLabel(currentLine);
     if(label == 1) {
-      symbolTable = insert(symbolTable, currentLine[0], currAddress);
+      data.address = currAddress; 
     } else if(label == -1) {
       /* An invalid instruction is detected */
       FATAL_PROG(1,INVALID_INSTRUCTION);
+    } else {
+      data.assemblyLine = getDataFromOperation(currentLine[0]);
     }
+    //adds to the symbol table
+    symbolTable = insert(symbolTable, currentLine[0], data, label);
     /* Load next instruction and increment address by 4 */
     currentStatus = loadNextInstruction(currentLine, sourceFile);
     FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
@@ -53,14 +62,14 @@ int main(int argc, char **argv) {
   FATAL_SYS((fclose(sourceFile) != 0));
 
   /* Second pass -> generate encoded instructions */
-  ldrAddresses.lastAddress = currAdress; //largest address
+  loadConstants.lastAddress = currAddress; //largest address
 
   /*max number of elements is number of instructions assembled 
     if every instruction is an ldr with immediate value */
-  Instruction extraInstructions[currAdress];
-  ldrAddresses.extraInstructions = &extraInstructions;
+  Instruction extraInstructions[currAddress]; //breaks error handling because of variable length array clean up code
+  loadConstants.extraInstructions = extraInstructions;
 
-  currAdress = 0;
+  currAddress = 0;
   /* Reopen source file to go to the top */
   sourceFile = fopen(source, "r");
   FATAL_SYS((sourceFile == NULL));
@@ -79,8 +88,8 @@ int main(int argc, char **argv) {
   }
 
   //Adds offsets for immediate value ldrs to the end of the assembly code
-  for (int i = 0; i < ldrAdresses.length; i++) {
-    writeNextInstruction(ldrAddresses.extraInstructions[i], destFile);
+  for (int i = 0; i < loadConstants.length; i++) {
+    writeNextInstruction(loadConstants.extraInstructions[i], destFile);
   }
   
   FATAL_SYS((fclose(sourceFile) != 0));

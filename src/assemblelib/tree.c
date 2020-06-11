@@ -3,22 +3,27 @@
 
 #include "tree.h"
 
-symbolNode *createNode(char* sym, Address addr) {
+symbolNode *createNode(char* sym, treeData data, int isLabel) {
     symbolNode *root = calloc(1, sizeof(symbolNode));
 
     root->symbol = strdup(sym);
-    root->address = addr;
 
+    if (isLabel) {
+      root->data.address = data.address;
+      root->isLabel = 1;
+    } else {
+      root->data.assemblyLine = data.assemblyLine;
+    }
     return root;
 }
 
-symbolNode *insert(symbolNode* root, char* sym, Address addr) {
+symbolNode *insert(symbolNode* root, char* sym, treeData data, int isLabel) {
   if(root == NULL) {
-      return createNode(sym, addr);
+    return createNode(sym, data, isLabel);
   } else if(strcmp(root->symbol, sym) > 0){
-      root->left = insert(root->left, sym, addr);
+    root->left = insert(root->left, sym, data, isLabel);
   } else if(strcmp(root->symbol, sym) < 0){
-      root->right = insert(root->right, sym, addr);
+    root->right = insert(root->right, sym, data, isLabel);
   } else{
       return NULL;
   }

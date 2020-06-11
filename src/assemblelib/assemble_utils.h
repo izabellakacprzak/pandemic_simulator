@@ -9,9 +9,6 @@
 
 #define MAX_INSTRUCTION_LENGTH 511
 
-// this is needed for tree.h
-// typedef uint32_t Address;
-
 typedef enum errorCode {
   OK, 
   INVALID_INSTRUCTION,
