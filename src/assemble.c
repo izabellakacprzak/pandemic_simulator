@@ -17,14 +17,15 @@ int main(int argc, char **argv) {
   errorCode currentStatus = OK;
   char *source = argv[1], *dest = argv[2];
   FILE *sourceFile, *destFile;
-  symbolNode *symbolTable = NULL;
+  symbolNode *symbolTable = NULL; //creates an empty symbol table
   char **currentLine = calloc((MAX_INSTRUCTION_PARAMS + 1), sizeof(char*));
   FATAL_SYS((currentLine == NULL));
   for(int i = 0; i < (MAX_INSTRUCTION_PARAMS + 1); i++){
     currentLine[i] = calloc((MAX_INSTRUCTION_SIZE + 1), sizeof(char));
     FATAL_SYS((currentLine[i] == NULL));
   }
-   Address currAddress = 0;
+  ldrAddresses loadConstants = {0};
+  Address currAddress = 0;
 
   /* First pass -> creating the symbol table */
   sourceFile = fopen(source, "r");
@@ -32,8 +33,6 @@ int main(int argc, char **argv) {
   currentStatus = loadNextInstruction(currentLine, sourceFile);
   FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
   int label;
-  
-  /* Create an empty symbol table */
   
   while(currentStatus != END_OF_FILE) {
     /* Check if the first token is a label */
@@ -54,9 +53,14 @@ int main(int argc, char **argv) {
   FATAL_SYS((fclose(sourceFile) != 0));
 
   /* Second pass -> generate encoded instructions */
-  Address maxAddress = currAddress;
-  currAddress = 0;
+  ldrAddresses.lastAddress = currAdress; //largest address
 
+  /*max number of elements is number of instructions assembled 
+    if every instruction is an ldr with immediate value */
+  Instruction extraInstructions[currAdress];
+  ldrAddresses.extraInstructions = &extraInstructions;
+
+  currAdress = 0;
   /* Reopen source file to go to the top */
   sourceFile = fopen(source, "r");
   FATAL_SYS((sourceFile == NULL));
@@ -71,16 +75,25 @@ int main(int argc, char **argv) {
     writeNextInstruction(result, destFile);
     currentStatus = loadNextInstruction(currentLine, sourceFile);
     FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
+    currAddress = currAddress + 4;
   }
 
+  //Adds offsets for immediate value ldrs to the end of the assembly code
+  for (int i = 0; i < ldrAdresses.length; i++) {
+    writeNextInstruction(ldrAddresses.extraInstructions[i], destFile);
+  }
+  
   FATAL_SYS((fclose(sourceFile) != 0));
   FATAL_SYS((fclose(destFile) != 0));
   return EXIT_SUCCESS;
 
  fatalError:
   /* Free any dynamically alocated memory */
-  for(int i = 0; i < (MAX_INSTRUCTION_PARAMS + 1); i++){
-    free(currentLine[i]);
+
+  if (currentLine != NULL) {
+    for(int i = 0; i < (MAX_INSTRUCTION_PARAMS + 1); i++){
+      free(currentLine[i]);
+    }
   }
   free(currentLine);
   freeTable(symbolTable);

@@ -38,11 +38,11 @@ typedef struct err {
 
 typedef struct ldrAddresses {
   Address lastAddress;
-  int length
+  int length;
   Instruction *extraInstructions;
 } ldrAddresses;
 
-Instruction assemble(symbolNode *symbolTable, const char *nextInstruction);
+Instruction assemble(symbolNode *symbolTable, char **nextInstruction);
 
 int contains(char *value, const char **array);
 

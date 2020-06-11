@@ -31,14 +31,15 @@ static int instructionTok(char **destArray, const char *line) {
         return OK;
     }
 
-    strncpy(destArray[0], line, i);
+    strcpy(destArray[0], line);
 
     int start = i + 1;   // current start place in line
     i = 0;
     int j = 1;           // argument number (destArray[j][])
     while (line[i] != '\0') {
+      printf("%d\n", i);
         if (line[i] == ',') {
-            strcpy(destArray[j], line + start);
+	  strcpy(destArray[j], line + start);
             start += i + 1;
             i = 0;
             j++;
