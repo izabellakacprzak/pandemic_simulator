@@ -95,65 +95,106 @@ void free_node(Dictionary *root) {
   free(root);
 }
 
-// sets bits for instructions that
-// compute results: and, eor, sub, rsb, add, orr
-void withResults(Instruction instruction, char **code){
-	int rd = atoi(strtok(code[1], "r"));
-	int rn = atoi(strtok(code[2], "r"));
+void calculateOperand(Instruction instruction, char **code, int opIndex){
 	int operand;
-	if(code[3][0] == '#'){
+	// is operand is an immediate value
+	if(code[opIndex][0] == '#'){
 		// set the I flag
-		instruction = instruction | (1 << 25);
+		instruction = setBits(1, 25, instruction);
 
-		// NEED TO ROTATE //
-		if(code[3][2] == 'x'){
-			// hexadecimal value
-			operand = atoi(strtok(code[3], "#0x"));
-		}
-		else{
-			// decimal value
-			operand = atoi(strtok(code[3], "#"));
-		}
+		operand = strtol(strtok(code[opIndex], "#"), NULL, 0);
+		
 		int rotations = 0;
 		while((operand >> 8) != 0){
 			rotations++;
-			operand = (operand >> 1) | (operand << 32);
+			operand = (operand >> 1) | (operand << 31);
 		}
-		instruction = instruction | ((rotations/2) << 8);
-		instruction = instruction | operand;
+		// not sure if this is correct
+		instruction = setBits(rotations/2, 8, instruction);
+		instruction = setBits(operand, 0, instruction);
 	}
+	// if operand is a shifter register
 	else{
+		int rm = atoi(strtok(code[opIndex], "r"));
+		// set bits 3 - 0 to the Rm register
+		instruction = setBits(rm, 0, instruction);
 
+		// set the shift type bits (6 - 5)
+		if(!strcmp(code[opIndex + 1], "lsl")){
+			// the code is 00 so do nothing
+		}
+		else if(!strcmp(code[opIndex + 1], "lsr")){
+			instruction = setBits(1, 5, instruction);
+		}
+		else if(!strcmp(code[opIndex + 1], "asr")){
+			instruction = setBits(2, 5, instruction);
+		}
+		else if(!strcmp(code[opIndex + 1], "ror")){
+			instruction = setBits(3, 5, instruction);
+		}
+		else{
+			// undefined shift ??
+		}
+
+		// shiftin by a constant
+		if(code[opIndex + 2][0] == '#'){
+			// bit 4 is 0
+			// set bits 11 - 7 to the constant value by which we shift
+			instruction = setBits(strtol(strtok(code[opIndex + 2], "#"), NULL, 0), 7, instruction);
+		}
+		// shifting by a register
+		else{
+			// bit 4 is 1
+			instruction = setBits(1, 4, instruction);
+			// set bits 11 - 7 to the register
+			instruction = setBits(atoi(strtok(code[opIndex + 2], "r")), 7, instruction);
+		}
 	}
+}
 
+// sets bits for instructions that
+// compute results: and, eor, sub, rsb, add, orr
+int withResults(Instruction instruction, char **code){
+	int rd = atoi(strtok(code[1], "r"));
+	int rn = atoi(strtok(code[2], "r"));
 
-	instruction = instruction | (rd << 12);
-	instruction = instruction | (rn << 16);
-	instruction = instruction | operand;
+	// sets the operand field
+	// passing 3 as the operand in the code starts at string at index 3
+	calculateOperand(instruction, code, 3);
+
+	instruction = setBits(rd, 12, instruction);
+	instruction = setBits(rn , 16, instruction);
+
+	return 0;
 }
 
 // sets bits for instructions that
 // do single operand assignment: mov
 void operandAssignment(Instruction instruction, char **code){
 	int rd = atoi(strtok(code[1], "r"));
-	int operand = atoi(code[2]);
-
-	instruction = instruction | (rd << 12);
-	instruction = instruction | operand;
+	
+	// sets the operand field
+        // passing 2 as the operand in the code starts at string at index 2
+	calculateOperand(instruction, code, 2);
+	instruction = setBits(rd, 12, instruction);
 }
+
 
 // sets bits for instructions that
 // do not compute results but
 // set the CPSR flags: tst, teq, cmp
 void noResults(Instruction instruction, char **code){
 	int rn = atoi(strtok(code[1], "r"));
-	int operand = atoi(code[2]);
+	
+	// sets the operand field
+        // passing 2 as the operand in the code starts at string at index 2
+	calculateOperand(instruction, code, 2);
 
-	instruction = instruction | (rn << 16);
-	instruction = instruction | operand;
+	instruction = setBits(rn, 16, instruction);
 
-	instruction = instruction | (1 < 20);
+	instruction = setBits(1, 20, instruction);
 }
+
 
 // all of these probably take char *nextInstruction or nothing at all
 static Instruction setDataProcessing(char **code) {
@@ -167,43 +208,43 @@ static Instruction setDataProcessing(char **code) {
   //if instruction is supposed to be tst, teq or cmp - set S - bit 20
   // otherwise it is clear (cleared upon initialisation)
   if(!strcmp(code[0], "and")){
-		  withResults(instruction, code);
+	  withResults(instruction, code);
   }
   else if(!strcmp(code[0], "eor")){
 	  withResults(instruction, code);
-	  instruction = instruction | (1 << 21);
+	  instruction = setBits(1, 21, instruction);
   }
   else if(!strcmp(code[0], "sub")){
 	  withResults(instruction, code);
-	  instruction = instruction | (2 << 21);
+	  instruction = setBits(2, 21, instruction);
   }
   else if(!strcmp(code[0], "rsb")){
 	  withResults(instruction, code);
-	  instruction = instruction | (3 << 21);
+	  instruction = setBits(3, 21, instruction);
   }
   else if(!strcmp(code[0], "add")){
 	  withResults(instruction, code);
-	  instruction = instruction | (4 << 21);
+	  instruction = setBits(4, 21, instruction);
   }
   else if(!strcmp(code[0], "orr")){
 	  withResults(instruction, code);
-	  instruction = instruction | (12 << 21);
+	  instruction = setBits(12, 21, instruction);
   }
   else if(!strcmp(code[0], "mov")){
 	  operandAssignment(instruction, code);
-	  instruction = instruction | (13 << 21);
+	  instruction = setBits(13, 21, instruction);
   }
   else if(!strcmp(code[0], "tst")){
 	  noResults(instruction, code);
-	  instruction = instruction | (8 << 21); 
+	  instruction = setBits(8, 21, instruction); 
   }
   else if(!strcmp(code[0], "teq")){
 	  noResults(instruction, code);
-	  instruction = instruction | (9 << 21);
+	  instruction = setBits(9, 21, instruction);
   }
   else if(!strcmp(code[0], "cmp")){
 	  noResults(instruction, code);
-	  instruction = instruction | (10 << 21);
+	  instruction = setBits(10, 21, instruction);
   }
 
   return instruction;
@@ -214,9 +255,9 @@ void setRegistersMultiply(Instruction instruction, char **code){
 	int rm = atoi(strtok(code[2], "r"));
 	int rs = atoi(strtok(code[3], "r"));
 
-	instruction = instruction | (rd << 16);
+	instruction = setBits(rd, 16, instruction);
 	instruction = instruction | rm;
-	instruction = instruction | (rs << 8);
+	instruction = setBits(rs, 8, instruction);
 }
 
 static Instruction setMultiply(char **code) {
@@ -234,10 +275,10 @@ static Instruction setMultiply(char **code) {
 	  setRegistersMultiply(instruction, code);
   }
   else if(!strcmp(code[0], "mla")){
-	  instruction = instruction | (1 << 21);
+	  instruction = setBits(1, 21, instruction);
 	  setRegistersMultiply(instruction, code);
 	  int rn = atoi(strtok(code[4], "r"));
-	  instruction = instruction | (rn << 12);
+	  instruction = setBits(rn, 12, instruction);
   }
 
   return instruction;
@@ -527,6 +568,19 @@ static Instruction setBranch(char **code) {
   else{
 	  instruction = instruction | (14 << 28);
   }
+
+  /*
+  int address = find(dict, code[1]);
+  // the address in a constant
+  if(address == -1){
+	  instruction = setBits(strtol(code[1], NULL, 0), 0, instruction);
+  }
+  // the address is a label
+  else{
+	  instruction = setBits(address, 0, instruction);
+  }
+  */
+
 
   return instruction;
 }
