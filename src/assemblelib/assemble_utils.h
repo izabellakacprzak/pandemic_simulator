@@ -12,7 +12,11 @@
 // this is needed for tree.h
 // typedef uint32_t Address;
 
-typedef enum errorCode {OK, INVALID_INSTRUCTION, SYS} errorCode;
+typedef enum errorCode {
+  OK, 
+  INVALID_INSTRUCTION, 
+  SYS
+} errorCode;
 
 typedef struct err {
   int code;
