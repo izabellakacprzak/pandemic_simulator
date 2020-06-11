@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 #include "../combinedlib/combined_utils.h"
 #include "assemble_utils.h"
 #include "tree.h"
@@ -527,7 +528,7 @@ int contains(char *value, const char **array){
   return 0;
 }
 
-Instruction assemble(symbolNode *symbolTable, const char *nextInstruction) {
+Instruction assemble(symbolNode *symbolTable, char **nextInstruction) {
   /*
     char *opcode;
     char *rest = nextInstruction;

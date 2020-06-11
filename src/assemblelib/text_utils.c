@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
-
+#include <assert.h>
+#include "assemble_utils.h"
 #include "text_utils.h"
 
 /* Creates a mask of 1s from start to end */
@@ -13,57 +14,50 @@
 //      now is char destArray[MAX_INSTRUCTION_PARAMS][MAX_INSTRUCTION_SIZE]
 //  > destArray should be on the heap
 static int instructionTok(char **destArray, const char *line) {
-  char **newDestArray = calloc((MAX_INSTRUCTION_SIZE + 1)*(MAX_INSTRUCTION_PARAMS + 1), sizeof(char));
-
-  if (!newDestArray) {
-    return EXIT_FAILURE;
-  }
-
-  int i = 0;
-  while (line[i] != ' ' && line[i] != ':' && line[i] != '\0') {
-    i++;
-  }
-
-  if (line[i] == '\0') {
-    return EXIT_FAILURE;
-  }
-
-  // new function label case
-  if (line[i] == ':') {
-    strncpy(newDestArray[0], line, i + 1);
-    return EXIT_SUCCESS;
-  }
-
-  strncpy(newDestArray[0], line, i);
-  
-  int start = i + 1;   // current start place in line
-  i = 0;
-  int j = 1;           // argument number (destArray[j][])
-  while (line[i] != '\0') {
-    if (line[i] == ',') {
-      strncpy(newDestArray[j], line + start, i);
-      start += i + 1;
-      i = 0;
-      j++;
-      
-    } else if (line[i] == '[') {
-      while (line[i] != ']') {
-	i++;
-      }
+    assert(strlen(line) <= MAX_INSTRUCTION_SIZE);
+    
+    int i = 0;
+    while (line[i] != ' ' && line[i] != ':' && line[i] != '\0') {
+        i++;
     }
 
-    i++;
-  }
+    if (line[i] == '\0') {
+        return INVALID_INSTRUCTION;
+    }
 
-  strncpy(newDestArray[j], line + start, i);
+    // new function label case
+    if (line[i] == ':') {
+        strcpy(destArray[0], line);
+        return OK;
+    }
 
-  if (j > MAX_INSTRUCTION_PARAMS) {
-    return EXIT_FAILURE;
-  }
-  
-  free(destArray);
-  destArray = newDestArray;
-  return EXIT_SUCCESS;
+    strncpy(destArray[0], line, i);
+
+    int start = i + 1;   // current start place in line
+    i = 0;
+    int j = 1;           // argument number (destArray[j][])
+    while (line[i] != '\0') {
+        if (line[i] == ',') {
+            strcpy(destArray[j], line + start);
+            start += i + 1;
+            i = 0;
+            j++;
+
+        } else if (line[i] == '[') {
+            while (line[i] != ']') {
+                i++;
+            }
+        }
+
+        i++;
+    }
+
+
+    if (j > MAX_INSTRUCTION_PARAMS) {
+        return INVALID_INSTRUCTION;
+    }
+    strcpy(destArray[j], line + start);
+    return OK;
 }
 
 // loads the next instruction line into an array of chars (line)
@@ -71,24 +65,22 @@ static int instructionTok(char **destArray, const char *line) {
 //  > destArray may not be the same size as before,
 //      now is char destArray[MAX_INSTRUCTION_PARAMS][MAX_INSTRUCTION_SIZE]
 int loadNextInstruction(char **destArray, FILE *sourceFile) {
-  if (!sourceFile) {
-    printf("Could not access file");
-    return EXIT_FAILURE;
-  }
+    if (!sourceFile) {
+        printf("Could not access file");
+        return SYS;
+    }
 
-  if (feof(sourceFile)) {
-    free(destArray);
-    destArray = NULL;
-    return EXIT_SUCCESS;
-  }
+    if (feof(sourceFile)) {
+        free(destArray);
+        destArray = NULL;
+        return END_OF_FILE;
+    }
 
-  char line[MAX_INSTRUCTION_SIZE];
-  fgets(line, MAX_INSTRUCTION_SIZE, sourceFile);
-  
-  return instructionTok(destArray, line);
+    char line[MAX_INSTRUCTION_SIZE];
+    fgets(line, MAX_INSTRUCTION_SIZE, sourceFile);
+
+    return instructionTok(destArray, line);
 }
-
-
 
 int writeNextInstruction(Instruction next, FILE *outputFile) {
 	Instruction instruction = (CREATE_MASK(7, 0) & next)

@@ -14,7 +14,8 @@
 
 typedef enum errorCode {
   OK, 
-  INVALID_INSTRUCTION, 
+  INVALID_INSTRUCTION,
+  END_OF_FILE,
   SYS
 } errorCode;
 
@@ -35,7 +36,7 @@ typedef struct err {
 #define FATAL_SYS(pred) \
   do { if (pred) {currentStatus = EC_FROM_SYS_ERROR(errno); goto fatalError;} } while (0)
 
-Instruction assemble(symbolNode *symbolTable, const char *nextInstruction);
+Instruction assemble(symbolNode *symbolTable, char **nextInstruction);
 
 int contains(char *value, const char **array);
 
