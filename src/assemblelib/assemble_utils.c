@@ -529,23 +529,7 @@ int contains(char *value, const char **array){
 }
 
 Instruction assemble(symbolNode *symbolTable, char **nextInstruction) {
-  /*
-    char *opcode;
-    char *rest = nextInstruction;
-
-
-    opcode = strtok_r(rest, " ", &rest);
-    if(contains(opcode, DATA_PROCESSING)){
-    return setDataProcessing(nextInstruction);
-    } else if(contains(opcode, MULTIPLY)){
-    return setMultiply();
-    } else if(contains(opcode, DATA_TRANSFER)){
-    return setDataTransfer();
-    } else{
-    return setBranch();
-    }
-  */
-
+  
   return 0;
 }
 
