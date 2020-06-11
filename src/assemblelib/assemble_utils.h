@@ -35,6 +35,12 @@ typedef struct err {
 #define FATAL_SYS(pred) \
   do { if (pred) {currentStatus = EC_FROM_SYS_ERROR(errno); goto fatalError;} } while (0)
 
+typedef struct ldrAddresses {
+  Address lastAddress;
+  int length
+  Instruction *extraInstructions;
+} ldrAddresses;
+
 Instruction assemble(symbolNode *symbolTable, const char *nextInstruction);
 
 int contains(char *value, const char **array);
