@@ -7,7 +7,8 @@
 #include "../combinedlib/combined_utils.h"
 #include "tree.h"
 
-#define MAX_INSTRUCTION_LENGTH 511
+#define MAX_INSTRUCTION_SIZE 511
+#define MAX_EXPR_IN_BRACKETS 3
 
 // this is needed for tree.h
 // typedef uint32_t Address;
@@ -37,9 +38,16 @@ typedef struct err {
 
 typedef struct ldrAddresses {
   Address lastAddress;
-  int length
+  int length;
   Instruction *extraInstructions;
 } ldrAddresses;
+
+typedef enum shift_codes {
+  lsl_c, 	// 0b00
+  lsr_c,	// 0b01
+  asr_c,	// 0b10
+  ror_c		// 0b11     
+} shift_c;
 
 Instruction assemble(symbolNode *symbolTable, const char *nextInstruction);
 
