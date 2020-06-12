@@ -585,6 +585,9 @@ int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextIn
   case HALT:
     return setHalt(setInstruction);
     break;
+  case SHIFT:
+    return setSpecialInstruction(setInstruction, nextInstruction);
+    break;
   default:
     return INVALID_INSTRUCTION;
   }
