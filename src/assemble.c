@@ -27,10 +27,13 @@ int main(int argc, char **argv) {
   symbolNode *symbolTable = NULL; //creates an empty symbol table
   char **currentLine = calloc((MAX_INSTRUCTION_PARAMS + 1), sizeof(char*));
   FATAL_SYS((currentLine == NULL));
+  /*
   for(int i = 0; i < (MAX_INSTRUCTION_PARAMS + 1); i++){
     currentLine[i] = calloc((MAX_INSTRUCTION_SIZE + 1), sizeof(char));
     FATAL_SYS((currentLine[i] == NULL));
   }
+  */
+  
   ldrAddresses loadConstants = {0};
 
 
@@ -88,9 +91,10 @@ int main(int argc, char **argv) {
 
   currentStatus = loadNextInstruction(currentLine, sourceFile);
   FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
-  Instruction result = 0;
+  Instruction result;
   
   while(currentStatus != END_OF_FILE) {
+    result = 0;
     currentStatus = assemble(&result, symbolTable, currentLine);
 
     //detects if something goes wrong assembling an instruction
@@ -104,17 +108,20 @@ int main(int argc, char **argv) {
 
   //Adds offsets for immediate value ldrs to the end of the assembly code
   for (int i = 0; i < loadConstants.length; i++) {
-    writeNextInstruction(loadConstants.extraInstructions[i], destFile);
+    currentStatus = writeNextInstruction(loadConstants.extraInstructions[i], destFile);
+    FATAL_PROG(currentStatus != OK, currentStatus);
   }
 
  fatalError: //ends the program immediately
   /* Free any dynamically alocated memory */
 
+  /*
   if (currentLine != NULL) {
     for(int i = 0; i < (MAX_INSTRUCTION_PARAMS + 1); i++){
       free(currentLine[i]);
     }
   }
+  */
   free(currentLine);
   freeTable(symbolTable);
   free(extraInstructions);
@@ -122,9 +129,10 @@ int main(int argc, char **argv) {
   FATAL_SYS((fclose(sourceFile) != 0));
   FATAL_SYS((fclose(destFile) != 0));
 
-  if (currentStatus == OK) {
+  if (currentStatus == OK || currentStatus == END_OF_FILE) {
     return EXIT_SUCCESS;
   }
+  
   /* Print an error message*/
   char *errorMessage;
   if (EC_IS_SYS_ERROR(currentStatus)) {

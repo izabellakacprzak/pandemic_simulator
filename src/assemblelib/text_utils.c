@@ -20,14 +20,16 @@ static int instructionTok(char **destArray, char *line) {
     if (!destArray || !line) {
       return INVALID_INSTRUCTION;
     }
+
+    char *rest = line;
     
-    destArray[0] = strtok(line, " ");
+    destArray[0] = strtok_r(line, " ", &rest);
     
     int i = 0;
-    char *rest = NULL;
+    
     while (destArray[i]) {
       i++;
-      destArray[i] = strtok_r(rest, " ,", &rest);
+      destArray[i] = strtok_r(rest, " ,\n", &rest);
       
       if (rest[0] == '[') {
 	int j = 1;
@@ -36,7 +38,6 @@ static int instructionTok(char **destArray, char *line) {
 	}
 
 	strcpy(&rest[j], rest);
-	rest[j + 1] = '\0';
       }
     }
 
@@ -50,17 +51,15 @@ static int instructionTok(char **destArray, char *line) {
 int loadNextInstruction(char **destArray, FILE *sourceFile) {
     if (!sourceFile) {
         printf("Could not access file");
-        return SYS;
-    }
-
-    if (feof(sourceFile)) {
-        free(destArray);
-        destArray = NULL;
-        return END_OF_FILE;
+        return NULL_FILE;
     }
 
     char line[MAX_INSTRUCTION_SIZE];
     fgets(line, MAX_INSTRUCTION_SIZE, sourceFile);
+
+    if (feof(sourceFile)) {
+        return END_OF_FILE;
+    }
 
     return instructionTok(destArray, line);
 }
@@ -72,10 +71,10 @@ int writeNextInstruction(Instruction next, FILE *outputFile) {
 		| (~((1 << 24) - 1)  & next);
 	if(!outputFile){
 		printf("Could not access file");
-		return 1;
+		return NULL_FILE;
 	}
 	fwrite(&instruction, 4, 1, outputFile);
-	return 0;
+	return OK;
 }
 
 /*Takes in a line, returns:

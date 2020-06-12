@@ -9,16 +9,6 @@
 #include "assemble_utils.h"
 #include "tree.h"
 
-/*
-#define POS(x) (x - 'a')
-
-const char *DATA_PROCESSING[15] = {"and", "eor", "sub", "rsb", "add", "orr",
-				   "mov", "tst", "teq", "cmp", "lsl"};
-const char *MULTIPLY[5] = {"mul", "mla"};
-const char *DATA_TRANSFER[5] = {"str", "ldr"};
-const char *BRANCH[5] = {"b"};
-*/
-
 // set at bit to given value
 static Instruction setBits(uint32_t value, int bit, Instruction instr) {
   return instr |= (value << bit);;
@@ -176,36 +166,36 @@ static int setDataProcessing(Instruction *instruction, char **code) {
   }
   else if(!strcmp(code[0], "eor")){
 	  isWithResults = 1;
-	  *instruction = setBits(eor, 21, *instruction);
+	  *instruction = setBits(EOR, 21, *instruction);
   }
   else if(!strcmp(code[0], "sub")){
 	  isWithResults = 1;
-	  *instruction = setBits(sub, 21, *instruction);
+	  *instruction = setBits(SUB, 21, *instruction);
   }
   else if(!strcmp(code[0], "rsb")){
 	  isWithResults = 1;
-	  *instruction = setBits(rsb, 21, *instruction);
+	  *instruction = setBits(RSB, 21, *instruction);
   }
   else if(!strcmp(code[0], "add")){
 	  isWithResults = 1;
-	  *instruction = setBits(add, 21, *instruction);
+	  *instruction = setBits(ADD, 21, *instruction);
   }
   else if(!strcmp(code[0], "orr")){
 	  isWithResults = 1;
-	  *instruction = setBits(orr, 21, *instruction);
+	  *instruction = setBits(ORR, 21, *instruction);
   }
   else if(!strcmp(code[0], "mov")){
 	  isOperandAssignment = 1;
-	  *instruction = setBits(mov, 21, *instruction);
+	  *instruction = setBits(MOV, 21, *instruction);
   }
   else if(!strcmp(code[0], "tst")){
-	  *instruction = setBits(tst, 21, *instruction); 
+	  *instruction = setBits(TST, 21, *instruction); 
   }
   else if(!strcmp(code[0], "teq")){
-	  *instruction = setBits(teq, 21, *instruction);
+	  *instruction = setBits(TEQ, 21, *instruction);
   }
   else if(!strcmp(code[0], "cmp")){
-	  *instruction = setBits(cmp, 21, *instruction);
+	  *instruction = setBits(CMP, 21, *instruction);
   }
   else{
 	  return INVALID_INPUT;
@@ -611,6 +601,9 @@ char *getProgramError(errorCode e) {
 
   errors[INVALID_INSTRUCTION].code = END_OF_FILE;
   errors[INVALID_INSTRUCTION].message = "End of file";
+
+  errors[INVALID_INSTRUCTION].code = NULL_FILE;
+  errors[INVALID_INSTRUCTION].message = "File does not exist";
   
   return errors[e].message;
 }
