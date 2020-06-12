@@ -17,6 +17,7 @@ typedef enum errorCode {
   OK, 
   INVALID_INSTRUCTION,
   INVALID_SHIFT,
+  INVALID_INPUT,
   SYS
 } errorCode;
 
@@ -49,6 +50,18 @@ typedef enum shift_codes {
   ASR,	// 0b10
   ROR	// 0b11     
 } shift_c;
+
+typedef enum data_processing_codes{
+	eor = 1,
+	sub = 2,
+	rsb = 3,
+	add = 4,
+	orr = 12,
+	mov = 13,
+	tst = 8,
+	teq = 9,
+	cmp = 10
+} data_processing_c;
 
 Instruction assemble(symbolNode *symbolTable, const char *nextInstruction);
 

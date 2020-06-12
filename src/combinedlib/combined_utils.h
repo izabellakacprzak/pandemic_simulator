@@ -31,4 +31,5 @@ typedef enum condition_code{
    with bit 0 shifting into bit 31 */
 int32_t ror(uint32_t value, uint32_t shift);
 
+int32_t rol(uint32_t value, uint32_t shift);
 #endif // COMBINED_UTILS_H
