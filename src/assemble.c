@@ -11,6 +11,11 @@ assemblyInstruction getDataFromOperation(char *operation) {
   return out;
 }
 
+Instruction *makeExtraInstructionsArray(Address size) {
+  Instruction *out = calloc(size, sizeof(Instruction));
+  return out;
+}
+
 /*
   argv[1] -> input file
   argv[2] -> output file
@@ -66,7 +71,10 @@ int main(int argc, char **argv) {
 
   /*max number of elements is number of instructions assembled 
     if every instruction is an ldr with immediate value */
-  Instruction extraInstructions[500]; //breaks error handling because of variable length array clean up code
+
+  Instruction *extraInstructions = makeExtraInstructionsArray(currAddress);
+  FATAL_PROG(extraInstructions == NULL, OUT_OF_MEMORY);
+  
   loadConstants.extraInstructions = extraInstructions;
 
   currAddress = 0;
@@ -81,7 +89,11 @@ int main(int argc, char **argv) {
   Instruction result = 0;
   
   while(currentStatus != END_OF_FILE) {
-    int err = assemble(&result, symbolTable, currentLine); // TODO: error code is in err
+    currentStatus = assemble(&result, symbolTable, currentLine);
+
+    //detects if something goes wrong assembling an instruction
+    FATAL_PROG(currentStatus != OK, currentStatus);
+    
     writeNextInstruction(result, destFile);
     currentStatus = loadNextInstruction(currentLine, sourceFile);
     FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);

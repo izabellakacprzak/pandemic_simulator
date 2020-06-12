@@ -15,6 +15,7 @@ typedef enum errorCode {
   INVALID_INSTRUCTION,
   INVALID_SHIFT,
   INVALID_INPUT,
+  OUT_OF_MEMORY,
   END_OF_FILE,
   SYS
 } errorCode;
