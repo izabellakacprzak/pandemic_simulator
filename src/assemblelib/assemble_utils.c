@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
 #include "../combinedlib/combined_utils.h"
 #include "assemble_utils.h"
 #include "tree.h"
@@ -556,24 +557,8 @@ int contains(char *value, const char **array){
   return 0;
 }
 
-Instruction assemble(symbolNode *symbolTable, const char *nextInstruction) {
-  /*
-    char *opcode;
-    char *rest = nextInstruction;
-
-
-    opcode = strtok_r(rest, " ", &rest);
-    if(contains(opcode, DATA_PROCESSING)){
-    return setDataProcessing(nextInstruction);
-    } else if(contains(opcode, MULTIPLY)){
-    return setMultiply();
-    } else if(contains(opcode, DATA_TRANSFER)){
-    return setDataTransfer();
-    } else{
-    return setBranch();
-    }
-  */
-
+Instruction assemble(symbolNode *symbolTable, char **nextInstruction) {
+  
   return 0;
 }
 

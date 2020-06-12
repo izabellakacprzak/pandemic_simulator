@@ -10,14 +10,12 @@
 #define MAX_INSTRUCTION_SIZE 511
 #define MAX_EXPR_IN_BRACKETS 3
 
-// this is needed for tree.h
-// typedef uint32_t Address;
-
 typedef enum errorCode {
   OK, 
   INVALID_INSTRUCTION,
   INVALID_SHIFT,
   INVALID_INPUT,
+  END_OF_FILE,
   SYS
 } errorCode;
 
@@ -63,7 +61,7 @@ typedef enum data_processing_codes{
 	cmp = 10
 } data_processing_c;
 
-Instruction assemble(symbolNode *symbolTable, const char *nextInstruction);
+Instruction assemble(symbolNode *symbolTable, char **nextInstruction);
 
 int contains(char *value, const char **array);
 

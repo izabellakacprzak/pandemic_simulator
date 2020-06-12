@@ -5,6 +5,9 @@
 
 typedef uint32_t Instruction;
 
+// The type for label addresses
+typedef uint32_t Address;
+
 // enum representing all 4 instruction types
 // plus the all-0 - HALT instruction
 typedef enum instr_type{
@@ -27,9 +30,23 @@ typedef enum condition_code{
   al = 0xE    // 0b1110
 } ConditionCode;
 
+
+typedef enum opcode{
+	EOR = 1,
+	SUB = 2,
+	RSB = 3,
+	ADD = 4,
+	ORR = 12,
+	MOV = 13,
+	TST = 8,
+	TEQ = 9,
+	CMP = 10
+} opcode;
+
+
 /* Performs rotate right to the value by rotating cyclically 
    with bit 0 shifting into bit 31 */
 int32_t ror(uint32_t value, uint32_t shift);
-
 int32_t rol(uint32_t value, uint32_t shift);
+
 #endif // COMBINED_UTILS_H
