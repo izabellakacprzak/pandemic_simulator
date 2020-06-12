@@ -563,31 +563,31 @@ int contains(char *value, const char **array){
 }
 
 int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction) {
-	symbolNode assemblyInstr = *search(symbolTable, nextInstruction[0]);      
-	InstructionType type = assemblyInstr.data.assemblyLine.type;
-	if(assemblyInstr.isLabel){
-		return 0;
-	}
+  symbolNode assemblyInstr = *search(symbolTable, nextInstruction[0]);      
+  InstructionType type = assemblyInstr.data.assemblyLine->type;
+  if(assemblyInstr.isLabel){
+    return 0;
+  }
 
-	switch(type){
-		case BRANCH:
-			return setBranch(setInstruction, nextInstruction);
-			break;
-		case DATA_PROCESSING:
-			return setDataProcessing(setInstruction, nextInstruction);
-			break;
-		case DATA_TRANSFER:
-			return setDataTransfer(setInstruction, nextInstruction, 0);
-			break;
-		case MULTIPLY:
-			return setMultiply(setInstruction, nextInstruction);
-			break;
-		case HALT:
-			return setHalt(setInstruction);
-			break;
-		default:
-			return INVALID_INSTRUCTION;
-	}
+  switch(type){
+  case BRANCH:
+    return setBranch(setInstruction, nextInstruction);
+    break;
+  case DATA_PROCESSING:
+    return setDataProcessing(setInstruction, nextInstruction);
+    break;
+  case DATA_TRANSFER:
+    return setDataTransfer(setInstruction, nextInstruction, 0);
+    break;
+  case MULTIPLY:
+    return setMultiply(setInstruction, nextInstruction);
+    break;
+  case HALT:
+    return setHalt(setInstruction);
+    break;
+  default:
+    return INVALID_INSTRUCTION;
+  }
 }
 
 char *getProgramError(errorCode e) {
