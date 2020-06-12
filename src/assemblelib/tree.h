@@ -12,16 +12,16 @@ typedef struct assemblyInstruction {
 
 typedef union treeData {
   Address address;
-  assemblyInstruction assemblyLine;
+  assemblyInstruction *assemblyLine;
 } treeData;
 
 /* A binary tree structure used for the symbol table */
 typedef struct symNodeStruct {
   char* symbol;
-  treeData data;
-  int isLabel;
   struct symNodeStruct* left;
   struct symNodeStruct* right;
+  treeData data;
+  int isLabel;
 } symbolNode;
 
 /* Inserts a new node into the tree,
@@ -37,5 +37,7 @@ void freeTable(symbolNode *root);
 
 /* Allocates a new node and adds the symbol and address to it */
 symbolNode *createNode(char* sym, treeData data, int isLabel);
+
+assemblyInstruction getDataFromOperation(char *operation);
 
 #endif

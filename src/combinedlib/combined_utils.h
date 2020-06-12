@@ -15,7 +15,8 @@ typedef enum instr_type{
   DATA_TRANSFER,
   DATA_PROCESSING,
   MULTIPLY,
-  HALT
+  HALT,
+  SHIFT
 } InstructionType;
 
 // enum representing condition codes
@@ -32,6 +33,7 @@ typedef enum condition_code{
 
 
 typedef enum opcode{
+	AND = 0,
 	EOR = 1,
 	SUB = 2,
 	RSB = 3,

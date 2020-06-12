@@ -5,11 +5,7 @@
 #include "combinedlib/combined_utils.h"
 #include "assemblelib/assemble_utils.h"
 #include "assemblelib/text_utils.h"
-
-assemblyInstruction getDataFromOperation(char *operation) {
-  assemblyInstruction out = {0};
-  return out;
-}
+#include "assemblelib/tree.h"
 
 Instruction *makeExtraInstructionsArray(Address size) {
   Instruction *out = calloc(size, sizeof(Instruction));
@@ -54,9 +50,14 @@ int main(int argc, char **argv) {
       FATAL_PROG(1,INVALID_INSTRUCTION);
     } else {
       data.assemblyLine = getDataFromOperation(currentLine[0]);
+      FATAL_PROG(data.assemblyLine == NULL, INVALID_INSTRUCTION);
     }
-    //adds to the symbol table
+
+    //adds data to symbol table
     symbolTable = insert(symbolTable, currentLine[0], data, label);
+    //insert return the root of the tree
+    FATAL_PROG(symbolTable == NULL, OUT_OF_MEMORY); //only of node allocation fails
+    
     /* Load next instruction and increment address by 4 */
     currentStatus = loadNextInstruction(currentLine, sourceFile);
     FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
@@ -104,12 +105,8 @@ int main(int argc, char **argv) {
   for (int i = 0; i < loadConstants.length; i++) {
     writeNextInstruction(loadConstants.extraInstructions[i], destFile);
   }
-  
-  FATAL_SYS((fclose(sourceFile) != 0));
-  FATAL_SYS((fclose(destFile) != 0));
-  return EXIT_SUCCESS;
 
- fatalError:
+ fatalError: //ends the program immediately
   /* Free any dynamically alocated memory */
 
   if (currentLine != NULL) {
@@ -119,15 +116,22 @@ int main(int argc, char **argv) {
   }
   free(currentLine);
   freeTable(symbolTable);
-  /* Print an error message*/
+  free(extraInstructions);
 
+  FATAL_SYS((fclose(sourceFile) != 0));
+  FATAL_SYS((fclose(destFile) != 0));
+
+  if (currentStatus == OK) {
+    return EXIT_SUCCESS;
+  }
+  /* Print an error message*/
   char *errorMessage;
   if (EC_IS_SYS_ERROR(currentStatus)) {
     errorMessage = strerror(EC_TO_SYS_ERROR(currentStatus));
   } else {
     errorMessage = getProgramError(currentStatus);
   }
-
   printf("%s\n", errorMessage);
   return EXIT_FAILURE;
+
 }
