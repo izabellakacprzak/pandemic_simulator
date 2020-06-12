@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
   errorCode currentStatus = OK;
   char *source = argv[1], *dest = argv[2];
   FILE *sourceFile, *destFile;
+  Address currAddress = 0;
   symbolNode *symbolTable = NULL; //creates an empty symbol table
   char **currentLine = calloc((MAX_INSTRUCTION_PARAMS + 1), sizeof(char*));
   FATAL_SYS((currentLine == NULL));
@@ -31,7 +32,7 @@ int main(int argc, char **argv) {
     FATAL_SYS((currentLine[i] == NULL));
   }
   ldrAddresses loadConstants = {0};
-  Address currAddress = 0;
+
 
   /* First pass -> creating the symbol table */
   sourceFile = fopen(source, "r");
@@ -131,7 +132,7 @@ int main(int argc, char **argv) {
   } else {
     errorMessage = getProgramError(currentStatus);
   }
-  printf("%s\n", errorMessage);
+  printf("%s on line %d\n", errorMessage, currAddress / 4);
   return EXIT_FAILURE;
 
 }

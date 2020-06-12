@@ -571,7 +571,20 @@ char *getProgramError(errorCode e) {
   errorType errors[SYS + 1];
   errors[INVALID_INSTRUCTION].code = INVALID_INSTRUCTION;
   errors[INVALID_INSTRUCTION].message = "Invalid instruction";
-  //if we have more program error types add them above
+  
+  errors[INVALID_INSTRUCTION].code = INVALID_SHIFT;
+  //Is there a better error message?  
+  errors[INVALID_INSTRUCTION].message = "Invalid shift";
+  
+  errors[INVALID_INSTRUCTION].code = INVALID_INPUT;
+  errors[INVALID_INSTRUCTION].message = "Invalid input";
+  
+  errors[INVALID_INSTRUCTION].code = OUT_OF_MEMORY;
+  errors[INVALID_INSTRUCTION].message = "Not enough memory to store current instruction";
+
+  errors[INVALID_INSTRUCTION].code = END_OF_FILE;
+  errors[INVALID_INSTRUCTION].message = "End of file";
+  
   return errors[e].message;
 }
 
