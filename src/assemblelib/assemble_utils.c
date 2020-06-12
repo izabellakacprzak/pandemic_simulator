@@ -562,13 +562,13 @@ int contains(char *value, const char **array){
   return 0;
 }
 
-Instruction assemble(symbolNode *symbolTable, char **nextInstruction) {
+int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction) {
   
   return 0;
 }
 
 char *getProgramError(errorCode e) {
-  errorType errors[2];
+  errorType errors[SYS + 1];
   errors[INVALID_INSTRUCTION].code = INVALID_INSTRUCTION;
   errors[INVALID_INSTRUCTION].message = "Invalid instruction";
   //if we have more program error types add them above

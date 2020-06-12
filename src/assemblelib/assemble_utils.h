@@ -61,7 +61,7 @@ typedef enum data_processing_codes{
 	cmp = 10
 } data_processing_c;
 
-Instruction assemble(symbolNode *symbolTable, char **nextInstruction);
+int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction);
 
 int contains(char *value, const char **array);
 

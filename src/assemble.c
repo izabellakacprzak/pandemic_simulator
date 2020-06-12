@@ -79,8 +79,9 @@ int main(int argc, char **argv) {
   currentStatus = loadNextInstruction(currentLine, sourceFile);
   FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
   Instruction result = 0;
+  
   while(currentStatus != END_OF_FILE) {
-    result = assemble(symbolTable, currentLine);
+    int err = assemble(&result, symbolTable, currentLine); // TODO: error code is in err
     writeNextInstruction(result, destFile);
     currentStatus = loadNextInstruction(currentLine, sourceFile);
     FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
