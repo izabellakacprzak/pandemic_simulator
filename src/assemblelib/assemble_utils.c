@@ -18,16 +18,15 @@ const char *DATA_TRANSFER[5] = {"str", "ldr"};
 const char *BRANCH[5] = {"b"};
 */
 
-// set from bit to given value? not sure if a good idea to refactor like that
-//however it would be more versatile
+// set at bit to given value
 static Instruction setBits(uint32_t value, int bit, Instruction instr) {
   return instr |= (value << bit);;
 }
 
 
-int calculateOperand(Instruction *instruction, char **code, int opIndex){
+static int calculateOperand(Instruction *instruction, char **code, int opIndex){
 	int operand;
-	// is operand is an immediate value
+	// if operand is an immediate value
 	if(code[opIndex][0] == '#'){
 		// set the I flag
 		*instruction = setBits(1, 25, *instruction);
@@ -35,31 +34,42 @@ int calculateOperand(Instruction *instruction, char **code, int opIndex){
 		operand = strtol(strtok(code[opIndex], "#"), NULL, 0);
 		
 		int rotations = 0;
-		while((operand >> 8) != 0){
+		while(rotations <= 32 && (operand >> 8) != 0){
 			rotations++;
-			operand = (operand >> 1) | (operand << 31);
+			operand = rol(operand, 2);
 		}
-		// not sure if this is correct
-		*instruction = setBits(rotations/2, 8, *instruction);
+
+		// can not represent constant
+		// either because it is too wide
+		// or because the number of rotations required is odd
+		if(rotations == 32){
+			return INVALID_INPUT;
+		}
+		*instruction = setBits(rotations, 8, *instruction);
 		*instruction = setBits(operand, 0, *instruction);
 	}
 	// if operand is a shifter register
 	else{
+		if(code[opIndex][0] != 'r'){
+			return INVALID_INPUT;
+		}
 		int rm = atoi(strtok(code[opIndex], "r"));
 		// set bits 3 - 0 to the Rm register
 		*instruction = setBits(rm, 0, *instruction);
 
+		char *shiftValue  = NULL;
+		char *shiftType = strtok_r(code[opIndex + 1], " ", &shiftValue);
 		// set the shift type bits (6 - 5)
-		if(!strcmp(code[opIndex + 1], "lsl")){
+		if(!strcmp(shiftType, "lsl")){
 			// the code is 00 so do nothing
 		}
-		else if(!strcmp(code[opIndex + 1], "lsr")){
+		else if(!strcmp(shiftType, "lsr")){
 			*instruction = setBits(1, 5, *instruction);
 		}
-		else if(!strcmp(code[opIndex + 1], "asr")){
+		else if(!strcmp(shiftType, "asr")){
 			*instruction = setBits(2, 5, *instruction);
 		}
-		else if(!strcmp(code[opIndex + 1], "ror")){
+		else if(!strcmp(shiftType, "ror")){
 			*instruction = setBits(3, 5, *instruction);
 		}
 		else{
@@ -68,17 +78,22 @@ int calculateOperand(Instruction *instruction, char **code, int opIndex){
 		}
 
 		// shiftin by a constant
-		if(code[opIndex + 2][0] == '#'){
+		if(shiftValue[0] == '#'){
 			// bit 4 is 0
 			// set bits 11 - 7 to the constant value by which we shift
-			*instruction = setBits(strtol(strtok(code[opIndex + 2], "#"), NULL, 0), 7, *instruction);
+			*instruction = setBits(strtol(strtok(shiftValue, "#"), NULL, 0), 7, *instruction);
 		}
 		// shifting by a register
-		else{
+		else if(shiftValue[0] == 'r'){
 			// bit 4 is 1
 			*instruction = setBits(1, 4, *instruction);
 			// set bits 11 - 7 to the register
-			*instruction = setBits(atoi(strtok(code[opIndex + 2], "r")), 7, *instruction);
+			*instruction = setBits(atoi(strtok(shiftValue, "r")), 7, *instruction);
+		}
+		// the amount by which to shift
+		// is neither a constant nor a register - invalid
+		else{
+			return INVALID_INPUT;
 		}
 	}
 
@@ -87,7 +102,7 @@ int calculateOperand(Instruction *instruction, char **code, int opIndex){
 
 // sets bits for instructions that
 // compute results: and, eor, sub, rsb, add, orr
-int withResults(Instruction *instruction, char **code){
+static int withResults(Instruction *instruction, char **code){
 	int rd = atoi(strtok(code[1], "r"));
 	int rn = atoi(strtok(code[2], "r"));
 
@@ -102,7 +117,10 @@ int withResults(Instruction *instruction, char **code){
 
 // sets bits for instructions that
 // do single operand assignment: mov
-int operandAssignment(Instruction *instruction, char **code){
+static int operandAssignment(Instruction *instruction, char **code){
+	if(code[1][0] != 'r'){
+		return INVALID_INPUT;
+	}
 	int rd = atoi(strtok(code[1], "r"));
 	
 	// sets the operand field
@@ -117,7 +135,10 @@ int operandAssignment(Instruction *instruction, char **code){
 // sets bits for instructions that
 // do not compute results but
 // set the CPSR flags: tst, teq, cmp
-int noResults(Instruction *instruction, char **code){
+static int noResults(Instruction *instruction, char **code){
+	if(code[1][0] != 'r'){
+		return INVALID_INPUT;
+	}
 	int rn = atoi(strtok(code[1], "r"));
 	
 	// sets the operand field
@@ -179,6 +200,9 @@ static int setDataProcessing(Instruction *instruction, char **code) {
   else if(!strcmp(code[0], "cmp")){
 	  *instruction = setBits(cmp, 21, *instruction);
   }
+  else{
+	  return INVALID_INPUT;
+  }
 
   if(isWithResults){
 	  output = withResults(instruction, code);
@@ -193,7 +217,7 @@ static int setDataProcessing(Instruction *instruction, char **code) {
   return output;
 }
 
-int setRegistersMultiply(Instruction *instruction, char **code){
+static int setRegistersMultiply(Instruction *instruction, char **code){
 	// if invalid input (no register)
 	// output INVALID_INPUT error
 	if(code[1][0] != 'r' || code[2][0] != 'r' || code[3][0] != 'r')
@@ -531,9 +555,15 @@ static Instruction setBranch(char **code) {
   else if(!strcmp(code[0], "ble")){
 	  instruction = instruction | (13 << 28);
   }
-  else{
+  else if(!strcmp(code[0], "bal") || !strcmp(code[0], "b")){
 	  instruction = instruction | (14 << 28);
   }
+  else{
+	  return INVALID_INPUT;
+  }
+
+  // if offset is a constant then set address to it
+  // if it is a label then find the corresponding address
 
   /*
   int address = find(dict, code[1]);
@@ -551,8 +581,17 @@ static Instruction setBranch(char **code) {
   return instruction;
 }
 
-static Instruction setHalt() {
-  return 0;
+static int setHalt(Instruction *instruction, char **code) {
+	instruction = 0;
+	return 0;
+}
+
+static int setSpecialInstruction(Instruction *instruction, char **code){
+	code[0] = "mov";
+	*code[4] = *code[2];
+	*code[2] = *code[1];
+	code[3] = "lsl";
+	return setDataProcessing(instruction, code);
 }
 
 int contains(char *value, const char **array){
