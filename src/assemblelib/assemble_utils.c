@@ -26,12 +26,17 @@ static Instruction setBits(uint32_t value, int bit, Instruction instr) {
 
 static int calculateOperand(Instruction *instruction, char **code, int opIndex){
 	int operand;
+
+	if(code == NULL){
+		return INVALID_INPUT;
+	}
+
 	// if operand is an immediate value
 	if(code[opIndex][0] == '#'){
 		// set the I flag
 		*instruction = setBits(1, 25, *instruction);
 
-		operand = strtol(strtok(code[opIndex], "#"), NULL, 0);
+		operand = strtol(strtok(code[opIndex], "#-+"), NULL, 0);
 		
 		int rotations = 0;
 		while(rotations <= 32 && (operand >> 8) != 0){
