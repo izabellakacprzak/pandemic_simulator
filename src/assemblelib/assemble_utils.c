@@ -491,32 +491,32 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
   return err;
 }
 
-static Instruction setBranch(char **code) {
+static int setBranch(Instruction *instruction, char **code) {
 
-  Instruction  instruction = 0;
+  *instruction = 0;
 
   // set the 101 at bits 27 - 25
-  instruction = setBits(0x5, 25, instruction);
+  *instruction = setBits(0x5, 25, *instruction);
 
 
   // set condition code
   if(!strcmp(code[0], "bne")){
-	  instruction = instruction | (1 << 28);
+	  *instruction = setBits(1, 28, *instruction);
   }
   else if(!strcmp(code[0], "bge")){
-	  instruction = instruction | (10 << 28);
+	  *instruction = setBits(10, 28, *instruction);
   }
   else if(!strcmp(code[0], "blt")){
-	  instruction = instruction | (11 << 28);
+	  *instruction = setBits(11, 28, *instruction);
   }
   else if(!strcmp(code[0], "bgt")){
-	  instruction = instruction | (12 << 28);
+	  *instruction = setBits(12, 28, *instruction);
   }
   else if(!strcmp(code[0], "ble")){
-	  instruction = instruction | (13 << 28);
+	  *instruction = setBits(13, 28, *instruction);
   }
   else if(!strcmp(code[0], "bal") || !strcmp(code[0], "b")){
-	  instruction = instruction | (14 << 28);
+	  *instruction = setBits(14, 28, *instruction);
   }
   else{
 	  return INVALID_INPUT;
@@ -538,10 +538,10 @@ static Instruction setBranch(char **code) {
   */
 
 
-  return instruction;
+  return 0;
 }
 
-static int setHalt(Instruction *instruction, char **code) {
+static int setHalt(Instruction *instruction) {
 	instruction = 0;
 	return 0;
 }
@@ -563,8 +563,31 @@ int contains(char *value, const char **array){
 }
 
 int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction) {
-  
-  return 0;
+	symbolNode assemblyInstr = *search(symbolTable, nextInstruction[0]);      
+	InstructionType type = assemblyInstr.data.assemblyLine.type;
+	if(assemblyInstr.isLabel){
+		return 0;
+	}
+
+	switch(type){
+		case BRANCH:
+			return setBranch(setInstruction, nextInstruction);
+			break;
+		case DATA_PROCESSING:
+			return setDataProcessing(setInstruction, nextInstruction);
+			break;
+		case DATA_TRANSFER:
+			return setDataTransfer(setInstruction, nextInstruction, 0);
+			break;
+		case MULTIPLY:
+			return setMultiply(setInstruction, nextInstruction);
+			break;
+		case HALT:
+			return setHalt(setInstruction);
+			break;
+		default:
+			return INVALID_INSTRUCTION;
+	}
 }
 
 char *getProgramError(errorCode e) {
