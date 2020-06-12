@@ -63,8 +63,9 @@ static int calculateOperand(Instruction *instruction, char **code, int opIndex){
     // set bits 3 - 0 to the Rm register
     *instruction = setBits(rm, 0, *instruction);
 
-    char *shiftValue  = NULL;
-    char *shiftType = strtok_r(code[opIndex + 1], " ", &shiftValue);
+    char *shiftType = code[opIndex + 1];
+    char *shiftValue  = code[opIndex + 2];
+    
     // set the shift type bits (6 - 5)
     if(!strcmp(shiftType, "lsl")){
       // the code is 00 so do nothing
@@ -275,7 +276,7 @@ static int removeBrackets(char **destTok, char *expression) {
     return 0;
   }
 
-  char *delims = ",]";
+  char *delims = "[,]";
   char *token = strtok(expression, delims);
 
   int i = 0;
