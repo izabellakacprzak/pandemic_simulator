@@ -13,51 +13,33 @@
 //  > destArray may not be the same size as before,
 //      now is char destArray[MAX_INSTRUCTION_PARAMS][MAX_INSTRUCTION_SIZE]
 //  > destArray should be on the heap
-static int instructionTok(char **destArray, const char *line) {
+//  > destArray is NULL terminated
+static int instructionTok(char **destArray, char *line) {
     assert(strlen(line) <= MAX_INSTRUCTION_SIZE);
+
+    if (!destArray || !line) {
+      return INVALID_INSTRUCTION;
+    }
+    
+    destArray[0] = strtok(line, " ");
     
     int i = 0;
-    while (line[i] != ' ' && line[i] != ':' && line[i] != '\0') {
-        i++;
+    char *rest = NULL;
+    while (destArray[i]) {
+      i++;
+      destArray[i] = strtok_r(rest, " ,", &rest);
+      
+      if (rest[0] == '[') {
+	int j = 1;
+	while (rest[j] != ']') {
+	  j++;
+	}
+
+	strcpy(&rest[j], rest);
+	rest[j + 1] = '\0';
+      }
     }
 
-    if (line[i] == '\0') {
-        return INVALID_INSTRUCTION;
-    }
-
-    // new function label case
-    if (line[i] == ':') {
-        strcpy(destArray[0], line);
-        return OK;
-    }
-
-    strcpy(destArray[0], line);
-
-    int start = i + 1;   // current start place in line
-    i = 0;
-    int j = 1;           // argument number (destArray[j][])
-    while (line[i] != '\0') {
-      printf("%d\n", i);
-        if (line[i] == ',') {
-	  strcpy(destArray[j], line + start);
-            start += i + 1;
-            i = 0;
-            j++;
-
-        } else if (line[i] == '[') {
-            while (line[i] != ']') {
-                i++;
-            }
-        }
-
-        i++;
-    }
-
-
-    if (j > MAX_INSTRUCTION_PARAMS) {
-        return INVALID_INSTRUCTION;
-    }
-    strcpy(destArray[j], line + start);
     return OK;
 }
 
