@@ -53,6 +53,11 @@ static int calculateOperand(Instruction *instruction, char **code, int opIndex){
     // set bits 3 - 0 to the Rm register
     *instruction = setBits(rm, 0, *instruction);
 
+    if (!code[opIndex + 1]) {
+      //argument 3 is a register with no shift
+      return OK;
+    }
+    
     char *shiftType = code[opIndex + 1];
     char *shiftValue  = code[opIndex + 2];
     

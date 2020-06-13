@@ -112,6 +112,9 @@ int main(int argc, char **argv) {
     FATAL_PROG(currentStatus != OK, currentStatus);
   }
 
+  FATAL_SYS((fclose(sourceFile) != 0));
+  FATAL_SYS((fclose(destFile) != 0));
+
  fatalError: //ends the program immediately
   /* Free any dynamically alocated memory */
 
@@ -125,9 +128,6 @@ int main(int argc, char **argv) {
   free(currentLine);
   freeTable(symbolTable);
   free(extraInstructions);
-
-  FATAL_SYS((fclose(sourceFile) != 0));
-  FATAL_SYS((fclose(destFile) != 0));
 
   if (currentStatus == OK || currentStatus == END_OF_FILE) {
     return EXIT_SUCCESS;
