@@ -523,11 +523,34 @@ static int setHalt(Instruction *instruction) {
 }
 
 static int setSpecialInstruction(Instruction *instruction, char **code, symbolNode *operationNode){
-	code[0] = "mov";
-	*code[4] = *code[2];
-	*code[2] = *code[1];
-	code[3] = "lsl";
-	return setDataProcessing(instruction, code, operationNode);
+  int err;
+  char **newCode = calloc(MAX_INSTRUCTION_PARAMS, sizeof(char*));
+
+  /*
+  for (int i = 0; i < MAX_INSTRUCTION_PARAMS; i+= 3) {
+    newCode[i] = malloc(MAX_INSTRUCTION_SIZE * sizeof(char*));
+    if (!newCode[i]) {
+      //free successfully assigned memory
+      for (int j = 0; j < i; j++) {
+	free(newCode[j]);
+      }
+      free(newCode);
+      return OUT_OF_MEMORY;
+    }
+  }
+  */
+  
+  newCode[0] = strdup("mov");
+  newCode[4] = code[2];
+  newCode[2] = code[1];
+  newCode[1] = code[1];
+  newCode[3] = code[0];
+  err = setDataProcessing(instruction, newCode, operationNode);
+
+
+  free(newCode[0]);
+  free(newCode);
+  return err;
 }
 
 int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction, ldrAddresses *ldrAddresses) {

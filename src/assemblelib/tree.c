@@ -140,6 +140,7 @@ assemblyInstruction *getDataFromOperation(char *operation) {
   } else if (strcmp(operation, "lsl") == 0) {
     out->conditionCode = al;
     out->type = SHIFT;
+    out->code = MOV;
   } else if (strcmp(operation, "andeq") == 0) {
     out->conditionCode = eq;
     out->type = HALT;

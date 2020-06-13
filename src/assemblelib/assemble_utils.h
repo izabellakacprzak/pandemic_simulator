@@ -9,6 +9,7 @@
 
 #define MAX_INSTRUCTION_SIZE 511
 #define MAX_EXPR_IN_BRACKETS 3
+#define MAX_INSTRUCTION_PARAMS 5
 
 typedef enum errorCode {
   OK,
