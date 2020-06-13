@@ -42,7 +42,11 @@ typedef enum opcode{
 	MOV = 13,
 	TST = 8,
 	TEQ = 9,
-	CMP = 10
+	CMP = 10,
+	MUL = 15,
+	MLA = 16,
+	STR = 17,
+	LDR = 18
 } opcode;
 
 
