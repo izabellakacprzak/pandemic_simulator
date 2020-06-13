@@ -61,7 +61,13 @@ int loadNextInstruction(char **destArray, FILE *sourceFile) {
         return END_OF_FILE;
     }
 
-    return instructionTok(destArray, line);
+    int err = instructionTok(destArray, line);
+
+    if (!destArray[0]) {
+      err = WHITESPACE_LINE;
+    }
+
+    return err;
 }
 
 int writeNextInstruction(Instruction next, FILE *outputFile) {

@@ -41,30 +41,35 @@ int main(int argc, char **argv) {
   sourceFile = fopen(source, "r");
   FATAL_SYS((sourceFile == NULL)); //file loading failed
   currentStatus = loadNextInstruction(currentLine, sourceFile);
-  FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
+  FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE
+		&& currentStatus != WHITESPACE_LINE), currentStatus);
+  
   int label;
   treeData data;
   while(currentStatus != END_OF_FILE) {
-    /* Check if the first token is a label */
-    label = isLabel(currentLine);
-    if(label == 1) {
-      data.address = currAddress; 
-    } else if(label == -1) {
-      /* An invalid instruction is detected */
-      FATAL_PROG(1,INVALID_INSTRUCTION);
-    } else {
-      data.assemblyLine = getDataFromOperation(currentLine[0]);
-      FATAL_PROG(data.assemblyLine == NULL, INVALID_INSTRUCTION);
-    }
+    if (currentStatus != WHITESPACE_LINE) {
+      /* Check if the first token is a label */
+      label = isLabel(currentLine);
+      if(label == 1) {
+	data.address = currAddress; 
+      } else if(label == -1) {
+	/* An invalid instruction is detected */
+	FATAL_PROG(1,INVALID_INSTRUCTION);
+      } else {
+	data.assemblyLine = getDataFromOperation(currentLine[0]);
+	FATAL_PROG(data.assemblyLine == NULL, INVALID_INSTRUCTION);
+      }
 
-    //adds data to symbol table
-    symbolTable = insert(symbolTable, currentLine[0], data, label);
-    //insert return the root of the tree
-    FATAL_PROG(symbolTable == NULL, OUT_OF_MEMORY); //only of node allocation fails
+      //adds data to symbol table
+      symbolTable = insert(symbolTable, currentLine[0], data, label);
+      //insert return the root of the tree
+      FATAL_PROG(symbolTable == NULL, OUT_OF_MEMORY); //only of node allocation fails
+    }
     
     /* Load next instruction and increment address by 4 */
     currentStatus = loadNextInstruction(currentLine, sourceFile);
-    FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
+    FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE
+		&& currentStatus != WHITESPACE_LINE), currentStatus);
     if (!label) {
       currAddress = currAddress + 4;
     }
@@ -93,25 +98,30 @@ int main(int argc, char **argv) {
   FATAL_SYS((destFile == NULL));
 
   currentStatus = loadNextInstruction(currentLine, sourceFile);
-  FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
+  FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE
+	      && currentStatus != WHITESPACE_LINE), currentStatus);
   Instruction result;
   
   while(currentStatus != END_OF_FILE) {
     result = 0;
-    currentStatus = assemble(&result, symbolTable, currentLine, &loadConstants);
-
-    if (currentStatus != NOT_INSTRUCTION) {
-      currAddress += 4;
-
-      //detects if something goes wrong assembling an instruction
-      FATAL_PROG(currentStatus != OK, currentStatus);
     
-      currentStatus = writeNextInstruction(result, destFile);
-      FATAL_PROG(currentStatus != OK, currentStatus);
+    if (currentStatus != WHITESPACE_LINE) {
+      currentStatus = assemble(&result, symbolTable, currentLine, &loadConstants);
+
+      if (currentStatus != NOT_INSTRUCTION) {
+	currAddress += 4;
+
+	//detects if something goes wrong assembling an instruction
+	FATAL_PROG(currentStatus != OK, currentStatus);
+    
+	currentStatus = writeNextInstruction(result, destFile);
+	FATAL_PROG(currentStatus != OK, currentStatus);
+      }
     }
     
     currentStatus = loadNextInstruction(currentLine, sourceFile);
-    FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
+    FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE
+		&& currentStatus != WHITESPACE_LINE), currentStatus);
   }
 
   //Adds offsets for immediate value ldrs to the end of the assembly code

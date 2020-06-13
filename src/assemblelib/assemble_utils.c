@@ -560,6 +560,9 @@ char *getProgramError(errorCode e) {
 
   errors[NOT_INSTRUCTION].code = NOT_INSTRUCTION;
   errors[NOT_INSTRUCTION].message = "Is a label, not an instruction";
+
+  errors[WHITESPACE_LINE].code = WHITESPACE_LINE;
+  errors[WHITESPACE_LINE].message = "Is a whitespace line";
   
   errors[OUT_OF_MEMORY].code = OUT_OF_MEMORY;
   errors[OUT_OF_MEMORY].message = "Not enough memory to store current instruction";
