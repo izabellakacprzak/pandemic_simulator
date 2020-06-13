@@ -304,7 +304,7 @@ static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instru
   ldrAddresses->extraInstructions[ldrAddresses->length] = expression;
   ldrAddresses->length++;
   // TODO: get current location
-  Address currentAddress = 0;
+  Address currentAddress = *(ldrAddresses->currAddress);
   int32_t offset = (ldrAddresses->lastAddress + (ldrAddresses->length * 4)) - (currentAddress + 8);
 
   char *offsetC = calloc(7, sizeof(char));
@@ -558,7 +558,7 @@ int contains(char *value, const char **array){
   return 0;
 }
 
-int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction) {
+int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction, ldrAddresses *ldrAddresses) {
   symbolNode assemblyInstr = *search(symbolTable, nextInstruction[0]);      
   InstructionType type = assemblyInstr.data.assemblyLine->type;
   if(assemblyInstr.isLabel){
@@ -573,7 +573,7 @@ int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextIn
     return setDataProcessing(setInstruction, nextInstruction);
     break;
   case DATA_TRANSFER:
-    return setDataTransfer(setInstruction, nextInstruction, 0);
+    return setDataTransfer(setInstruction, nextInstruction, ldrAddresses);
     break;
   case MULTIPLY:
     return setMultiply(setInstruction, nextInstruction);

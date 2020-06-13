@@ -65,7 +65,9 @@ int main(int argc, char **argv) {
     /* Load next instruction and increment address by 4 */
     currentStatus = loadNextInstruction(currentLine, sourceFile);
     FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
-    currAddress = currAddress + 4;
+    if (!label) {
+      currAddress = currAddress + 4;
+    }
   }
 
   currentStatus = OK;
@@ -73,6 +75,7 @@ int main(int argc, char **argv) {
 
   /* Second pass -> generate encoded instructions */
   loadConstants.lastAddress = currAddress; //largest address
+  loadConstants.currAddress = &currAddress;
 
   /*max number of elements is number of instructions assembled 
     if every instruction is an ldr with immediate value */
@@ -95,7 +98,7 @@ int main(int argc, char **argv) {
   
   while(currentStatus != END_OF_FILE) {
     result = 0;
-    currentStatus = assemble(&result, symbolTable, currentLine);
+    currentStatus = assemble(&result, symbolTable, currentLine, &loadConstants);
 
     //detects if something goes wrong assembling an instruction
     FATAL_PROG(currentStatus != OK, currentStatus);

@@ -40,6 +40,7 @@ typedef struct err {
 
 typedef struct ldrAddresses {
   Address lastAddress;
+  Address *currAddress;
   int length;
   Instruction *extraInstructions;
 } ldrAddresses;
@@ -51,7 +52,7 @@ typedef enum shift_codes {
   ROR	// 0b11     
 } shift_c;
 
-int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction);
+int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction, ldrAddresses *ldrAddresses);
 
 int contains(char *value, const char **array);
 
