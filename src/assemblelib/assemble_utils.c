@@ -485,6 +485,7 @@ static int setBranch(Instruction *instruction, char **code, ldrAddresses *ldrAdd
   // set condition code
   *instruction = setBits(operationNode->data.assemblyLine->conditionCode, 28, *instruction);
 
+  strcat(code[1], ":");
   symbolNode *assemblyOffset = search(symbolTable, code[1]);
   // if offset is a constant then set address to it
   // if it is a label then find the corresponding address
@@ -499,14 +500,18 @@ static int setBranch(Instruction *instruction, char **code, ldrAddresses *ldrAdd
      Address currentAddress = *(ldrAddresses->currAddress);
      offset = (assemblyOffset->data.address) - (currentAddress + 8);
   }
-
+  
   if (offset > 0x1FFFFFF || offset < -0x1FFFFFF) {
     // offset is more than 26 bits
     return INVALID_INSTRUCTION;
   }
-
-  offset >>= 2;
   
+  //*instruction = setBits((offset & (1 << 31)) >> 31, 24, *instruction);
+  
+  offset >>= 2;
+
+  offset = offset & ((1 << 24) - 1);
+
   *instruction = setBits(offset, 0, *instruction);
 
   return OK;
