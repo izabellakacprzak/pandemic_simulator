@@ -392,7 +392,7 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
 	     arg2[0] is address register (Rn)
 	     arg2[1] is immediate offset */
 	
-      case 3:
+      case 4:
 	/* Optional:
 	     arg2[0] is register address (Rn)
 	     arg2[1] is offset register with sign ({+/-}Rm) (unset U bit (23) if negative)
