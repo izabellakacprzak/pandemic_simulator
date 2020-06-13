@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
   errorCode currentStatus = OK;
   char *source = argv[1], *dest = argv[2];
-  FILE *sourceFile, *destFile;
+  FILE *sourceFile, *destFile = NULL;
   Address currAddress = 0;
   symbolNode *symbolTable = NULL; //creates an empty symbol table
   char **currentLine = calloc((MAX_INSTRUCTION_PARAMS + 1), sizeof(char*));
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     FATAL_SYS((currentLine[i] == NULL));
   }
   */
-  
+
   ldrAddresses loadConstants = {0};
 
 
@@ -41,21 +41,34 @@ int main(int argc, char **argv) {
   sourceFile = fopen(source, "r");
   FATAL_SYS((sourceFile == NULL)); //file loading failed
   currentStatus = loadNextInstruction(currentLine, sourceFile);
+  
   FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
   int label;
   treeData data;
+
+  printf("Opened source file\n");
+
+
   while(currentStatus != END_OF_FILE) {
-    /* Check if the first token is a label */
+    
+
+	  printf("%s\n", *currentLine);
+      	  /* Check if the first token is a label */
     label = isLabel(currentLine);
     if(label == 1) {
-      data.address = currAddress; 
+	    printf("3\n");
+      	    data.address = currAddress; 
     } else if(label == -1) {
+	    printf("4\n");
       /* An invalid instruction is detected */
       FATAL_PROG(1,INVALID_INSTRUCTION);
     } else {
       data.assemblyLine = getDataFromOperation(currentLine[0]);
+      printf("hello\n");
       FATAL_PROG(data.assemblyLine == NULL, INVALID_INSTRUCTION);
     }
+
+    printf("hej\n");
 
     //adds data to symbol table
     symbolTable = insert(symbolTable, currentLine[0], data, label);
@@ -67,6 +80,10 @@ int main(int argc, char **argv) {
     FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
     currAddress = currAddress + 4;
   }
+
+
+  printf("Initialized label tree\n");
+
 
   currentStatus = OK;
   FATAL_SYS((fclose(sourceFile) != 0));
@@ -93,6 +110,9 @@ int main(int argc, char **argv) {
   FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
   Instruction result;
   
+
+  printf("About to start assemble\n");
+
   while(currentStatus != END_OF_FILE) {
     result = 0;
     currentStatus = assemble(&result, symbolTable, currentLine);
@@ -112,6 +132,9 @@ int main(int argc, char **argv) {
     FATAL_PROG(currentStatus != OK, currentStatus);
   }
 
+  FATAL_SYS((fclose(sourceFile) != 0));
+  FATAL_SYS((fclose(destFile) != 0));
+
  fatalError: //ends the program immediately
   /* Free any dynamically alocated memory */
 
@@ -122,14 +145,15 @@ int main(int argc, char **argv) {
     }
   }
   */
+
+  printf("free1\n");
   free(currentLine);
+  printf("free2\n");
   freeTable(symbolTable);
+  printf("free3\n");
   free(extraInstructions);
 
-  FATAL_SYS((fclose(sourceFile) != 0));
-  FATAL_SYS((fclose(destFile) != 0));
-
-  if (currentStatus == OK || currentStatus == END_OF_FILE) {
+    if (currentStatus == OK || currentStatus == END_OF_FILE) {
     return EXIT_SUCCESS;
   }
   
