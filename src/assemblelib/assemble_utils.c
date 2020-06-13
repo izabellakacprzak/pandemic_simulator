@@ -163,48 +163,32 @@ static int setDataProcessing(Instruction *instruction, char **code, symbolNode *
 
   int output = 0;
 
+  symbolNode *operationNode = search(symbolTable, code[0]);
+
   // setting the opcode bits
   //if instruction is supposed to be tst, teq or cmp - set S - bit 20
   // otherwise it is clear (cleared upon initialisation)
-  if(!strcmp(code[0], "and")){
-	  isWithResults = 1;
+
+  switch (operationNode->data.assemblyLine->code) {
+  case AND:
+  case EOR:
+  case SUB:
+  case RSB:
+  case ADD:
+    isWithResults = 1; //arithmetic operations
+    break;
+  case MOV:
+    isOperandAssignment = 1; //TODO, what is this for?
+    break;
+  case TST:
+  case TEQ:
+  case CMP:
+    break;
+  default:
+    return INVALID_INPUT;
   }
-  else if(!strcmp(code[0], "eor")){
-	  isWithResults = 1;
-	  *instruction = setBits(EOR, 21, *instruction);
-  }
-  else if(!strcmp(code[0], "sub")){
-	  isWithResults = 1;
-	  *instruction = setBits(SUB, 21, *instruction);
-  }
-  else if(!strcmp(code[0], "rsb")){
-	  isWithResults = 1;
-	  *instruction = setBits(RSB, 21, *instruction);
-  }
-  else if(!strcmp(code[0], "add")){
-	  isWithResults = 1;
-	  *instruction = setBits(ADD, 21, *instruction);
-  }
-  else if(!strcmp(code[0], "orr")){
-	  isWithResults = 1;
-	  *instruction = setBits(ORR, 21, *instruction);
-  }
-  else if(!strcmp(code[0], "mov")){
-	  isOperandAssignment = 1;
-	  *instruction = setBits(MOV, 21, *instruction);
-  }
-  else if(!strcmp(code[0], "tst")){
-	  *instruction = setBits(TST, 21, *instruction); 
-  }
-  else if(!strcmp(code[0], "teq")){
-	  *instruction = setBits(TEQ, 21, *instruction);
-  }
-  else if(!strcmp(code[0], "cmp")){
-	  *instruction = setBits(CMP, 21, *instruction);
-  }
-  else{
-	  return INVALID_INPUT;
-  }
+
+  *instruction = setBits(operationNode->data.assemblyLine->code, 21, *instruction);
 
   if(isWithResults){
 	  output = withResults(instruction, code);
@@ -556,7 +540,7 @@ int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextIn
   if(assemblyInstr.isLabel){
     return NOT_INSTRUCTION;
   }
-  
+  assemblyInstruction *currentInstructionData = assemblyInstr.data.assemblyLine;
   InstructionType type = assemblyInstr.data.assemblyLine->type;
 
   switch(type){
