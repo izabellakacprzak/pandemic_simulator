@@ -38,11 +38,15 @@ typedef enum opcode{
 	SUB = 2,
 	RSB = 3,
 	ADD = 4,
-	ORR = 12,
-	MOV = 13,
 	TST = 8,
 	TEQ = 9,
-	CMP = 10
+	CMP = 10,
+	ORR = 12,
+	MOV = 13,
+	MUL = 15,
+	MLA = 16,
+	STR = 17,
+	LDR = 18
 } opcode;
 
 

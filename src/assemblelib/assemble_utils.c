@@ -158,8 +158,6 @@ static int setDataProcessing(Instruction *instruction, char **code, symbolNode *
 
   //sets condition code
   *instruction = setBits(al, 28, *instruction);
-  int isWithResults = 0;
-  int isOperandAssignment = 0;
 
   int output = 0;
 
@@ -175,30 +173,21 @@ static int setDataProcessing(Instruction *instruction, char **code, symbolNode *
   case SUB:
   case RSB:
   case ADD:
-    isWithResults = 1; //arithmetic operations
+    output = withResults(instruction, code); //arithmetic operations
     break;
   case MOV:
-    isOperandAssignment = 1; //TODO, what is this for?
+    output = operandAssignment(instruction, code);
     break;
   case TST:
   case TEQ:
   case CMP:
+    output = noResults(instruction, code);
     break;
   default:
     return INVALID_INPUT;
   }
 
   *instruction = setBits(operationNode->data.assemblyLine->code, 21, *instruction);
-
-  if(isWithResults){
-	  output = withResults(instruction, code);
-  }
-  else if(isOperandAssignment){
-	  output = operandAssignment(instruction, code);
-  }
-  else{
-	  output = noResults(instruction, code);
-  }
 
   return output;
 }
@@ -230,22 +219,25 @@ static int setMultiply(Instruction *instruction, char **code, symbolNode *symbol
   // sets the register bits
   // and A bit if instructino is mla
   // there is no need to set S because instruction is initially all 0
-  if(!strcmp(code[0], "mul")){
-	  return setRegistersMultiply(instruction, code);
-  }
-  else if(!strcmp(code[0], "mla")){
-	  // if invalid input (no register)
-	  // output INVALID_INPUT error
-	  if(code[4][0] != 'r')
-		  return INVALID_INPUT;
-	  *instruction = setBits(1, 21, *instruction);
-	  int rn = atoi(strtok(code[4], "r"));
-	  *instruction = setBits(rn, 12, *instruction);
-	  return setRegistersMultiply(instruction, code); 
-  }
-  else{
-	  return INVALID_INPUT;
-  }
+  symbolNode *operationNode = search(symbolTable, code[0]);
+  	switch(operationNode->data.assemblyLine->code){
+		case MUL:
+			return setRegistersMultiply(instruction, code);
+			break;
+		case MLA:
+			// if invalid input (no register)
+			// output INVALID_INPUT error
+			if(code[4][0] != 'r')
+				return INVALID_INPUT;
+			*instruction = setBits(1, 21, *instruction);
+			int rn = atoi(strtok(code[4], "r"));
+			*instruction = setBits(rn, 12, *instruction);
+			return setRegistersMultiply(instruction, code); 
+			break;
+		default:
+			return INVALID_INPUT;
+	}
+
 }
 
 // takes an expression with or without [] brackets, returns the number of arguments in brackets
@@ -276,7 +268,7 @@ static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instru
     // treat as a mov instruction (condition code is al as well)
     code[2][0] = '#';
     *instruction = setBits(al, 28, 0);
-    *instruction = setBits(13, 21, *instruction); // TODO: MOV enum
+    *instruction = setBits(MOV, 21, *instruction);
     return operandAssignment(instruction, code);
   }
 
@@ -320,24 +312,30 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
   // default: U bit is set (to add offset)
   instructionVal = setBits(1, 23, instructionVal);
 
-  if (!strcmp(code[0], "ldr")) {
-    /* code[0] is "ldr" */
-    // set the L bit
-    instructionVal = setBits(1, 20, instructionVal);
+  symbolNode *operationNode = search(symbolTable, code[0]);
 
-    if (code[2][0] == '=') {
-      /* code[2] is an immediate value (only possible for ldr) */
-      // set I and P bits
-      instructionVal = setBits(1, 25, instructionVal);
-      instructionVal = setBits(1, 24, instructionVal);
-      return dataTransferImmediate(ldrAddresses, code, instruction);
-    }
+	switch(operationNode->data.assemblyLine->code) {
+		case LDR:
+			/* code[0] is "ldr" */
+			// set the L bit
+			instructionVal = setBits(1, 20, instructionVal);
 
-  } else if (strcmp(code[0], "str")) {
-    /* code[0] is not "ldr" or "str" */
-    printf("Invalid dataTransfer label.");
-    return INVALID_INSTRUCTION;
-  }
+			if (code[2][0] == '=') {
+				/* code[2] is an immediate value (only possible for ldr) */
+				// set I and P bits
+				instructionVal = setBits(1, 25, instructionVal);
+				instructionVal = setBits(1, 24, instructionVal);
+				return dataTransferImmediate(ldrAddresses, code, instruction);
+				break;
+			}
+		case STR:
+			break;
+		default:
+			/* code[0] is not "ldr" or "str" */
+			printf("Invalid dataTransfer label.");
+			return INVALID_INSTRUCTION;
+	}
+
 
   /* code[0] is "ldr" or "str" */
 
@@ -352,7 +350,6 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
   char *type;
   int shift;
 
-  // TODO: initialise instruction tokens to NULL
   if (!code[3]) {
     // Pre-indexing: set P bit
     instructionVal = setBits(1, 24, instructionVal);

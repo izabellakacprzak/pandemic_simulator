@@ -103,15 +103,19 @@ assemblyInstruction *getDataFromOperation(char *operation) {
   } else if (strcmp(operation, "mul") == 0) {
     out->conditionCode = al;
     out->type = MULTIPLY;
+    out->code = MUL;
   } else if (strcmp(operation, "mla") == 0) {
     out->conditionCode = al;
     out->type = MULTIPLY;
+    out->code = MLA;
   } else if (strcmp(operation, "ldr") == 0) {
     out->conditionCode = al;
     out->type = DATA_TRANSFER;
+    out->code = LDR;
   } else if (strcmp(operation, "str") == 0) {
     out->conditionCode = al;
     out->type = DATA_TRANSFER;
+    out->code = STR;
   } else if (strcmp(operation, "beq") == 0) {
     out->conditionCode = eq;
     out->type = BRANCH;
