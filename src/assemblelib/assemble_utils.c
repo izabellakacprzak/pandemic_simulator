@@ -154,14 +154,12 @@ static int noResults(Instruction *instruction, char **code){
 
 
 // all of these probably take char *nextInstruction or nothing at all
-static int setDataProcessing(Instruction *instruction, char **code, symbolNode *symbolTable) {
+static int setDataProcessing(Instruction *instruction, char **code, symbolNode *operationNode) {
 
   //sets condition code
   *instruction = setBits(al, 28, *instruction);
 
   int output = 0;
-
-  symbolNode *operationNode = search(symbolTable, code[0]);
 
   // setting the opcode bits
   //if instruction is supposed to be tst, teq or cmp - set S - bit 20
@@ -209,7 +207,7 @@ static int setRegistersMultiply(Instruction *instruction, char **code){
 	return OK;
 }
 
-static int setMultiply(Instruction *instruction, char **code, symbolNode *symbolTable) {
+static int setMultiply(Instruction *instruction, char **code, symbolNode *operationNode) {
 
   // sets condition code
   *instruction = setBits(al, 18, *instruction);
@@ -219,24 +217,23 @@ static int setMultiply(Instruction *instruction, char **code, symbolNode *symbol
   // sets the register bits
   // and A bit if instructino is mla
   // there is no need to set S because instruction is initially all 0
-  symbolNode *operationNode = search(symbolTable, code[0]);
-  	switch(operationNode->data.assemblyLine->code){
-		case MUL:
-			return setRegistersMultiply(instruction, code);
-			break;
-		case MLA:
-			// if invalid input (no register)
-			// output INVALID_INPUT error
-			if(code[4][0] != 'r')
-				return INVALID_INPUT;
-			*instruction = setBits(1, 21, *instruction);
-			int rn = atoi(strtok(code[4], "r"));
-			*instruction = setBits(rn, 12, *instruction);
-			return setRegistersMultiply(instruction, code); 
-			break;
-		default:
-			return INVALID_INPUT;
-	}
+  switch(operationNode->data.assemblyLine->code){
+  case MUL:
+    return setRegistersMultiply(instruction, code);
+    break;
+  case MLA:
+    // if invalid input (no register)
+    // output INVALID_INPUT error
+    if(code[4][0] != 'r')
+      return INVALID_INPUT;
+    *instruction = setBits(1, 21, *instruction);
+    int rn = atoi(strtok(code[4], "r"));
+    *instruction = setBits(rn, 12, *instruction);
+    return setRegistersMultiply(instruction, code); 
+    break;
+  default:
+    return INVALID_INPUT;
+  }
 
 }
 
@@ -296,7 +293,7 @@ static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instru
 
 // of the form:
 //   <ldr/str> Rd,<address> (where <address> is 1-3 tokens)
-static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *ldrAddresses, symbolNode *symbolTable) {
+static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *ldrAddresses, symbolNode *operationNode) {
 
   Instruction instructionVal = 0;
   instruction = &instructionVal;
@@ -312,29 +309,27 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
   // default: U bit is set (to add offset)
   instructionVal = setBits(1, 23, instructionVal);
 
-  symbolNode *operationNode = search(symbolTable, code[0]);
+  switch(operationNode->data.assemblyLine->code) {
+  case LDR:
+    /* code[0] is "ldr" */
+    // set the L bit
+    instructionVal = setBits(1, 20, instructionVal);
 
-	switch(operationNode->data.assemblyLine->code) {
-		case LDR:
-			/* code[0] is "ldr" */
-			// set the L bit
-			instructionVal = setBits(1, 20, instructionVal);
-
-			if (code[2][0] == '=') {
-				/* code[2] is an immediate value (only possible for ldr) */
-				// set I and P bits
-				instructionVal = setBits(1, 25, instructionVal);
-				instructionVal = setBits(1, 24, instructionVal);
-				return dataTransferImmediate(ldrAddresses, code, instruction);
-				break;
-			}
-		case STR:
-			break;
-		default:
-			/* code[0] is not "ldr" or "str" */
-			printf("Invalid dataTransfer label.");
-			return INVALID_INSTRUCTION;
-	}
+    if (code[2][0] == '=') {
+      /* code[2] is an immediate value (only possible for ldr) */
+      // set I and P bits
+      instructionVal = setBits(1, 25, instructionVal);
+      instructionVal = setBits(1, 24, instructionVal);
+      return dataTransferImmediate(ldrAddresses, code, instruction);
+      break;
+    }
+  case STR:
+    break;
+  default:
+    /* code[0] is not "ldr" or "str" */
+    printf("Invalid dataTransfer label.");
+    return INVALID_INSTRUCTION;
+  }
 
 
   /* code[0] is "ldr" or "str" */
@@ -468,8 +463,7 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
   return err;
 }
 
-static int setBranch(Instruction *instruction, char **code, ldrAddresses *ldrAddresses, symbolNode *symbolTable) {
-  symbolNode assemblyInstr = *search(symbolTable, code[0]);
+static int setBranch(Instruction *instruction, char **code, ldrAddresses *ldrAddresses, symbolNode *operationNode, symbolNode *symbolTable) {
 
   *instruction = 0;
 
@@ -477,7 +471,7 @@ static int setBranch(Instruction *instruction, char **code, ldrAddresses *ldrAdd
   *instruction = setBits(5, 25, *instruction);
 
   // set condition code
-  *instruction = setBits(assemblyInstr.data.assemblyLine->conditionCode, 28, *instruction);
+  *instruction = setBits(operationNode->data.assemblyLine->conditionCode, 28, *instruction);
 
   symbolNode *assemblyOffset = search(symbolTable, code[1]);
   // if offset is a constant then set address to it
@@ -511,41 +505,41 @@ static int setHalt(Instruction *instruction) {
 	return 0;
 }
 
-static int setSpecialInstruction(Instruction *instruction, char **code, symbolNode *symbolTable){
+static int setSpecialInstruction(Instruction *instruction, char **code, symbolNode *operationNode){
 	code[0] = "mov";
 	*code[4] = *code[2];
 	*code[2] = *code[1];
 	code[3] = "lsl";
-	return setDataProcessing(instruction, code, symbolTable);
+	return setDataProcessing(instruction, code, operationNode);
 }
 
 int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction, ldrAddresses *ldrAddresses) {
-  symbolNode assemblyInstr = *search(symbolTable, nextInstruction[0]);      
+  symbolNode *operationNode = search(symbolTable, nextInstruction[0]);      
 
-  if(assemblyInstr.isLabel){
+  if(operationNode->isLabel){
     return NOT_INSTRUCTION;
   }
-  assemblyInstruction *currentInstructionData = assemblyInstr.data.assemblyLine;
-  InstructionType type = assemblyInstr.data.assemblyLine->type;
+  
+  InstructionType type = operationNode->data.assemblyLine->type;
 
   switch(type){
   case BRANCH:
-    return setBranch(setInstruction, nextInstruction, ldrAddresses, symbolTable);
+    return setBranch(setInstruction, nextInstruction, ldrAddresses, operationNode, symbolTable);
     break;
   case DATA_PROCESSING:
-    return setDataProcessing(setInstruction, nextInstruction, symbolTable);
+    return setDataProcessing(setInstruction, nextInstruction, operationNode);
     break;
   case DATA_TRANSFER:
-    return setDataTransfer(setInstruction, nextInstruction, ldrAddresses, symbolTable);
+    return setDataTransfer(setInstruction, nextInstruction, ldrAddresses, operationNode);
     break;
   case MULTIPLY:
-    return setMultiply(setInstruction, nextInstruction, symbolTable);
+    return setMultiply(setInstruction, nextInstruction, operationNode);
     break;
   case HALT:
     return setHalt(setInstruction);
     break;
   case SHIFT:
-    return setSpecialInstruction(setInstruction, nextInstruction, symbolTable);
+    return setSpecialInstruction(setInstruction, nextInstruction, operationNode);
     break;
   default:
     return INVALID_INSTRUCTION;
