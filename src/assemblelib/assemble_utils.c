@@ -15,19 +15,19 @@ static Instruction setBits(uint32_t value, int bit, Instruction instr) {
 }
 
 
-static int calculateOperand(Instruction *instruction, char **code, int opIndex){
-	int operand;
+static int calculateOperand(Instruction *instruction, char **code, int opIndex, int processing){
+  int operand;
 
-	if(code == NULL){
-		return INVALID_INPUT;
-	}
+  if(code == NULL){
+    return INVALID_INPUT;
+  }
 
-	// if operand is an immediate value
-	if(code[opIndex][0] == '#'){
-		// set the I flag
-		*instruction = setBits(1, 25, *instruction);
+  // if operand is an immediate value
+  if(code[opIndex][0] == '#'){
+    // set the I flag if processing
+    *instruction = setBits(processing, 25, *instruction);
 
-		operand = strtol(strtok(code[opIndex], "#-+"), NULL, 0);
+    operand = strtol(strtok(code[opIndex], "#-+"), NULL, 0);
 	
     int rotations = 0;
     while(rotations <= 32 && (operand >> 8) != 0){
@@ -49,6 +49,10 @@ static int calculateOperand(Instruction *instruction, char **code, int opIndex){
     if(code[opIndex][0] != 'r'){
       return INVALID_INPUT;
     }
+
+    // set the I flag if single transfer
+    *instruction = setBits(!processing, 25, *instruction);
+    
     int rm = atoi(strtok(code[opIndex], "r-+"));
     // set bits 3 - 0 to the Rm register
     *instruction = setBits(rm, 0, *instruction);
@@ -114,7 +118,7 @@ static int withResults(Instruction *instruction, char **code){
 	*instruction = setBits(rd, 12, *instruction);
 	*instruction = setBits(rn , 16, *instruction);
 
-	return calculateOperand(instruction, code, 3);
+	return calculateOperand(instruction, code, 3, 1);
 }
 
 // sets bits for instructions that
@@ -130,7 +134,7 @@ static int operandAssignment(Instruction *instruction, char **code){
 		
 	*instruction = setBits(rd, 12, *instruction);
 	
-	return calculateOperand(instruction, code, 2);
+	return calculateOperand(instruction, code, 2, 1);
 }
 
 
@@ -149,7 +153,7 @@ static int noResults(Instruction *instruction, char **code){
 	*instruction = setBits(rn, 16, *instruction);
 	*instruction = setBits(1, 20, *instruction);
 	
-	return calculateOperand(instruction, code, 2);
+	return calculateOperand(instruction, code, 2, 1);
 }
 
 
@@ -284,9 +288,12 @@ static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instru
 
   int err = snprintf(offsetC, 6, "#%i", offset);
   
-  err = calculateOperand(instruction, &offsetC, 0);
+  err = calculateOperand(instruction, &offsetC, 0, 0);
 
   free(offsetC);
+
+  // set 0xF in place of Rn
+  *instruction = setBits(0xF, 16, *instruction);
 
   return err;
 }
@@ -295,31 +302,29 @@ static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instru
 //   <ldr/str> Rd,<address> (where <address> is 1-3 tokens)
 static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *ldrAddresses, symbolNode *operationNode) {
 
-  Instruction instructionVal = 0;
-  instruction = &instructionVal;
+  *instruction = 0;
   
   // set condition code and instruction identity bit
-  instructionVal = setBits(al, 28, instructionVal);
-  instructionVal = setBits(1, 26, instructionVal);
+  *instruction = setBits(al, 28, *instruction);
+  *instruction = setBits(1, 26, *instruction);
 
   // Set Rd register
   int rd = strtol(strtok(code[1], "r"), NULL, 0);
-  instructionVal = setBits(rd, 12, instructionVal);
+  *instruction = setBits(rd, 12, *instruction);
 
   // default: U bit is set (to add offset)
-  instructionVal = setBits(1, 23, instructionVal);
+  *instruction = setBits(1, 23, *instruction);
 
   switch(operationNode->data.assemblyLine->code) {
   case LDR:
     /* code[0] is "ldr" */
     // set the L bit
-    instructionVal = setBits(1, 20, instructionVal);
+    *instruction = setBits(1, 20, *instruction);
 
     if (code[2][0] == '=') {
       /* code[2] is an immediate value (only possible for ldr) */
-      // set I and P bits
-      instructionVal = setBits(1, 25, instructionVal);
-      instructionVal = setBits(1, 24, instructionVal);
+      // set P bit
+      *instruction = setBits(1, 24, *instruction);
       return dataTransferImmediate(ldrAddresses, code, instruction);
       break;
     }
@@ -347,7 +352,7 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
 
   if (!code[3]) {
     // Pre-indexing: set P bit
-    instructionVal = setBits(1, 24, instructionVal);
+    *instruction = setBits(1, 24, *instruction);
     
     switch (removeBrackets(arg2, code[2])) {
       case 0:
@@ -372,9 +377,6 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
 	    *instruction &= ~(1 << 23);
 	  }
 	  
-	  // just need to set rm register
-	  int rm = strtol(strtok(arg2[1], "-+r"), NULL, 0);
-	  *instruction = setBits(rm, 0, *instruction);
 	  break;
 	} 
 
@@ -393,7 +395,7 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
 	  *instruction &= ~(1 << 23);
 	}
 	
-	err = calculateOperand(instruction, arg2, 1);
+	err = calculateOperand(instruction, arg2, 1, 0);
 	break;
 
       default:
@@ -417,7 +419,7 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
 	// unset U bit if negative
 	*instruction &= ~(1 << 23);
       }
-      err = calculateOperand(instruction, code, 3);
+      err = calculateOperand(instruction, code, 3, 0);
 
     } else {
       /* Optional:
@@ -451,12 +453,12 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
       *instruction &= ~(1 << 23);
     }
     
-    err = calculateOperand(instruction, code, 3);
+    err = calculateOperand(instruction, code, 3, 0);
   }
 
   // setting Rn register
   int rn = strtol(strtok(arg2[0], "r"), NULL, 0);
-  instructionVal = setBits(rn, 16, instructionVal);
+  *instruction = setBits(rn, 16, *instruction);
   
   free(arg2);
   

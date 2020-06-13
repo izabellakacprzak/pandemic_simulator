@@ -26,18 +26,23 @@ static int instructionTok(char **destArray, char *line) {
     destArray[0] = strtok_r(line, " \n", &rest);
     
     int i = 0;
+    int j;
+    char bracketed[strlen(line)];
     
     while (destArray[i]) {
       i++;
       destArray[i] = strtok_r(rest, " ,\n", &rest);
       
       if (rest[0] == '[') {
-	int j = 1;
+	i++;
+	j = 1;
 	while (rest[j] != ']') {
 	  j++;
 	}
-
-	strcpy(&rest[j], rest);
+	
+	strncpy(destArray[i], rest, j - 2);
+	destArray[i][j + 1] = '\0';
+	rest = &rest[j + 1];
       }
     }
 
