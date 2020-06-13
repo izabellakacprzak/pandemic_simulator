@@ -51,7 +51,7 @@ void freeTable(symbolNode *root) {
   }
   freeTable(root->left);
   freeTable(root->right);
-  if (root->isLabel) {
+  if (!root->isLabel) {
     //because of getDataFromOperation, all assemblyline structs are on the heap
     free(root->data.assemblyLine);
   }

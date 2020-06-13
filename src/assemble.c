@@ -100,13 +100,18 @@ int main(int argc, char **argv) {
     result = 0;
     currentStatus = assemble(&result, symbolTable, currentLine, &loadConstants);
 
-    //detects if something goes wrong assembling an instruction
-    FATAL_PROG(currentStatus != OK, currentStatus);
+    if (currentStatus != NOT_INSTRUCTION) {
+      currAddress += 4;
+
+      //detects if something goes wrong assembling an instruction
+      FATAL_PROG(currentStatus != OK, currentStatus);
     
-    writeNextInstruction(result, destFile);
+      currentStatus = writeNextInstruction(result, destFile);
+      FATAL_PROG(currentStatus != OK, currentStatus);
+    }
+    
     currentStatus = loadNextInstruction(currentLine, sourceFile);
     FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE), currentStatus);
-    currAddress = currAddress + 4;
   }
 
   //Adds offsets for immediate value ldrs to the end of the assembly code
