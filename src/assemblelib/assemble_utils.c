@@ -174,6 +174,7 @@ static int setDataProcessing(Instruction *instruction, char **code, symbolNode *
   case EOR:
   case SUB:
   case RSB:
+  case ORR:
   case ADD:
     output = withResults(instruction, code); //arithmetic operations
     break;
@@ -214,7 +215,7 @@ static int setRegistersMultiply(Instruction *instruction, char **code){
 static int setMultiply(Instruction *instruction, char **code, symbolNode *operationNode) {
 
   // sets condition code
-  *instruction = setBits(al, 18, *instruction);
+  *instruction = setBits(al, 28, *instruction);
   *instruction = setBits(0x9, 4, *instruction);
 
 
@@ -248,7 +249,7 @@ static int removeBrackets(char **destTok, char *expression) {
     return 0;
   }
 
-  char *delims = "[,]";
+  char *delims = "[, ]";
   char *token = strtok(expression, delims);
 
   int i = 0;
@@ -376,7 +377,13 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
 	    // unset U bit if negative
 	    *instruction &= ~(1 << 23);
 	  }
-	  
+
+	  //setting the I bit
+	  *instruction = setBits(1, 25, *instruction);
+
+	  // just need to set rm register
+	  int rm = strtol(strtok(arg2[1], "-+r"), NULL, 0);
+	  *instruction = setBits(rm, 0, *instruction);
 	  break;
 	} 
 
@@ -430,9 +437,12 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
 	// unset U bit if negative
 	*instruction &= ~(1 << 23);
       }
+
+      //setting the I bit
+      *instruction = setBits(1, 25, *instruction);
 	  
       // just need to set rm register
-      int rm = strtol(strtok(arg2[1], "-+r"), NULL, 0);
+      int rm = strtol(strtok(code[3], "-+r"), NULL, 0);
       *instruction = setBits(rm, 0, *instruction);
 
     }
