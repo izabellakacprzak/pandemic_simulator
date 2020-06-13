@@ -36,7 +36,7 @@ symbolNode *insert(symbolNode* root, char* sym, treeData data, int isLabel) {
 
 symbolNode *search(symbolNode *root, char* sym) {
 
-  if(strcmp(root->symbol, sym) == 0 || root == NULL) {
+  if(!root || strcmp(root->symbol, sym) == 0) {
       return root;
   }else if(strcmp(root->symbol, sym) > 0){
       return search(root->left, sym);

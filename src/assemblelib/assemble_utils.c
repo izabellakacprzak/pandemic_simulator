@@ -303,7 +303,7 @@ static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instru
 
   ldrAddresses->extraInstructions[ldrAddresses->length] = expression;
   ldrAddresses->length++;
-  // TODO: get current location
+  
   Address currentAddress = *(ldrAddresses->currAddress);
   int32_t offset = (ldrAddresses->lastAddress + (ldrAddresses->length * 4)) - (currentAddress + 8);
 
@@ -487,54 +487,42 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
   return err;
 }
 
-static int setBranch(Instruction *instruction, char **code, symbolNode *symbolTable) {
+static int setBranch(Instruction *instruction, char **code, ldrAddresses *ldrAddresses, symbolNode *symbolTable) {
+  symbolNode assemblyInstr = *search(symbolTable, code[0]);
 
   *instruction = 0;
 
   // set the 101 at bits 27 - 25
-  *instruction = setBits(0x5, 25, *instruction);
-
+  *instruction = setBits(5, 25, *instruction);
 
   // set condition code
-  if(!strcmp(code[0], "bne")){
-	  *instruction = setBits(1, 28, *instruction);
-  }
-  else if(!strcmp(code[0], "bge")){
-	  *instruction = setBits(10, 28, *instruction);
-  }
-  else if(!strcmp(code[0], "blt")){
-	  *instruction = setBits(11, 28, *instruction);
-  }
-  else if(!strcmp(code[0], "bgt")){
-	  *instruction = setBits(12, 28, *instruction);
-  }
-  else if(!strcmp(code[0], "ble")){
-	  *instruction = setBits(13, 28, *instruction);
-  }
-  else if(!strcmp(code[0], "bal") || !strcmp(code[0], "b")){
-	  *instruction = setBits(14, 28, *instruction);
-  }
-  else{
-	  return INVALID_INPUT;
-  }
+  *instruction = setBits(assemblyInstr.data.assemblyLine->conditionCode, 28, *instruction);
 
+  symbolNode *assemblyOffset = search(symbolTable, code[1]);
   // if offset is a constant then set address to it
   // if it is a label then find the corresponding address
 
-  /*
-  int address = find(dict, code[1]);
-  // the address in a constant
-  if(address == -1){
-	  instruction = setBits(strtol(code[1], NULL, 0), 0, instruction);
-  }
+  int32_t offset;
+  if(!assemblyOffset){
+    // the address is a constant
+    offset = strtol(code[1], NULL, 0);
+    
+  } else {
   // the address is a label
-  else{
-	  instruction = setBits(address, 0, instruction);
+     Address currentAddress = *(ldrAddresses->currAddress);
+     offset = (assemblyOffset->data.address) - (currentAddress + 8);
   }
-  */
 
+  if (offset > 0x1FFFFFF || offset < -0x1FFFFFF) {
+    // offset is more than 26 bits
+    return INVALID_INSTRUCTION;
+  }
 
-  return 0;
+  offset >>= 2;
+  
+  *instruction = setBits(offset, 0, *instruction);
+
+  return OK;
 }
 
 static int setHalt(Instruction *instruction) {
@@ -561,7 +549,7 @@ int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextIn
 
   switch(type){
   case BRANCH:
-    return setBranch(setInstruction, nextInstruction, symbolTable);
+    return setBranch(setInstruction, nextInstruction, ldrAddresses, symbolTable);
     break;
   case DATA_PROCESSING:
     return setDataProcessing(setInstruction, nextInstruction, symbolTable);
