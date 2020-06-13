@@ -23,7 +23,7 @@ static int instructionTok(char **destArray, char *line) {
 
     char *rest = line;
     
-    destArray[0] = strtok_r(line, " ", &rest);
+    destArray[0] = strtok_r(line, " \n", &rest);
     
     int i = 0;
     int j = 1;

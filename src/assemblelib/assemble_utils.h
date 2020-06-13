@@ -11,10 +11,11 @@
 #define MAX_EXPR_IN_BRACKETS 3
 
 typedef enum errorCode {
-  OK, 
+  OK,
   INVALID_INSTRUCTION,
   INVALID_SHIFT,
   INVALID_INPUT,
+  NOT_INSTRUCTION,
   OUT_OF_MEMORY,
   END_OF_FILE,
   NULL_FILE,
@@ -40,6 +41,7 @@ typedef struct err {
 
 typedef struct ldrAddresses {
   Address lastAddress;
+  Address *currAddress;
   int length;
   Instruction *extraInstructions;
 } ldrAddresses;
@@ -51,7 +53,7 @@ typedef enum shift_codes {
   ROR	// 0b11     
 } shift_c;
 
-int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction);
+int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction, ldrAddresses *ldrAddresses);
 
 int contains(char *value, const char **array);
 

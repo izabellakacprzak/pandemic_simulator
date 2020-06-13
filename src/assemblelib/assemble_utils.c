@@ -53,6 +53,11 @@ static int calculateOperand(Instruction *instruction, char **code, int opIndex){
     // set bits 3 - 0 to the Rm register
     *instruction = setBits(rm, 0, *instruction);
 
+    if (!code[opIndex + 1]) {
+      //argument 3 is a register with no shift
+      return OK;
+    }
+    
     char *shiftType = code[opIndex + 1];
     char *shiftValue  = code[opIndex + 2];
     
@@ -149,7 +154,7 @@ static int noResults(Instruction *instruction, char **code){
 
 
 // all of these probably take char *nextInstruction or nothing at all
-static int setDataProcessing(Instruction *instruction, char **code) {
+static int setDataProcessing(Instruction *instruction, char **code, symbolNode *symbolTable) {
 
   //sets condition code
   *instruction = setBits(al, 28, *instruction);
@@ -231,7 +236,7 @@ static int setRegistersMultiply(Instruction *instruction, char **code){
 	return OK;
 }
 
-static int setMultiply(Instruction *instruction, char **code) {
+static int setMultiply(Instruction *instruction, char **code, symbolNode *symbolTable) {
 
   // sets condition code
   *instruction = setBits(al, 18, *instruction);
@@ -299,7 +304,7 @@ static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instru
   ldrAddresses->extraInstructions[ldrAddresses->length] = expression;
   ldrAddresses->length++;
   // TODO: get current location
-  Address currentAddress = 0;
+  Address currentAddress = *(ldrAddresses->currAddress);
   int32_t offset = (ldrAddresses->lastAddress + (ldrAddresses->length * 4)) - (currentAddress + 8);
 
   char *offsetC = calloc(7, sizeof(char));
@@ -315,7 +320,7 @@ static int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instru
 
 // of the form:
 //   <ldr/str> Rd,<address> (where <address> is 1-3 tokens)
-static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *ldrAddresses) {
+static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *ldrAddresses, symbolNode *symbolTable) {
 
   Instruction instructionVal = 0;
   instruction = &instructionVal;
@@ -482,7 +487,7 @@ static int setDataTransfer(Instruction *instruction, char **code, ldrAddresses *
   return err;
 }
 
-static int setBranch(Instruction *instruction, char **code) {
+static int setBranch(Instruction *instruction, char **code, symbolNode *symbolTable) {
 
   *instruction = 0;
 
@@ -537,47 +542,41 @@ static int setHalt(Instruction *instruction) {
 	return 0;
 }
 
-static int setSpecialInstruction(Instruction *instruction, char **code){
+static int setSpecialInstruction(Instruction *instruction, char **code, symbolNode *symbolTable){
 	code[0] = "mov";
 	*code[4] = *code[2];
 	*code[2] = *code[1];
 	code[3] = "lsl";
-	return setDataProcessing(instruction, code);
+	return setDataProcessing(instruction, code, symbolTable);
 }
 
-int contains(char *value, const char **array){
-  for(int i = 0; i < sizeof(array)/sizeof(array[0]); i++){
-    if(!strcmp(array[i], value))
-      return 1;
-  }
-  return 0;
-}
-
-int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction) {
+int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction, ldrAddresses *ldrAddresses) {
   symbolNode assemblyInstr = *search(symbolTable, nextInstruction[0]);      
-  InstructionType type = assemblyInstr.data.assemblyLine->type;
+
   if(assemblyInstr.isLabel){
-    return 0;
+    return NOT_INSTRUCTION;
   }
+  
+  InstructionType type = assemblyInstr.data.assemblyLine->type;
 
   switch(type){
   case BRANCH:
-    return setBranch(setInstruction, nextInstruction);
+    return setBranch(setInstruction, nextInstruction, symbolTable);
     break;
   case DATA_PROCESSING:
-    return setDataProcessing(setInstruction, nextInstruction);
+    return setDataProcessing(setInstruction, nextInstruction, symbolTable);
     break;
   case DATA_TRANSFER:
-    return setDataTransfer(setInstruction, nextInstruction, 0);
+    return setDataTransfer(setInstruction, nextInstruction, ldrAddresses, symbolTable);
     break;
   case MULTIPLY:
-    return setMultiply(setInstruction, nextInstruction);
+    return setMultiply(setInstruction, nextInstruction, symbolTable);
     break;
   case HALT:
     return setHalt(setInstruction);
     break;
   case SHIFT:
-    return setSpecialInstruction(setInstruction, nextInstruction);
+    return setSpecialInstruction(setInstruction, nextInstruction, symbolTable);
     break;
   default:
     return INVALID_INSTRUCTION;
@@ -589,21 +588,24 @@ char *getProgramError(errorCode e) {
   errors[INVALID_INSTRUCTION].code = INVALID_INSTRUCTION;
   errors[INVALID_INSTRUCTION].message = "Invalid instruction";
   
-  errors[INVALID_INSTRUCTION].code = INVALID_SHIFT;
+  errors[INVALID_SHIFT].code = INVALID_SHIFT;
   //Is there a better error message?  
-  errors[INVALID_INSTRUCTION].message = "Invalid shift";
+  errors[INVALID_SHIFT].message = "Invalid shift";
   
-  errors[INVALID_INSTRUCTION].code = INVALID_INPUT;
-  errors[INVALID_INSTRUCTION].message = "Invalid input";
+  errors[INVALID_INPUT].code = INVALID_INPUT;
+  errors[INVALID_INPUT].message = "Invalid input";
+
+  errors[NOT_INSTRUCTION].code = NOT_INSTRUCTION;
+  errors[NOT_INSTRUCTION].message = "Is a label, not an instruction";
   
-  errors[INVALID_INSTRUCTION].code = OUT_OF_MEMORY;
-  errors[INVALID_INSTRUCTION].message = "Not enough memory to store current instruction";
+  errors[OUT_OF_MEMORY].code = OUT_OF_MEMORY;
+  errors[OUT_OF_MEMORY].message = "Not enough memory to store current instruction";
 
-  errors[INVALID_INSTRUCTION].code = END_OF_FILE;
-  errors[INVALID_INSTRUCTION].message = "End of file";
+  errors[END_OF_FILE].code = END_OF_FILE;
+  errors[END_OF_FILE].message = "End of file";
 
-  errors[INVALID_INSTRUCTION].code = NULL_FILE;
-  errors[INVALID_INSTRUCTION].message = "File does not exist";
+  errors[NULL_FILE].code = NULL_FILE;
+  errors[NULL_FILE].message = "File does not exist";
   
   return errors[e].message;
 }
