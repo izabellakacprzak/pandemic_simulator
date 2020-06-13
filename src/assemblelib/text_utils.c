@@ -27,7 +27,6 @@ static int instructionTok(char **destArray, char *line) {
     
     int i = 0;
     int j;
-    char bracketed[strlen(line)];
     
     while (destArray[i]) {
       i++;
