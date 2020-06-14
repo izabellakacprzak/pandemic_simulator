@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Ilib -Wno-unused-variable -g -D_DEFAULT_SOURCE -std=c99 -pedantic
+CFLAGS = -Wall -Ilib -g -D_DEFAULT_SOURCE -std=c99 -pedantic
 LDLIBS = -L../combinedlib -lcombinedutils
 LIB = libassembleutils.a
 LIBOBJS = tree.o text_utils.o assemble_utils.o

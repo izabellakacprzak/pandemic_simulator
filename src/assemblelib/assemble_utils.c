@@ -320,10 +320,6 @@ static int setDataTransfer(Instruction *instruction, char **code,
   int arguments = removeBrackets(arg2, code[2]);
 
   int err = OK;
-  int32_t offset;
-  int rm;
-  char *type;
-  int shift;
 
   if(!code[3]) {
     /* Pre-indexing: set P bit */
