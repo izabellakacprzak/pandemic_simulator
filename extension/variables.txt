@@ -1,0 +1,5 @@
+population=30
+initially_infected=2
+latency_period=7days
+infection_rate=0.5
+fatality_rate=0.01
