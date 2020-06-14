@@ -57,14 +57,15 @@ int main(int argc, char **argv) {
       symbolTable = insert(symbolTable, currentLine[0], data, label);
       FATAL_PROG(symbolTable == NULL, OUT_OF_MEMORY);
     }
+
+    if(!label && !(currentStatus == WHITESPACE_LINE)) {
+      currAddress = currAddress + 4;
+    }
     
     /* Load next instruction and increment address by 4 */
     currentStatus = loadNextInstruction(currentLine, sourceFile);
     FATAL_PROG((currentStatus != OK && currentStatus != END_OF_FILE
 		&& currentStatus != WHITESPACE_LINE), currentStatus);
-    if(!label) {
-      currAddress = currAddress + 4;
-    }
   }
 
   currentStatus = OK;

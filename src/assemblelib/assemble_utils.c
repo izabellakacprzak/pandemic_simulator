@@ -456,7 +456,11 @@ static int setSpecialInstruction(Instruction *instruction, char **code, symbolNo
 
 int assemble(Instruction *setInstruction, symbolNode *symbolTable,
 	     char **nextInstruction, ldrAddresses *ldrAddresses) {
-  symbolNode *operationNode = search(symbolTable, nextInstruction[0]);      
+  symbolNode *operationNode = search(symbolTable, nextInstruction[0]);
+
+  if (!operationNode) {
+    return NOT_IN_TABLE;
+  }
 
   if(operationNode->isLabel) {
     return NOT_INSTRUCTION;
@@ -495,6 +499,9 @@ char *getProgramError(errorCode e) {
 
   errors[NOT_INSTRUCTION].code = NOT_INSTRUCTION;
   errors[NOT_INSTRUCTION].message = "Is a label, not an instruction";
+
+  errors[NOT_IN_TABLE].code = NOT_IN_TABLE;
+  errors[NOT_IN_TABLE].message = "Label/pneumonic was not found in the symbol table";
 
   errors[WHITESPACE_LINE].code = WHITESPACE_LINE;
   errors[WHITESPACE_LINE].message = "Is a whitespace line";
