@@ -8,7 +8,7 @@ symbolNode *createNode(char* sym, treeData data, int isLabel) {
 
     root->symbol = strdup(sym);
 
-    if (isLabel) {
+    if(isLabel) {
       root->data.address = data.address;
       root->isLabel = 1;
     } else {
@@ -20,14 +20,14 @@ symbolNode *createNode(char* sym, treeData data, int isLabel) {
 symbolNode *insert(symbolNode* root, char* sym, treeData data, int isLabel) {
   if(root == NULL) {
     return createNode(sym, data, isLabel);
-  } else if(strcmp(root->symbol, sym) > 0){
+  } else if(strcmp(root->symbol, sym) > 0) {
     root->left = insert(root->left, sym, data, isLabel);
-  } else if(strcmp(root->symbol, sym) < 0){
+  } else if(strcmp(root->symbol, sym) < 0) {
     root->right = insert(root->right, sym, data, isLabel);
-  } else{
-    //all data is declared on heap by getDataFromOperation
-    //this data is redundant so is freed
-    if (!isLabel) {
+  } else {
+    /* All data is declared on heap by getDataFromOperation,
+       if the mnemonic is already inserted in the tree this data is redundant so is freed */
+    if(!isLabel) {
       free(data.assemblyLine);
     }
   }
@@ -52,7 +52,6 @@ void freeTable(symbolNode *root) {
   freeTable(root->left);
   freeTable(root->right);
   if (!root->isLabel) {
-    //because of getDataFromOperation, all assemblyline structs are on the heap
     free(root->data.assemblyLine);
   }
   free(root->symbol);
@@ -147,7 +146,7 @@ assemblyInstruction *getDataFromOperation(char *operation) {
     out->type = HALT;
     out->code = AND;
   } else {
-    //INVALID MNEMONIC DETECTED
+    /* Invalid mnemonic detected */
     return NULL;
   }
   return out;

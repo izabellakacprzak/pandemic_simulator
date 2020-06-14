@@ -4,12 +4,14 @@
 #include <stdint.h>
 #include "../combinedlib/combined_utils.h"
 
+/* Struct containing the details of a mnemonic */
 typedef struct assemblyInstruction {
   ConditionCode conditionCode;
   InstructionType type;
   opcode code;
 } assemblyInstruction;
 
+/* Union used to store the data for a mnemonic or the adress of a label */
 typedef union treeData {
   Address address;
   assemblyInstruction *assemblyLine;
