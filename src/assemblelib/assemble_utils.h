@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <errno.h>
-
 #include "../combinedlib/combined_utils.h"
 #include "tree.h"
 
@@ -11,6 +10,7 @@
 #define MAX_EXPR_IN_BRACKETS 3
 #define MAX_INSTRUCTION_PARAMS 5
 
+/* Enum containing the error codes for error handling */
 typedef enum errorCode {
   OK,
   INVALID_INSTRUCTION,
@@ -24,6 +24,7 @@ typedef enum errorCode {
   SYS
 } errorCode;
 
+/* Struct containing the error message based on the error code*/
 typedef struct err {
   int code;
   char *message;
@@ -33,14 +34,15 @@ typedef struct err {
 #define EC_TO_SYS_ERROR(e) (e - SYS)
 #define EC_IS_SYS_ERROR(e) (e >= SYS)
 
-//for program errors such as invalid instructions
+/* For program errors such as invalid instructions */
 #define FATAL_PROG(pred, status) \
   do { if (pred) {currentStatus = status; goto fatalError;} } while (0)
 
-//for system errors such as failed file open
+/* For system errors such as failed file open */
 #define FATAL_SYS(pred) \
   do { if (pred) {currentStatus = EC_FROM_SYS_ERROR(errno); goto fatalError;} } while (0)
 
+/* Struct used for generating branch instructions */
 typedef struct ldrAddresses {
   Address lastAddress;
   Address *currAddress;
@@ -55,7 +57,8 @@ typedef enum shift_codes {
   ROR	// 0b11     
 } shift_c;
 
-int assemble(Instruction *setInstruction, symbolNode *symbolTable, char **nextInstruction, ldrAddresses *ldrAddresses);
+int assemble(Instruction *setInstruction, symbolNode *symbolTable,
+	     char **nextInstruction, ldrAddresses *ldrAddresses);
 
 int contains(char *value, const char **array);
 
