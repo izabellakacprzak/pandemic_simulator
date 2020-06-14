@@ -94,7 +94,7 @@ static int calculateOperand(Instruction *instruction, char **code, int opIndex, 
       // bit 4 is 1
       *instruction = setBits(1, 4, *instruction);
       // set bits 11 - 7 to the register
-      *instruction = setBits(atoi(strtok(shiftValue, "r")), 7, *instruction);
+      *instruction = setBits(atoi(strtok(shiftValue, "r")), 8, *instruction);
     }
     // the amount by which to shift
     // is neither a constant nor a register - invalid
