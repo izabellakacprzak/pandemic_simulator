@@ -55,6 +55,7 @@ void freeTable(symbolNode *root) {
     //because of getDataFromOperation, all assemblyline structs are on the heap
     free(root->data.assemblyLine);
   }
+  free(root->symbol);
   free(root);
 }
 
