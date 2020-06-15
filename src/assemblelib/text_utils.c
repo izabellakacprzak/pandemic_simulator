@@ -7,6 +7,13 @@
 /* Creates a mask of 1s from start to end */
 #define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
 
+char* strDoop(const char* str) {
+  int len = strlen(str);
+    char* newStr = calloc(len + 1, sizeof(char));
+    memcpy(newStr, str, len);
+    return newStr;
+}
+
 /* Takes an instruction and leaves it in the form:
         char** = {label, arg1, arg2 ...}
    Pre: line is in correct format,
@@ -17,8 +24,14 @@ static int instructionTok(char **destArray, char *line) {
   if(!destArray || !line) {
     return INVALID_INSTRUCTION;
   }
-
-  // TODO: reduce size of destArray
+  
+  for (int i = 0; i < MAX_INSTRUCTION_PARAMS + 1; i++) {
+    if (destArray[i]) {
+      free(destArray[i]);
+      destArray[i] = NULL;
+    }
+  }
+  
   char *rest = line;
   char *check = strtok_r(line, " \n", &rest);
   
@@ -27,7 +40,7 @@ static int instructionTok(char **destArray, char *line) {
     return WHITESPACE_LINE;
   }
   
-  destArray[0] = strdup(check);
+  destArray[0] = strDoop(check);
     
   int i = 0;
   int j, k;
@@ -41,7 +54,7 @@ static int instructionTok(char **destArray, char *line) {
       break;
     }
     
-    destArray[i] = strdup(check);
+    destArray[i] = strDoop(check);
     k = 0;
     while(rest[k] == ' ') {
       k++;
