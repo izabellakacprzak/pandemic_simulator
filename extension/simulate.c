@@ -92,13 +92,14 @@ int main (int argc, char **argv) {
 
     humans[i]->x = x;
     humans[i]->y = y;
-    humans[i]->risk = RAND_0_TO_1;
+    humans[i]->risk = randomFrom0To1();
     CELL_SET(grid[x][y], humans[i]);
   }
 
   //sets an initial number of humans to be infected
   for(int i = 0; i < initiallyInfected; i++) {
     humans[i]->status = LATENT;
+    humans[i]->latencyTime = disease.latencyPeriod;
   }
 
   getNextInput(input);
@@ -108,7 +109,8 @@ int main (int argc, char **argv) {
 
     for (int i = 0; i < noTurns; i++) {
       //call turn function
-      move(grid, humans, disease, population, gridLength, gridWidth);
+      move(grid, humans, population, gridLength, gridWidth);
+      checkInfections(grid, humans, population, gridLength, gridWidth, &disease);
     }
 
     printToTerminal(grid, gridLength, gridWidth);

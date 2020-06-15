@@ -7,7 +7,8 @@
 typedef enum healthStatus {
   HEALTHY,
   LATENT,
-  SICK
+  SICK,
+  DEAD
 } HealthStatus;
 
 typedef enum cellType {
@@ -21,6 +22,7 @@ typedef struct humanStruct {
   int y;
   double risk; 
   HealthStatus status;
+  int latencyTime;
 } Human;
 
 typedef struct gridCellStruct {
@@ -32,6 +34,7 @@ typedef struct diseaseStruct {
   int latencyPeriod;
   double infectionChance;
   double fatalityChance;
+  double recoveryChance;
 } Disease;
 
 typedef GridCell** Grid;
@@ -47,9 +50,9 @@ typedef GridCell** Grid;
 #define RANDINT(min, max) \
   (rand() % (max - min)) + min
 
-#define RAND_0_TO_1 \
-  (rand() / 32767)
+double randomFrom0To1(void);
 
-void move(Grid grid, Human **humans, Disease disease, int population,
-	  int length, int height);
+void move(Grid grid, Human **humans, int population, int length, int height);
+
+void checkInfections(Grid grid, Human **humans, int population, int length, int height, Disease *disease);
 #endif
