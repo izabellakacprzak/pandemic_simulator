@@ -11,11 +11,11 @@
 int main (int argc, char **argv) {
   char input[10];
   int noTurns;
-  int gridLength = GRID_SIZE, gridWidth = GRID_SIZE;
+  int gridLength = GRID_SIZE, gridHeight = GRID_SIZE;
   Grid grid = calloc(gridLength, sizeof(GridCell*));
 
   for (int i = 0; i < gridLength; i++) {
-    grid[i] = calloc(gridWidth, sizeof(GridCell));
+    grid[i] = calloc(gridHeight, sizeof(GridCell));
     //creates unoccupied cells of default type
   }
 
@@ -86,7 +86,7 @@ int main (int argc, char **argv) {
     humans[i] = calloc(1,sizeof(Human));
     do{
       x = RANDINT(0, gridLength - 1); 
-      y = RANDINT(0, gridWidth - 1);
+      y = RANDINT(0, gridHeight - 1);
     } while (grid[x][y].human);
     //makes sure two humans cant be in the same square
 
@@ -109,11 +109,11 @@ int main (int argc, char **argv) {
 
     for (int i = 0; i < noTurns; i++) {
       //call turn function
-      move(grid, humans, population, gridLength, gridWidth);
-      checkInfections(grid, humans, population, gridLength, gridWidth, &disease);
+      move(grid, humans, population, gridLength, gridHeight);
+      checkInfections(grid, humans, population, gridLength, gridHeight, &disease);
     }
 
-    printToTerminal(grid, gridLength, gridWidth);
+    printToTerminal(grid, gridLength, gridHeight);
 
     getNextInput(input);
   }
