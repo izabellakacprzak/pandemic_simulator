@@ -1,4 +1,5 @@
-population=30
+population=3
+//This is a comment
 initially_infected=2
 latency_period=7days
 infection_rate=0.5

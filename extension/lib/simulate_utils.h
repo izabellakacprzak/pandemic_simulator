@@ -2,6 +2,8 @@
 #ifndef SIMULATE_UTILS
 #define SIMULATE_UTILS
 
+#include <stdlib.h>
+
 typedef enum healthStatus {
   HEALTHY,
   LATENT,
@@ -17,8 +19,7 @@ typedef enum cellType {
 typedef struct humanStruct {
   int x;
   int y;
-  //gridCell *cell;
-  int risk; //could be a float based on design later on
+  double risk; 
   HealthStatus status;
 } Human;
 
@@ -27,14 +28,26 @@ typedef struct gridCellStruct {
   CellType type;
 } GridCell;
 
+typedef struct diseaseStruct {
+  int latencyPeriod;
+  double infectionChance;
+  double fatalityChance;
+} Disease;
+
 typedef GridCell** Grid;
 
 //sets a cell to be occupied by a given human
-#define CELL_SET(cell, human) \
-  do { cell.human = human; } while (0)
+#define CELL_SET(cell, newHuman) \
+  do { cell.human = newHuman; } while (0)
 
 //sets a cell to be unoccupied
 #define CELL_CLEAR(cell) \
   do { cell.human = NULL; } while (0)
+
+#define RANDINT(min, max) \
+  (rand() % (max - min)) + min
+
+#define RAND_0_TO_1 \
+  (rand() / 32767)
 
 #endif
