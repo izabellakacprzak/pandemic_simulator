@@ -24,7 +24,8 @@ int main(int argc, char **argv) {
   Address currAddress = 0;
   symbolNode *symbolTable = NULL;
   Instruction *extraInstructions = NULL;
-  char **currentLine = calloc((MAX_INSTRUCTION_PARAMS + 1), sizeof(char*));
+  char **currentLine = calloc(MAX_INSTRUCTION_PARAMS, sizeof(char*));
+  
   FATAL_SYS((currentLine == NULL));
    
   ldrAddresses loadConstants = {0};
@@ -128,6 +129,11 @@ int main(int argc, char **argv) {
   /* End the program immediately if an error has been detected */
   fatalError:
   /* Free any dynamically allocated memory */
+  for (int i = 0; i < MAX_INSTRUCTION_PARAMS; i++) {
+    if (currentLine[i]) {
+      free(currentLine[i]);
+    }
+  }
   free(currentLine);
   freeTable(symbolTable);
   free(extraInstructions);

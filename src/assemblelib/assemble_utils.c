@@ -429,7 +429,7 @@ static int setBranch(Instruction *instruction, char **code,
 }
 
 static int setHalt(Instruction *instruction) {
-	instruction = 0;
+  *instruction = 0;
 	return 0;
 }
 

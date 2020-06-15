@@ -18,15 +18,30 @@ static int instructionTok(char **destArray, char *line) {
     return INVALID_INSTRUCTION;
   }
 
+  // TODO: reduce size of destArray
   char *rest = line;
-  destArray[0] = strtok_r(line, " \n", &rest);
+  char *check = strtok_r(line, " \n", &rest);
+  
+  if (!check) {
+    destArray[0] = NULL;
+    return WHITESPACE_LINE;
+  }
+  
+  destArray[0] = strdup(check);
     
   int i = 0;
   int j, k;
     
-  while(destArray[i]) {
+  while(check) {
     i++;
-    destArray[i] = strtok_r(rest, " ,\n", &rest);
+    
+    check = strtok_r(rest, " ,\n", &rest);
+    if (!check) {
+      destArray[i] = NULL;
+      break;
+    }
+    
+    destArray[i] = strdup(check);
     k = 0;
     while(rest[k] == ' ') {
       k++;
@@ -59,11 +74,8 @@ int loadNextInstruction(char **destArray, FILE *sourceFile) {
   if(feof(sourceFile)) {
       return END_OF_FILE;
   }
-  int err = instructionTok(destArray, line);
-  if(!destArray[0]) {
-    err = WHITESPACE_LINE;
-  }
-  return err;
+  
+  return instructionTok(destArray, line);
 }
 
 int writeNextInstruction(Instruction next, FILE *outputFile) {
