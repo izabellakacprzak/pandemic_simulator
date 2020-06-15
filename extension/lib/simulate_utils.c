@@ -77,3 +77,12 @@ void checkInfections(Grid grid, Human **humans, int population,
     }
   }
 }
+
+char *getProgramError(ErrorCode e) {
+  ErrorType errors[SYS];
+  errors[ALLOCATION_FAIL].code = ALLOCATION_FAIL;
+  errors[ALLOCATION_FAIL].message = "Out of Memory";
+  
+
+ return errors[e].message; 
+}

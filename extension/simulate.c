@@ -11,11 +11,15 @@
 int main (int argc, char **argv) {
   char input[10];
   int noTurns;
+  ErrorCode err;
   int gridLength = GRID_SIZE, gridWidth = GRID_SIZE;
   Grid grid = calloc(gridLength, sizeof(GridCell*));
 
+  FATAL_PROG((grid == NULL), ALLOCATION_FAIL);
+  
   for (int i = 0; i < gridLength; i++) {
     grid[i] = calloc(gridWidth, sizeof(GridCell));
+    FATAL_PROG((grid[i] == NULL), ALLOCATION_FAIL);
     //creates unoccupied cells of default type
   }
 
@@ -80,10 +84,13 @@ int main (int argc, char **argv) {
   //creates an array of humans on the heap
   Human **humans = calloc(population, sizeof(Human*));
 
+  FATAL_PROG((humans == NULL), ALLOCATION_FAIL);
+
   int x, y;
   //TODO implement error handling of allocation fails
   for (int i = 0; i < population; i++) {
     humans[i] = calloc(1,sizeof(Human));
+    FATAL_PROG((humans[i] == NULL), ALLOCATION_FAIL);
     do{
       x = RANDINT(0, gridLength - 1); 
       y = RANDINT(0, gridWidth - 1);
@@ -117,15 +124,38 @@ int main (int argc, char **argv) {
 
     getNextInput(input);
   }
+
+
+
+
+ fatalError:
+
+  if (grid) {
+    for (int i = 0; i < gridLength; i++) {
+      free(grid[i]);
+    }
+  }
+
+  if (humans) {
+    for (int i = 0; i < population; i++) {
+      free(humans[i]);
+    }
+  }
   
-  for (int i = 0; i < gridLength; i++) {
-    free(grid[i]);
-  }
-
-  for (int i = 0; i < population; i++) {
-    free(humans[i]);
-  }
-
   free(grid);
+  free(humans);
+
+  if (err != OK) {
+    /* Print an error message*/
+    char *errorMessage;
+    if(EC_IS_SYS_ERROR(err)) {
+      errorMessage = strerror(EC_TO_SYS_ERROR(err));
+    } else {
+      errorMessage = getProgramError(err);
+    }
+    printf("%s\n", errorMessage);
+    return EXIT_FAILURE;
+  }
+  
   return EXIT_SUCCESS;
 }
