@@ -45,7 +45,8 @@ int main(int argc, char **argv) {
       /* Check if the first token is a label */
       label = isLabel(currentLine);
       if(label == 1) {
-	data.address = currAddress; 
+	data.address = currAddress;
+	currentLine[0][strlen(currentLine[0]) - 1] = '\0';
       } else if(label == -1) {
 	/* An invalid instruction is detected */
 	FATAL_PROG(1,INVALID_INSTRUCTION);

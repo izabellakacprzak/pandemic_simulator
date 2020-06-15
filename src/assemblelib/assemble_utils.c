@@ -403,8 +403,8 @@ static int setBranch(Instruction *instruction, char **code,
   *instruction = setBits(5, 25, *instruction);
   *instruction = setBits(operationNode->data.assemblyLine->conditionCode, 28, *instruction);
 
-  strcat(code[1], ":");
   symbolNode *assemblyOffset = search(symbolTable, code[1]);
+  
   int32_t offset;
   if(!assemblyOffset) {
     /* The address is a constant - set the address to it */
@@ -452,14 +452,15 @@ static int setSpecialInstruction(Instruction *instruction, char **code, symbolNo
 
 int assemble(Instruction *setInstruction, symbolNode *symbolTable,
 	     char **nextInstruction, ldrAddresses *ldrAddresses) {
+  /* check if nextInstruction is a label */
+  if(!nextInstruction[1]) {
+    return NOT_INSTRUCTION;
+  }
+
   symbolNode *operationNode = search(symbolTable, nextInstruction[0]);
 
   if (!operationNode) {
     return NOT_IN_TABLE;
-  }
-
-  if(operationNode->isLabel) {
-    return NOT_INSTRUCTION;
   }
   
   InstructionType type = operationNode->data.assemblyLine->type;
