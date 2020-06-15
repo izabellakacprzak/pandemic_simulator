@@ -1,5 +1,7 @@
 population=30
+//This is a comment
 initially_infected=2
 latency_period=7days
+sbkjadfbja
 infection_rate=0.5
 fatality_rate=0.01
