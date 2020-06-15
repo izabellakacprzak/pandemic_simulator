@@ -85,8 +85,8 @@ int main (int argc, char **argv) {
   for (int i = 0; i < population; i++) {
     humans[i] = calloc(1,sizeof(Human));
     do{
-      x = RANDINT(0, gridLength); 
-      y = RANDINT(0, gridWidth);
+      x = RANDINT(0, gridLength - 1); 
+      y = RANDINT(0, gridWidth - 1);
     } while (grid[x][y].human);
     //makes sure two humans cant be in the same square
 
@@ -108,6 +108,7 @@ int main (int argc, char **argv) {
 
     for (int i = 0; i < noTurns; i++) {
       //call turn function
+      move(grid, humans, disease, population, gridLength, gridWidth);
     }
 
     printToTerminal(grid, gridLength, gridWidth);

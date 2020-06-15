@@ -50,4 +50,6 @@ typedef GridCell** Grid;
 #define RAND_0_TO_1 \
   (rand() / 32767)
 
+void move(Grid grid, Human **humans, Disease disease, int population,
+	  int length, int height);
 #endif
