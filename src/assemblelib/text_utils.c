@@ -18,7 +18,13 @@ static int instructionTok(char **destArray, char *line) {
     return INVALID_INSTRUCTION;
   }
 
-  // TODO: reduce size of destArray
+  for (int i = 0; i < MAX_INSTRUCTION_PARAMS + 1; i++) {
+    if (destArray[i]) {
+      free(destArray[i]);
+      destArray[i] = NULL;
+    }
+  }
+  
   char *rest = line;
   char *check = strtok_r(line, " \n", &rest);
   
@@ -53,7 +59,8 @@ static int instructionTok(char **destArray, char *line) {
       while(rest[j] != ']') {
         j++;
       }
-      strncpy(destArray[i], rest, j + 1);
+      
+      destArray[i] = strdup(rest);
       destArray[i][j + 1] = '\0';
       rest = &rest[j + 2];
     }
