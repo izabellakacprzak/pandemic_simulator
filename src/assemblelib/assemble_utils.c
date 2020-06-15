@@ -435,7 +435,7 @@ static int setHalt(Instruction *instruction) {
 
 static int setSpecialInstruction(Instruction *instruction, char **code, symbolNode *operationNode) {
   int err;
-  char **newCode = calloc(MAX_INSTRUCTION_PARAMS, sizeof(char*));
+  char **newCode = calloc(MAX_INSTRUCTION_PARAMS + 1, sizeof(char*));
  
   newCode[0] = strdup("mov");
   newCode[4] = code[2];
@@ -443,7 +443,6 @@ static int setSpecialInstruction(Instruction *instruction, char **code, symbolNo
   newCode[1] = code[1];
   newCode[3] = code[0];
   err = setDataProcessing(instruction, newCode, operationNode);
-
 
   free(newCode[0]);
   free(newCode);
