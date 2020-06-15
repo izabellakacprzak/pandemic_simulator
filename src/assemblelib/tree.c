@@ -3,17 +3,10 @@
 
 #include "tree.h"
 
-char* strDoop(const char* str) {
-  int len = strlen(str);
-  char* newStr = calloc(len + 1, sizeof(char));
-  memcpy(newStr, str, len);
-  return newStr;
-}
-
 symbolNode *createNode(const char* sym, treeData data, int isLabel) {
     symbolNode *root = calloc(1, sizeof(symbolNode));
 
-    root->symbol = strDoop(sym);
+    root->symbol = strdup(sym);
 
     if(isLabel) {
       root->data.address = data.address;

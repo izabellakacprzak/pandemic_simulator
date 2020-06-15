@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   Address currAddress = 0;
   symbolNode *symbolTable = NULL;
   Instruction *extraInstructions = NULL;
-  char **currentLine = calloc(MAX_INSTRUCTION_PARAMS, sizeof(char*));
+  char **currentLine = calloc(MAX_INSTRUCTION_PARAMS + 1, sizeof(char*));
   
   FATAL_SYS((currentLine == NULL));
    
