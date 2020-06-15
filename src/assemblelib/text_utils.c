@@ -76,12 +76,13 @@ int loadNextInstruction(char **destArray, FILE *sourceFile) {
       return NULL_FILE;
   }
   char line[MAX_INSTRUCTION_SIZE];
-  fgets(line, MAX_INSTRUCTION_SIZE, sourceFile);
-
-  if(feof(sourceFile)) {
-      return END_OF_FILE;
+  if (!fgets(line, MAX_INSTRUCTION_SIZE, sourceFile)) {
+    if(feof(sourceFile)) {
+        return END_OF_FILE;
+    }
+    return SYS; //feof failed because of a system fault
   }
-  
+
   return instructionTok(destArray, line);
 }
 
