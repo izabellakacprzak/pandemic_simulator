@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Ilib -g -D_DEFAULT_SOURCE -std=c99 -pedantic
+CFLAGS = -Wall -Wextra -Ilib -O3 -g -D_DEFAULT_SOURCE -std=c99 -pedantic
 LDLIBS = -L../combinedlib -lcombinedutils
 LIB = libemulateutils.a
 LIBOBJS = execute_utils.o pipeline_utils.o

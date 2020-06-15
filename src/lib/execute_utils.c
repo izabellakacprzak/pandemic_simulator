@@ -114,7 +114,12 @@ static Register getOffsetRegister(int carry, Instruction instruction, State *sta
     int carryBit;
 
     if(selectedShift == lsl) {
-      carryBit = (instruction & (1 << (32 - amount))) >> (32 - amount);
+      if (amount == 0) {
+	carryBit = 0;
+      } else {
+	carryBit = (instruction & (1 << (32 - amount))) >> (32 - amount);
+      }
+      
     } else {
       carryBit = (instruction & (1 << (amount - 1))) >> (amount - 1);
     }
@@ -308,13 +313,13 @@ static int executeDataTransfer(Instruction instruction, State *statePtr) {
 	 || invalidMemoryAccess(regAddress + 3))
 	return 1;
       
-      *destReg = statePtr->memory[regAddress];
+      *destReg = (uint32_t) statePtr->memory[regAddress];
 
-      *destReg += statePtr->memory[regAddress + 1] << 8;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 1] << 8;
 
-      *destReg += statePtr->memory[regAddress + 2] << 16;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 2] << 16;
 
-      *destReg += statePtr->memory[regAddress + 3] << 24;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 3] << 24;
     } else {
       memAddress = *baseReg + offset;
       
@@ -340,13 +345,13 @@ static int executeDataTransfer(Instruction instruction, State *statePtr) {
 	 || invalidMemoryAccess(regAddress + 3))
 	return 1;
       
-      *destReg = statePtr->memory[regAddress];
+      *destReg = (uint32_t) statePtr->memory[regAddress];
 
-      *destReg += statePtr->memory[regAddress + 1] << 8;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 1] << 8;
 
-      *destReg += statePtr->memory[regAddress + 2] << 16;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 2] << 16;
 
-      *destReg += statePtr->memory[regAddress + 3] << 24;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 3] << 24;
 
       *baseReg += offset;
     } else {

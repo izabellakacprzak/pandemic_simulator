@@ -1,6 +1,6 @@
 CC      = gcc
-CFLAGS  = -Wall -Wextra -fsanitize=undefined -Ilib -g -O0 -D_DEFAULT_SOURCE -std=c99 -pedantic
-LDLIBS  = -lubsan -Llib -lemulateutils -Lassemblelib -lassembleutils -Lcombinedlib -lcombinedutils
+CFLAGS  = -Wall -Wextra -Ilib -g -O3 -D_DEFAULT_SOURCE -std=c99 -pedantic
+LDLIBS  = -Llib -lemulateutils -Lassemblelib -lassembleutils -Lcombinedlib -lcombinedutils
 BUILD	= libs emulate assemble
 
 .SUFFIXES: .c .o
