@@ -17,7 +17,8 @@ void move(Grid grid, Human **humans, int population,
 	x = humans[i]->x + (RANDINT(0, 3) - 1); //random int from -1 to 1
 	y = humans[i]->y + (RANDINT(0, 3) - 1);
       } while(!(0 <= x && x < length) || !(0 <= y && y < height) ||
-	      (grid[x][y].human && !(x == humans[i]->x && y == humans[i]->y)));
+	      (grid[x][y].human && grid[x][y].human != humans[i]
+		/*&& !(x == humans[i]->x && y == humans[i]->y)*/));
       CELL_CLEAR(grid[humans[i]->x][humans[i]->y]);
       humans[i]->x = x;
       humans[i]->y = y;
