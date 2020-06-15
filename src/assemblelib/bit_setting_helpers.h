@@ -2,6 +2,7 @@
 #define ASSEMBLE_HELPERS
 
 #include "assemble_utils.h"
+#include "tree.h"
 
 /* Set bits starting from "bit" to a given value */
 Instruction setBits(uint32_t value, int bit, Instruction instr);

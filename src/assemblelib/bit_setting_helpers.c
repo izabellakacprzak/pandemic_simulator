@@ -1,6 +1,7 @@
 #include "bit_setting_helpers.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 Instruction setBits(uint32_t value, int bit, Instruction instr) {
   return instr |= (value << bit);;
