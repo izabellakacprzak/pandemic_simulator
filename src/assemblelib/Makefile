@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Ilib -g -O3 -D_DEFAULT_SOURCE -std=c99 -pedantic
 LDLIBS = -L../combinedlib -lcombinedutils
 LIB = libassembleutils.a
-LIBOBJS = tree.o text_utils.o assemble_utils.o
+LIBOBJS = tree.o text_utils.o assemble_utils.o bit_setting_helpers.o
 BUILD = libs $(LIB)
 
 all: $(BUILD)
@@ -22,3 +22,5 @@ assemble_utils.o: assemble_utils.h
 text_utils.o: text_utils.h
 
 tree.o: tree.h
+
+bit_setting_helpers.o: bit_setting_helpers.h

@@ -61,8 +61,6 @@ typedef enum shift_codes {
 int assemble(Instruction *setInstruction, symbolNode *symbolTable,
 	     char **nextInstruction, ldrAddresses *ldrAddresses);
 
-int contains(char *value, const char **array);
-
 char *getProgramError(errorCode e);
 
 #endif // ASSEMBLE_UTILS_H
