@@ -4,8 +4,8 @@
 
 typedef enum healthStatus {
   HEALTHY,
-  INFECTED,
-  INFECTED_WITH_SYMPTOMS
+  LATENT,
+  SICK
 } HealthStatus;
 
 typedef enum cellType {

@@ -15,10 +15,10 @@ void printToTerminal(Grid grid, int gridLength, int gridHeight) {
 	case HEALTHY:
 	  printf("H"); //healthy
 	  break;
-	case INFECTED:
-	  printf("C"); //carrier
+	case LATENT:
+	  printf("L"); //carrier
 	  break;
-	case INFECTED_WITH_SYMPTOMS:
+	case SICK:
 	  printf("I"); //infected
 	  break;
 	default:
