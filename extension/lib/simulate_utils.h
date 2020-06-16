@@ -55,7 +55,7 @@ double randomFrom0To1(void);
 
 void move(Grid grid, Human **humans, int population, int length, int height);
 
-void checkInfections(Grid grid, Human **humans, int population, int length, int height, Disease *disease);
+void checkInfections(Grid grid, Human **humans, int *population, int length, int height, Disease *disease);
 
 typedef enum errorCode {
   OK,

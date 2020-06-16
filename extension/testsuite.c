@@ -267,7 +267,7 @@ int main(void) {
   // fatalityChance and recoveryChance = 0
   humans[0]->status = HEALTHY;
   
-  checkInfections(grid, humans, 1, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
 
   testbool(humans[0]->status == HEALTHY, "Single healthy human remains healthy");
 
@@ -285,7 +285,7 @@ int main(void) {
        - - -   */
 
   humans[4]->status = LATENT;
-  checkInfections(grid, humans, population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
 
   {
     int latent = 0;
@@ -307,7 +307,7 @@ int main(void) {
 
   humans[8]->status = LATENT;
 
-  checkInfections(grid, humans, population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
 
   {
     int correct = 0;

@@ -116,14 +116,13 @@ int main (int argc, char **argv) {
     for (int i = 0; i < noTurns; i++) {
       //call turn function
       move(grid, humans, population, gridLength, gridHeight);
-      checkInfections(grid, humans, population, gridLength, gridHeight, &disease);
+      checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
     }
 
     printToTerminal(grid, gridLength, gridHeight);
 
     getNextInput(input);
   }
-
 
  fatalError:
 
@@ -135,7 +134,9 @@ int main (int argc, char **argv) {
 
   if (humans) {
     for (int i = 0; i < population; i++) {
-      free(humans[i]);
+      if (humans[i]) {
+        free(humans[i]);
+      }
     }
   }
   
