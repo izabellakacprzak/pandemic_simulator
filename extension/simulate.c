@@ -6,13 +6,19 @@
 #include <string.h>
 #include <time.h>
 
+typedef enum outputSelection {
+  NO_OUTPUT,
+  GIF,
+  TERMINAL
+} outputSelection;
 
 int main (int argc, char **argv) {
   char input[10];
   int noTurns, gridLength, gridHeight, population, initiallyInfected;
   ErrorCode err = OK;
   Disease disease = {0};
-
+  outputSelection outputType = NO_OUTPUT; //no output selected
+  
   srand(time(NULL));
 
   setInitial(&disease, &population, &initiallyInfected,
@@ -57,20 +63,40 @@ int main (int argc, char **argv) {
     humans[i]->latencyTime = disease.latencyPeriod;
   }
 
-  getNextInput(input);
-  
-  while (strcmp(input, "q")) {
-    noTurns = atoi(input);
+  while(outputType == NO_OUTPUT) {
+    printf("What output would you like? ('gif'/'terminal')\n");
+    scanf("%9s", input);
 
-    for (int i = 0; i < noTurns; i++) {
-      //call turn function
-      move(grid, humans, population, gridLength, gridHeight);
-      checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+    if (strcmp(input, "gif") == 0) {
+      outputType = GIF;
+    } else if (strcmp(input, "terminal") == 0) {
+      outputType = GIF;
+    } else {
+      printf("Invalid input %s\n", input);
     }
+  }
 
-    printToTerminal(grid, gridLength, gridHeight);
+  if (outputType == TERMINAL) {
+    FATAL_SYS(getNextInput(input) != 1); //kill if no item is scanned
+  
+    while (strcmp(input, "q")) {
+      noTurns = atoi(input);
+      
+      for (int i = 0; i < noTurns; i++) {
+      //call turn function
+	move(grid, humans, population, gridLength, gridHeight);
+	checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+      }
+      
+      printToTerminal(grid, gridLength, gridHeight);
 
-    getNextInput(input);
+      FATAL_SYS(getNextInput(input) != 1);
+    }
+  } else {
+    //TODO add gif handling code
+    printf("How many turns do you want to include?\n");
+    scanf("%9s", input);
+    noTurns = atoi(input);
   }
 
  fatalError:
