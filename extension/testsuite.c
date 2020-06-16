@@ -248,7 +248,7 @@ int main(void) {
                            int length, int height, Disease *disease) */
   printf("Tests for checkInfections (simulate_utils.c):\n");
 
-  // srand(1);
+  srand(1);
 
   /* using randomFrom1To0:
      randoms: {0.840188, 0.394383, 0.783099, 0.798440, 0.911647,

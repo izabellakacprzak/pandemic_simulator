@@ -6,82 +6,31 @@
 #include <string.h>
 #include <time.h>
 
-#define BUFFER_SIZE (100)
 
 int main (int argc, char **argv) {
   char input[10];
-  int noTurns;
+  int noTurns, gridLength, gridHeight, population, initiallyInfected;
   ErrorCode err;
-  int gridLength = GRID_SIZE, gridHeight = GRID_SIZE;
+  Disease disease = {0};
+
+  srand(time(NULL));
+
+  setInitial(&disease, &population, &initiallyInfected,
+	     &gridLength, &gridHeight);
+  configurate(&disease, &population, &initiallyInfected,
+	      &gridLength, &gridHeight);
+
+  //creates an array of humans on the heap
   Grid grid = calloc(gridLength, sizeof(GridCell*));
 
   FATAL_PROG((grid == NULL), ALLOCATION_FAIL);
-  
+
   for (int i = 0; i < gridLength; i++) {
     grid[i] = calloc(gridHeight, sizeof(GridCell));
     FATAL_PROG((grid[i] == NULL), ALLOCATION_FAIL);
     //creates unoccupied cells of default type
   }
 
-  srand(time(NULL));
-  
-  /* Declarations of variables */
-  int population, initiallyInfected;
-  Disease disease = {0};
-
-  /* Open the config file and initalise the variables */
-  FILE *configFile;
-  if((configFile = fopen("config.txt", "r" )) == NULL){
-      perror("Error loading configuration file");
-      exit(EXIT_FAILURE);
-  }
-
-  char buffer[BUFFER_SIZE];
-
-  //Code duplication to remove - this is a working version
-  while(!feof(configFile)) {
-    fgets(buffer, BUFFER_SIZE, configFile);
-    /* Comments in config file are denoted with / */
-    if(buffer[0] == '/') {
-      continue;
-    } else if(strstr(buffer, "population")) {
-      if(!sscanf(buffer, "population=%d", &population)) {
-	  perror("Configuration value not found\n");
-	  exit(EXIT_FAILURE);
-	}
-    } else if(strstr(buffer, "initially_infected")) {
-      if(!sscanf(buffer, "initially_infected=%d", &initiallyInfected)) {
-	  perror("Configuration value not found\n");
-	  exit(EXIT_FAILURE);
-	}
-    } else if(strstr(buffer, "latency_period")){
-      if(!sscanf(buffer, "latency_period=%d", &(disease.latencyPeriod))){
-	  perror("Configuration value not found\n");
-	  exit(EXIT_FAILURE);
-	}
-    } else if(strstr(buffer, "infection_rate")){
-      if(!sscanf(buffer, "infection_rate=%lf", &(disease.infectionChance))){
-	  perror("Configuration value not found");
-	  exit(EXIT_FAILURE);
-	}
-    } else if(strstr(buffer, "fatality_rate")){
-      if(!sscanf(buffer, "fatality_rate=%lf", &(disease.fatalityChance))){
-	  perror("Configuration value not found");
-	  exit(EXIT_FAILURE);
-	}
-    } else {
-      printf("configuration variable %s does not exist\n", buffer);
-    }
-  }
-  fclose(configFile);
-
-  printf("Population is: %d\n", population);
-  printf("The number of initially infected is: %d\n", initiallyInfected);
-  printf("The latency period of the virus is: %d\n", disease.latencyPeriod);
-  printf("The infection rate is: %lf\n", disease.infectionChance);
-  printf("The fatality rate is: %lf\n", disease.fatalityChance);   
-
-  //creates an array of humans on the heap
   Human **humans = calloc(population, sizeof(Human*));
 
   FATAL_PROG((humans == NULL), ALLOCATION_FAIL);
