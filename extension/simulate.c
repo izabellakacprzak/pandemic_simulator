@@ -5,12 +5,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "gifoutput/gif_output.h"
 
 typedef enum outputSelection {
   NO_OUTPUT,
   GIF,
   TERMINAL
 } outputSelection;
+
+#define CELL_SIZE 10
 
 int main (int argc, char **argv) {
   char input[10];
@@ -97,6 +100,22 @@ int main (int argc, char **argv) {
     printf("How many turns do you want to include?\n");
     scanf("%9s", input);
     noTurns = atoi(input);
+
+    ge_GIF *gif = initialiseGif(gridLength, gridHeight, CELL_SIZE);
+
+
+    writeFrame(gif, grid, gridLength, gridHeight, CELL_SIZE);
+    //adds a frame of the current board to the gif
+    
+    for (int i = 0; i < noTurns; i++) {
+      //call turn function
+      move(grid, humans, population, gridLength, gridHeight);
+      checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+      writeFrame(gif, grid, gridLength, gridHeight, CELL_SIZE);
+    }
+    
+    //close gif file and produce gif
+    ge_close_gif(gif);
   }
 
  fatalError:
