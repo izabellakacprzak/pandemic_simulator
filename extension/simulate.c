@@ -13,7 +13,7 @@ typedef enum outputSelection {
   TERMINAL
 } outputSelection;
 
-#define CELL_SIZE 10
+#define CELL_SIZE 3
 
 int main (int argc, char **argv) {
   char input[10];
