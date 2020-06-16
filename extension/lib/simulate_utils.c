@@ -90,5 +90,16 @@ void checkInfections(Grid grid, Human **humans, int *population,
 	      humans[i]->status = HEALTHY;
       }
     }
+
+    // if human is dead reallocate humans array
+    if(humans[i]->status == DEAD){
+            if(i < *population - 1){
+                    //humans[i] = humans[*population - 1];
+                    memmove(&humans[i], &humans[i+1], sizeof(Human *) * (*population - i - 1)); 
+                    humans = realloc(humans, sizeof(Human *) * ((*population) - 1));
+            }
+            free(humans[*population - 1]);
+            *population = *population - 1;
+    }
   }
 }
