@@ -1,6 +1,6 @@
-population=10
+population 10
 //This is a comment
-initially_infected=5
-latency_period=7days
-infection_rate=0.5
-fatality_rate=0.1
+initially_infected 5
+latency_period 7days
+infection_rate 0.5
+fatality_rate 0.1
