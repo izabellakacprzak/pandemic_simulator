@@ -26,10 +26,10 @@ void move(Grid grid, Human **humans, int population,
   }
 }
 
-void checkInfections(Grid grid, Human **humans, int population,
+void checkInfections(Grid grid, Human **humans, int *population,
 		     int length, int height, Disease *disease) {
   int x, y;
-  for (int i = 0; i < population; i++) {
+  for (int i = 0; i < *population; i++) {
     x = humans[i]->x;
     y = humans[i]->y;
 
@@ -74,6 +74,17 @@ void checkInfections(Grid grid, Human **humans, int population,
       } else if (randomFrom0To1() < disease->recoveryChance) {
 	humans[i]->status = HEALTHY;
       }
+    }
+
+    // if human is dead reallocate humans array
+    if(humans[i]->status == DEAD){
+            if(i < *population - 1){
+                    //humans[i] = humans[*population - 1];
+                    memmove(&humans[i], &humans[i+1], sizeof(Human *) * (*population - i - 1)); 
+                    humans = realloc(humans, sizeof(Human *) * ((*population) - 1));
+            }
+            free(humans[*population - 1]);
+            *population = *population - 1;
     }
   }
 }
