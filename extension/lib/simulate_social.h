@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include "simulate_utils.h"
 
-void initialiseSocials(int amount, Grid grid, int gridLength, int gridHeight);
+void initialiseSocials(int amount, Grid grid, GridCell *socialPlaces, int gridLength, int gridHeight);
 
-// void moveAStar();
+void moveAStar(Grid grid, Human **humans, int population,
+	  int length, int height);
 
 #endif

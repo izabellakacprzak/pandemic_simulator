@@ -32,8 +32,13 @@ int main (int argc, char **argv) {
     //creates unoccupied cells of default type
   }
 
-  initialiseSocials(numSocials, grid, gridLength, gridHeight);
+  GridCell *socialPlaces;
 
+  if(numSocials){
+    socialPlaces = calloc(numSocials, sizeof(GridCell));
+    initialiseSocials(numSocials, grid, socialPlaces, gridLength, gridHeight);
+  }
+  
   Human **humans = calloc(population, sizeof(Human*));
 
   FATAL_PROG((humans == NULL), ALLOCATION_FAIL);
@@ -94,7 +99,10 @@ int main (int argc, char **argv) {
       }
     }
   }
-  
+
+  if(numSocials){
+  free(socialPlaces);
+  }
   free(grid);
   free(humans);
 

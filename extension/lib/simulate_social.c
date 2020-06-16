@@ -5,7 +5,8 @@
 #include "simulate_utils.h"
 #include "simulationIO.h"
 
-void initialiseSocials(int amount, Grid grid, int gridLength, int gridHeight) {
+void initialiseSocials(int amount, Grid grid, GridCell *socialPlaces,
+		       int gridLength, int gridHeight) {
   int x, y;
   for (int i = 1; i <= amount; i++) {
     do {
@@ -15,11 +16,24 @@ void initialiseSocials(int amount, Grid grid, int gridLength, int gridHeight) {
 
     grid[x][y].type = SOCIAL;
     grid[x][y].spaceNumber = i;
+    socialPlaces[i - 1] = grid[x][y];
   }
+
 }
 
 /*
-void moveAStar () {
+void moveAStar (Grid grid, Human **humans, int population,
+	  int length, int height) {
+  int x, y;
+  for(int i = 0; i < population; i++){
+    if(humans[i]->status != DEAD) {
+      
+    }
 
+  }
+
+
+  
 }
+
 */
