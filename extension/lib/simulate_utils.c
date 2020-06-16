@@ -8,6 +8,14 @@ double randomFrom0To1(void) {
   return (double) rand() / (double) RAND_MAX;
 }
 
+void cellSet(GridCell *cell, Human *newHuman) {
+  cell->human = newHuman;
+}
+
+void cellClear(GridCell *cell) {
+  cell->human = NULL;
+}
+
 void move(Grid grid, Human **humans, int population,
 	  int length, int height) {
   int x, y;
@@ -78,8 +86,10 @@ void checkInfections(Grid grid, Human **humans, int *population,
 		humans[i]->latencyTime = disease->latencyPeriod;
 	      }
 	    }
+	    
 	  }
 	}
+	
       }
     }
 
@@ -118,6 +128,7 @@ void checkInfections(Grid grid, Human **humans, int *population,
 	}
 	*/
  	*population = *population - 1;
+	i--;
       } else if (randomFrom0To1() < disease->recoveryChance) {
 	      humans[i]->status = HEALTHY;
       }

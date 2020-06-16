@@ -11,7 +11,7 @@
 int main (int argc, char **argv) {
   char input[10];
   int noTurns, gridLength, gridHeight, population, initiallyInfected, numSocials;
-  ErrorCode err;
+  ErrorCode err = OK;
   Disease disease = {0};
 
   srand(time(NULL));
@@ -22,12 +22,12 @@ int main (int argc, char **argv) {
 	      &gridLength, &gridHeight, &numSocials);
 
   //creates an array of humans on the heap
-  Grid grid = calloc(gridLength, sizeof(GridCell*));
+  Grid grid = calloc(gridHeight, sizeof(GridCell*));
 
   FATAL_PROG((grid == NULL), ALLOCATION_FAIL);
 
-  for (int i = 0; i < gridLength; i++) {
-    grid[i] = calloc(gridHeight, sizeof(GridCell));
+  for (int i = 0; i < gridHeight; i++) {
+    grid[i] = calloc(gridLength, sizeof(GridCell));
     FATAL_PROG((grid[i] == NULL), ALLOCATION_FAIL);
     //creates unoccupied cells of default type
   }
@@ -75,7 +75,7 @@ int main (int argc, char **argv) {
 
     for (int i = 0; i < noTurns; i++) {
       //call turn function
-      move(grid, humans, population, gridLength, gridHeight);
+      moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight);
       checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
     }
 
@@ -101,7 +101,7 @@ int main (int argc, char **argv) {
   }
 
   if(numSocials){
-  free(socialPlaces);
+    free(socialPlaces);
   }
   free(grid);
   free(humans);

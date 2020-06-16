@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -g -D_DEFAULT_SOURCE -std=c99 -pedantic
+CFLAGS = -Wall -Wextra -g -D_DEFAULT_SOURCE -std=c99 -pedantic
 LIB = libsimulateutils.a
 LIBOBJS = simulate_utils.o simulationIO.o simulate_social.o
 BUILD = $(LIB)

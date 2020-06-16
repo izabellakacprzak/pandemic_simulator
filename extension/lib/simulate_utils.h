@@ -46,6 +46,7 @@ typedef struct socialSpace {
 
 typedef GridCell** Grid;
 
+
 //sets a cell to be occupied by a given human
 #define CELL_SET(cell, newHuman) \
   do { cell.human = newHuman; } while (0)
@@ -58,6 +59,10 @@ typedef GridCell** Grid;
   (rand() % (max - min)) + min
 
 double randomFrom0To1(void);
+
+void cellSet(GridCell *cell, Human *newHuman);
+
+void cellClear(GridCell *cell);
 
 void move(Grid grid, Human **humans, int population, int length, int height);
 
