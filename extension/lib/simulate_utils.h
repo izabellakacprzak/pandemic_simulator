@@ -18,6 +18,12 @@ typedef enum cellType {
   HOSPITAL
 } CellType;
 
+
+typedef struct point {
+	int x;
+	int y;
+} Point;
+
 typedef struct humanStruct {
   int x;
   int y;
