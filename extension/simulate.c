@@ -87,7 +87,6 @@ int main (int argc, char **argv) {
   FATAL_PROG((humans == NULL), ALLOCATION_FAIL);
 
   int x, y;
-  //TODO implement error handling of allocation fails
   for (int i = 0; i < population; i++) {
     humans[i] = calloc(1,sizeof(Human));
     FATAL_PROG((humans[i] == NULL), ALLOCATION_FAIL);
@@ -124,8 +123,6 @@ int main (int argc, char **argv) {
 
     getNextInput(input);
   }
-
-
 
 
  fatalError:
