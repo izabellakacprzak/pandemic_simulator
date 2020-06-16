@@ -1,4 +1,5 @@
 #include "simulate_utils.h"
+#include "simulate_social.h"
 #include "simulationIO.h"
 #include <assert.h>
 #include <stdio.h>
@@ -9,16 +10,16 @@
 
 int main (int argc, char **argv) {
   char input[10];
-  int noTurns, gridLength, gridHeight, population, initiallyInfected;
+  int noTurns, gridLength, gridHeight, population, initiallyInfected, numSocials;
   ErrorCode err;
   Disease disease = {0};
 
   srand(time(NULL));
 
   setInitial(&disease, &population, &initiallyInfected,
-	     &gridLength, &gridHeight);
+	     &gridLength, &gridHeight, &numSocials);
   configurate(&disease, &population, &initiallyInfected,
-	      &gridLength, &gridHeight);
+	      &gridLength, &gridHeight, &numSocials);
 
   //creates an array of humans on the heap
   Grid grid = calloc(gridLength, sizeof(GridCell*));
@@ -31,6 +32,8 @@ int main (int argc, char **argv) {
     //creates unoccupied cells of default type
   }
 
+  initialiseSocials(numSocials, grid, gridLength, gridHeight);
+
   Human **humans = calloc(population, sizeof(Human*));
 
   FATAL_PROG((humans == NULL), ALLOCATION_FAIL);
@@ -40,7 +43,7 @@ int main (int argc, char **argv) {
     humans[i] = calloc(1,sizeof(Human));
     FATAL_PROG((humans[i] == NULL), ALLOCATION_FAIL);
     do{
-      x = RANDINT(0, gridLength - 1); 
+      x = RANDINT(0, gridLength - 1);
       y = RANDINT(0, gridHeight - 1);
     } while (grid[x][y].human);
     //makes sure two humans cant be in the same square
@@ -48,6 +51,9 @@ int main (int argc, char **argv) {
     humans[i]->x = x;
     humans[i]->y = y;
     humans[i]->risk = randomFrom0To1();
+    if (numSocials) {
+      humans[i]->socialPreference = RANDINT(1, numSocials);
+    }
     CELL_SET(grid[x][y], humans[i]);
   }
 

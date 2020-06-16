@@ -3,8 +3,6 @@
 #include <assert.h>
 #include <string.h>
 
-
-
 void printToTerminal(Grid grid, int gridLength, int gridHeight) {
   assert(gridLength >= 0);
   assert(gridHeight >= 0);
@@ -30,7 +28,11 @@ void printToTerminal(Grid grid, int gridLength, int gridHeight) {
 	  break;
 	}
       } else {
-	printf("-"); //empty cell
+	if (grid[i][j].type == SOCIAL) {
+	  printf("S"); //social space
+	} else {
+	  printf("-"); //empty cell
+	}
       }
     }
     printf("\n");
@@ -38,7 +40,7 @@ void printToTerminal(Grid grid, int gridLength, int gridHeight) {
 }
 
 int getNextInput(char *input) {
-  printf("How many turns do you want to wait? (q to quit)\n");
+printf("How many turns do you want to wait? (q to quit)\n");
   return scanf("%9s", input);
 }
 
@@ -56,12 +58,13 @@ static void getDouble(char *buffer, double *value){
   }
 }
 
-void setInitial(Disease *disease, int *population, int *initiallyInfected,int *gridLength, int *gridHeight){
+void setInitial(Disease *disease, int *population, int *initiallyInfected,int *gridLength, int *gridHeight, int *numSocials){
 
   *population = DEFAULT_POPULATION;
   *initiallyInfected = DEFAULT_INFECTED;
   *gridLength = GRID_SIZE;
   *gridHeight = GRID_SIZE;
+  *numSocials = 2;
   disease->latencyPeriod = LATENCY;
   disease->infectionChance = INF_CHANCE;
   disease->fatalityChance = FATAL_CHANCE;
@@ -69,12 +72,12 @@ void setInitial(Disease *disease, int *population, int *initiallyInfected,int *g
    
 }
 
-void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight) {
+void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight, int *numSocials) {
 
   FILE *configFile;
     if((configFile = fopen("config.txt", "r" )) == NULL){
         printf("Error loading configuration file... Reverting to default...\n");
-	setInitial(disease, population, initiallyInfected, gridLength, gridHeight);
+	setInitial(disease, population, initiallyInfected, gridLength, gridHeight, numSocials);
     } else{
       char buffer[BUFFER_SIZE];
 

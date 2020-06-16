@@ -14,21 +14,23 @@ typedef enum healthStatus {
 
 typedef enum cellType {
   NORMAL,
-  WORK,
+  SOCIAL,
   HOSPITAL
 } CellType;
 
 typedef struct humanStruct {
+  int latencyTime;
   int x;
   int y;
-  double risk; 
+  int socialPreference;
+  double risk;
   HealthStatus status;
-  int latencyTime;
 } Human;
 
 typedef struct gridCellStruct {
   Human *human;
   CellType type;
+  int spaceNumber;
 } GridCell;
 
 typedef struct diseaseStruct {
