@@ -14,3 +14,4 @@ simulate_utils.o: simulate_utils.h
 simulationIO.o: simulationIO.h
 clean:
 	/bin/rm -f $(BUILD) *.o core
+
