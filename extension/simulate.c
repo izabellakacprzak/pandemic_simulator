@@ -32,10 +32,10 @@ int main (int argc, char **argv) {
     //creates unoccupied cells of default type
   }
 
-  GridCell *socialPlaces;
+  SocialSpace *socialPlaces;
 
   if(numSocials){
-    socialPlaces = calloc(numSocials, sizeof(GridCell));
+    socialPlaces = calloc(numSocials, sizeof(SocialSpace));
     initialiseSocials(numSocials, grid, socialPlaces, gridLength, gridHeight);
   }
   

@@ -30,7 +30,6 @@ typedef struct humanStruct {
 typedef struct gridCellStruct {
   Human *human;
   CellType type;
-  int spaceNumber;
 } GridCell;
 
 typedef struct diseaseStruct {
@@ -39,6 +38,11 @@ typedef struct diseaseStruct {
   double fatalityChance;
   double recoveryChance;
 } Disease;
+
+typedef struct socialSpace {
+  int x;
+  int y;
+} SocialSpace;
 
 typedef GridCell** Grid;
 
