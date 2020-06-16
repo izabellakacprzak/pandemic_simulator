@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <string.h>
 
-#define BUFFER_SIZE (100)
+
 
 void printToTerminal(Grid grid, int gridLength, int gridHeight) {
   assert(gridLength >= 0);
@@ -56,49 +56,70 @@ static void getDouble(char *buffer, double *value){
   }
 }
 
-void configurate(Disease *disease, int *population, int *initiallyInfected) {
+void setInitial(Disease *disease, int *population, int *initiallyInfected,int *gridLength, int *gridHeight){
+
+  *population = DEFAULT_POPULATION;
+  *initiallyInfected = DEFAULT_INFECTED;
+  *gridLength = GRID_SIZE;
+  *gridHeight = GRID_SIZE;
+  disease->latencyPeriod = LATENCY;
+  disease->infectionChance = INF_CHANCE;
+  disease->fatalityChance = FATAL_CHANCE;
+  disease->recoveryChance = RECOVERY_CHANCE;
+   
+}
+
+void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight) {
 
   FILE *configFile;
     if((configFile = fopen("config.txt", "r" )) == NULL){
-        perror("Error loading configuration file");
-	exit(EXIT_FAILURE);
-    }
+        printf("Error loading configuration file... Reverting to default...\n");
+	setInitial(disease, population, initiallyInfected, gridLength, gridHeight);
+    } else{
+      char buffer[BUFFER_SIZE];
 
-  char buffer[BUFFER_SIZE];
-
-  //Code duplication to remove - this is a working version
-  while(!feof(configFile)) {
+      //Code duplication to remove - this is a working version
+      while(!feof(configFile)) {
   
-    fgets(buffer, BUFFER_SIZE, configFile);
+	fgets(buffer, BUFFER_SIZE, configFile);
     /* Comments in config file are denoted with / */
-    if(buffer[0] == '/') {
-      continue;
-    } else if(strstr(buffer, "population")) {
-      getInt(buffer, population);
-    } else if(strstr(buffer, "initially_infected")) {
-      getInt(buffer, initiallyInfected);
-    } else if(strstr(buffer, "latency_period")){
-      getInt(buffer, &disease->latencyPeriod);      
-    } else if(strstr(buffer, "infection_rate")){
-      getDouble(buffer, &disease->infectionChance);
-    } else if(strstr(buffer, "fatality_rate")){
-      getDouble(buffer, &disease->fatalityChance);
-    } else {
-      printf("Configuration variable %s does not exist\n", buffer);
+	if(buffer[0] == '/') {
+	  continue;
+	} else if(strstr(buffer, "population")) {
+	  getInt(buffer, population);
+	} else if(strstr(buffer, "initially_infected")) {
+	  getInt(buffer, initiallyInfected);
+	} else if(strstr(buffer, "latency_period")){
+	  getInt(buffer, &disease->latencyPeriod);      
+	} else if(strstr(buffer, "length")){
+	  getInt(buffer, gridLength);      
+	} else if(strstr(buffer, "height")){
+	  getInt(buffer, gridHeight);      
+	} else if(strstr(buffer, "infection_rate")){
+	  getDouble(buffer, &disease->infectionChance);
+	} else if(strstr(buffer, "fatality_rate")){
+	  getDouble(buffer, &disease->fatalityChance);
+	} else if(strstr(buffer, "recovery_rate")){
+	  getDouble(buffer, &disease->recoveryChance);
+	} else {
+	  printf("Configuration variable %s does not exist\n", buffer);
+	}
+      }
+      fclose(configFile);
     }
-  }
-  fclose(configFile);
-
-  printConfigValues(disease, population, initiallyInfected); 
+    printConfigValues(disease, population, initiallyInfected, gridLength, gridHeight); 
 
 }
 
-void printConfigValues(Disease *disease, int *population, int *initiallyInfected) {
+void printConfigValues(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight) {
 
   printf("Population is: %d\n", *population);
   printf("The number of initially infected is: %d\n", *initiallyInfected);
   printf("The latency period of the virus is: %d\n", disease->latencyPeriod);
   printf("The infection rate is: %lf\n", disease->infectionChance);
-  printf("The fatality rate is: %lf\n", disease->fatalityChance);   
+  printf("The fatality rate is: %lf\n", disease->fatalityChance);
+  printf("The recovery chance is: %lf\n", disease->recoveryChance);
+  printf("The grid width is: %d\n", *gridHeight);
+  printf("The grid length is %d\n", *gridLength);
 
 }

@@ -7,11 +7,23 @@
 #include <time.h>
 
 
-
 int main (int argc, char **argv) {
   char input[10];
   int noTurns;
-  int gridLength = GRID_SIZE, gridWidth = GRID_SIZE;
+  int gridLength, gridWidth;
+ 
+  srand(time(NULL));
+  
+  /* Declarations of variables */
+  int population, initiallyInfected;
+  Disease disease = {0};
+
+  setInitial(&disease, &population, &initiallyInfected,
+	     &gridLength, &gridWidth);
+  configurate(&disease, &population, &initiallyInfected,
+	      &gridLength, &gridWidth);
+
+  //creates an array of humans on the heap
   Grid grid = calloc(gridLength, sizeof(GridCell*));
 
   for (int i = 0; i < gridLength; i++) {
@@ -19,15 +31,6 @@ int main (int argc, char **argv) {
     //creates unoccupied cells of default type
   }
 
-  srand(time(NULL));
-  
-  /* Declarations of variables */
-  int population, initiallyInfected;
-  Disease disease = {0};
-
-  configurate(&disease, &population, &initiallyInfected);
-
-  //creates an array of humans on the heap
   Human **humans = calloc(population, sizeof(Human*));
 
   int x, y;
