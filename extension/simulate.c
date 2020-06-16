@@ -1,4 +1,5 @@
 #include "simulate_utils.h"
+#include "simulate_social.h"
 #include "simulationIO.h"
 #include <assert.h>
 #include <stdio.h>
@@ -17,7 +18,7 @@ typedef enum outputSelection {
 
 int main (int argc, char **argv) {
   char input[10];
-  int noTurns, gridLength, gridHeight, population, initiallyInfected;
+  int noTurns, gridLength, gridHeight, population, initiallyInfected, numSocials;
   ErrorCode err = OK;
   Disease disease = {0};
   outputSelection outputType = NO_OUTPUT; //no output selected
@@ -25,21 +26,28 @@ int main (int argc, char **argv) {
   srand(time(NULL));
 
   setInitial(&disease, &population, &initiallyInfected,
-	     &gridLength, &gridHeight);
+	     &gridLength, &gridHeight, &numSocials);
   configurate(&disease, &population, &initiallyInfected,
-	      &gridLength, &gridHeight);
+	      &gridLength, &gridHeight, &numSocials);
 
   //creates an array of humans on the heap
-  Grid grid = calloc(gridLength, sizeof(GridCell*));
+  Grid grid = calloc(gridHeight, sizeof(GridCell*));
 
   FATAL_PROG((grid == NULL), ALLOCATION_FAIL);
 
-  for (int i = 0; i < gridLength; i++) {
-    grid[i] = calloc(gridHeight, sizeof(GridCell));
+  for (int i = 0; i < gridHeight; i++) {
+    grid[i] = calloc(gridLength, sizeof(GridCell));
     FATAL_PROG((grid[i] == NULL), ALLOCATION_FAIL);
     //creates unoccupied cells of default type
   }
 
+  SocialSpace *socialPlaces;
+
+  if(numSocials){
+    socialPlaces = calloc(numSocials, sizeof(SocialSpace));
+    initialiseSocials(numSocials, grid, socialPlaces, gridLength, gridHeight);
+  }
+  
   Human **humans = calloc(population, sizeof(Human*));
 
   FATAL_PROG((humans == NULL), ALLOCATION_FAIL);
@@ -57,6 +65,9 @@ int main (int argc, char **argv) {
     humans[i]->x = x;
     humans[i]->y = y;
     humans[i]->risk = randomFrom0To1();
+    if (numSocials) {
+      humans[i]->socialPreference = RANDINT(1, numSocials);
+    }
     CELL_SET(grid[x][y], humans[i]);
   }
 
@@ -108,7 +119,7 @@ int main (int argc, char **argv) {
     
     for (int i = 0; i < noTurns; i++) {
       //call turn function
-      move(grid, humans, population, gridLength, gridHeight);
+      moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight);
       checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
       writeFrame(gif, grid, gridLength, gridHeight, CELL_SIZE);
     }
@@ -132,7 +143,10 @@ int main (int argc, char **argv) {
       }
     }
   }
-  
+
+  if(numSocials){
+    free(socialPlaces);
+  }
   free(grid);
   free(humans);
 
