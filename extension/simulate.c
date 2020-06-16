@@ -10,7 +10,7 @@
 int main (int argc, char **argv) {
   char input[10];
   int noTurns, gridLength, gridHeight, population, initiallyInfected;
-  ErrorCode err;
+  ErrorCode err = OK;
   Disease disease = {0};
 
   srand(time(NULL));
