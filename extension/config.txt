@@ -1,9 +1,9 @@
-population 10000
+population 1000000
 //This is a comment
 initially_infected 5
 latency_period 7
 infection_rate 0.75
 fatality_rate 0.05
 recovery_rate 0.1
-height 100
+height 1000
 length 1000
