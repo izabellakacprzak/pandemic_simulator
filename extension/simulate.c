@@ -49,8 +49,8 @@ int main (int argc, char **argv) {
     humans[i] = calloc(1,sizeof(Human));
     FATAL_PROG((humans[i] == NULL), ALLOCATION_FAIL);
     do{
-      x = RANDINT(0, gridLength - 1); 
-      y = RANDINT(0, gridHeight - 1);
+      x = RANDINT(0, gridLength); 
+      y = RANDINT(0, gridHeight);
     } while (grid[x][y].human);
     //makes sure two humans cant be in the same square
 
