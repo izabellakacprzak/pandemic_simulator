@@ -72,7 +72,7 @@ int main (int argc, char **argv) {
 		humans[i]->y = currPoint.y;
 		//makes sure two humans cant be in the same square
 
-		humans[i]->risk = randomFrom0To1();
+		humans[i]->risk = randomFrom0To1() * 2;
 		CELL_SET(grid[currPoint.x][currPoint.y], humans[i]);
 
 		freeCells[index] = freeCells[noFreeCells - 1];
