@@ -9,12 +9,12 @@
 #include "gifoutput/gif_output.h"
 
 typedef enum outputSelection {
-  NO_OUTPUT,
-  GIF,
-  TERMINAL
+	NO_OUTPUT,
+	GIF,
+	TERMINAL
 } outputSelection;
 
-#define CELL_SIZE 3
+#define CELL_SIZE 20
 
 int main (int argc, char **argv) {
   char input[10];
@@ -29,6 +29,9 @@ int main (int argc, char **argv) {
 	     &gridLength, &gridHeight, &numSocials);
   configurate(&disease, &population, &initiallyInfected,
 	      &gridLength, &gridHeight, &numSocials);
+
+  int noFreeCells;
+  Point *freeCells;
 
   //creates an array of humans on the heap
   Grid grid = calloc(gridHeight, sizeof(GridCell*));
@@ -52,23 +55,41 @@ int main (int argc, char **argv) {
 
   FATAL_PROG((humans == NULL), ALLOCATION_FAIL);
 
-  int x, y;
-  for (int i = 0; i < population; i++) {
-    humans[i] = calloc(1,sizeof(Human));
-    FATAL_PROG((humans[i] == NULL), ALLOCATION_FAIL);
-    do{
-      x = RANDINT(0, gridLength); 
-      y = RANDINT(0, gridHeight);
-    } while (grid[x][y].human);
-    //makes sure two humans cant be in the same square
 
-    humans[i]->x = x;
-    humans[i]->y = y;
-    humans[i]->risk = randomFrom0To1();
-    if (numSocials) {
-      humans[i]->socialPreference = RANDINT(1, numSocials);
-    }
-    CELL_SET(grid[x][y], humans[i]);
+  noFreeCells = gridLength * gridHeight;
+  freeCells = calloc(noFreeCells, sizeof(Point));
+
+  FATAL_PROG((freeCells == NULL), ALLOCATION_FAIL);
+  // initialized all cell Points to be free
+  for(int i = 0; i < gridLength; i++){
+	for(int j = 0; j < gridHeight; j++){
+		freeCells[i + (j * gridLength)].x = i;
+		freeCells[i + (j * gridLength)].y = j;
+	}
+  }
+
+  int index;
+  Point currPoint;
+  for (int i = 0; i < population; i++) {
+		humans[i] = calloc(1,sizeof(Human));
+		FATAL_PROG((humans[i] == NULL), ALLOCATION_FAIL);
+		index = RANDINT(0, noFreeCells); 
+		currPoint = freeCells[index];
+		humans[i]->x = currPoint.x;
+		humans[i]->y = currPoint.y;
+		//makes sure two humans cant be in the same square
+
+		humans[i]->risk = randomFrom0To1() * 2;
+		if (numSocials) {
+		      humans[i]->socialPreference = RANDINT(1, numSocials);
+	        }
+		CELL_SET(grid[currPoint.x][currPoint.y], humans[i]);
+
+		freeCells[index] = freeCells[noFreeCells - 1];
+		noFreeCells--;
+		if(noFreeCells > 0){
+			freeCells = realloc(freeCells, noFreeCells * sizeof(Point));
+		}
   }
 
   //sets an initial number of humans to be infected
@@ -149,6 +170,7 @@ int main (int argc, char **argv) {
   }
   free(grid);
   free(humans);
+  free(freeCells);
 
   if (err != OK) {
     /* Print an error message*/
