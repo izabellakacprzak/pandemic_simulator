@@ -96,7 +96,6 @@ int main (int argc, char **argv) {
       FATAL_SYS(getNextInput(input) != 1);
     }
   } else {
-    //TODO add gif handling code
     printf("How many turns do you want to include?\n");
     scanf("%9s", input);
     noTurns = atoi(input);
