@@ -110,14 +110,13 @@ int main (int argc, char **argv) {
     for (int i = 0; i < noTurns; i++) {
       //call turn function
       move(grid, humans, population, gridLength, gridWidth);
-      checkInfections(grid, humans, population, gridLength, gridWidth, &disease);
+      checkInfections(grid, humans, &population, gridLength, gridWidth, &disease);
     }
 
     printToTerminal(grid, gridLength, gridWidth);
 
     getNextInput(input);
   }
-  
   for (int i = 0; i < gridLength; i++) {
     free(grid[i]);
   }
