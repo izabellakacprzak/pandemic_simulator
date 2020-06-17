@@ -20,7 +20,7 @@ void move(Grid grid, Human **humans, int population,
 	  int length, int height) {
   int x, y;
   for(int i = 0; i < population; i++){
-    if (humans[i]->status != DEAD) {
+    if (humans[i]->status != SICK) {
       do{
 	x = humans[i]->x + (RANDINT(0, 3) - 1); //random int from -1 to 1
 	y = humans[i]->y + (RANDINT(0, 3) - 1);
