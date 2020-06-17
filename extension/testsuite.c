@@ -19,7 +19,8 @@ static void executeRand(int executions) {
 }
 
 static void resetHumans(int newPopulation, int *population, Human **humans,
-			Grid grid, int gridLength, int gridHeight, int *noFreeCells, Point **freeCells, int numSocials) {
+			Grid grid, int gridLength, int gridHeight, int *noFreeCells,
+			Point **freeCells, int numSocials) {
   for (int i = 0; i < *population; i++) {
     free(humans[i]);
   }
@@ -55,7 +56,9 @@ static void resetHumans(int newPopulation, int *population, Human **humans,
     //makes sure two humans cant be in the same square
 
     humans[i]->risk = randomFrom0To1() * 2;
-    if (numSocials) {
+    if (numSocials == 1) {
+      humans[i]->socialPreference = 1;
+    } else if (numSocials) {
       humans[i]->socialPreference = RANDINT(1, numSocials);
     }
     CELL_SET(grid[currPoint.x][currPoint.y], humans[i]);
@@ -84,6 +87,23 @@ static void changeHumanLocation(int x, int y, Human *human, Grid grid) {
   grid[x][y].human = human;
   human->x = x;
   human->y = y;
+}
+
+static void resetSocialPlaces(int newNumSocials, int *numSocials,
+			      SocialSpace **socialPlaces, Grid grid) {
+  for (int i = 0; i < *numSocials; i++) {
+    grid[socialPlaces[0][i].x][socialPlaces[0][i].y].type = NORMAL;
+  }
+  
+  free(*socialPlaces);
+  *socialPlaces = calloc(newNumSocials, sizeof(SocialSpace));
+  *numSocials = newNumSocials;
+}
+
+static void placeSocialSpace(int x, int y, SocialSpace *socialPlace, Grid grid) {
+  grid[x][y].type = SOCIAL;
+  socialPlace->x = x;
+  socialPlace->y = y;
 }
 
 static void testbool(bool condition, const char *testname) {
@@ -126,8 +146,8 @@ int main(void) {
   disease.infectionChance = 0.5;
   disease.fatalityChance = 0.1;
 
-  int gridLength = 10; // Note: must be >= 3
-  int gridHeight = 70; // Note: must be >= 3
+  int gridLength = 7; // Note: DO NOT CHANGE for initialiseSocials tests (must be >= 3)
+  int gridHeight = 10; // Note: DO NOT CHANGE for initialiseSocials tests (must be >= 3)
 
   int numSocials = 2;
 
@@ -180,7 +200,9 @@ int main(void) {
     //makes sure two humans cant be in the same square
 
     humans[i]->risk = randomFrom0To1() * 2;
-    if (numSocials) {
+    if (numSocials == 1) {
+      humans[i]->socialPreference = 1;
+    } else if (numSocials) {
       humans[i]->socialPreference = RANDINT(1, numSocials);
     }
     CELL_SET(grid[currPoint.x][currPoint.y], humans[i]);
@@ -199,7 +221,7 @@ int main(void) {
   }
 
   /* INITIALISATION TESTS */
-  printf("Initialisation Tests:\n");
+  printf("Initialisation Tests (Note: initialiseSocials is tested in simulate_social.c tests):\n");
 
   // --- //
   {
@@ -219,7 +241,8 @@ int main(void) {
     testbool(ok, "No humans in the same location");
   }
 
-  testint((gridLength * gridHeight) - population, noFreeCells, "noFreeCells decreases for every human added");
+  testint(noFreeCells, (gridLength * gridHeight) - population,
+	  "noFreeCells decreases for every human added");
 
   {
     int infected = 0;
@@ -558,11 +581,73 @@ int main(void) {
 		       int gridLength, int gridHeight) */
   printf("Tests for initialiseSocials (simulate_social.c):\n");
 
+  resetSocialPlaces(5, &numSocials, &socialPlaces, grid);
+  srand(1);
+  executeRand(10); // next in initialiseSocials are (1, 5), (1, 5), (4, 5) (when grid size is (7, 10))
+
+  initialiseSocials(numSocials, grid, socialPlaces, gridLength, gridHeight);
+
+  testbool(!(socialPlaces[0].x == socialPlaces[1].x && socialPlaces[0].y == socialPlaces[1].y),
+	   "Two social spaces cannot be placed in the same position");
+
+  {
+    int count = 0;
+    for (int i = 0; i < gridLength; i++) {
+      for (int j = 0; j < gridHeight; j++) {
+	if (grid[i][j].type == SOCIAL) {
+	  count++;
+	}
+      }
+    }
+
+    testint(count, numSocials, "Correct number of grid cells are SOCIAL");
+  }
+
+  {
+    int count = 0;
+    for (int i = 0; i < numSocials; i++) {
+      if (grid[socialPlaces[i].x][socialPlaces[i].y].type == SOCIAL) {
+	count++;
+      }
+    }
+
+    testint(count, numSocials, "socialPlaces x and y values are assigned correctly");
+  }
+
   printf("\n");
 
   /* Test: moveAStar(Grid grid, Human **humans, int population, SocialSpace *socialPlaces,
                      int length, int height) */
   printf("Tests for moveAStar (simulate_social.c):\n");
+
+  // population = 1, numSocials = 1
+  resetSocialPlaces(1, &numSocials, &socialPlaces, grid);
+  resetHumans(1, &population, humans, grid, gridLength, gridHeight, &noFreeCells, &freeCells, numSocials);
+
+  // --- //
+  placeSocialSpace(1, 1, &socialPlaces[0], grid);
+  changeHumanLocation(1, 2, humans[0], grid);
+  humans[0]->socialPreference = 0;
+  
+  moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight);
+
+  testbool(humans[0]->x == 1 && humans[0]->y == 1, "Human moves toward social space");
+  testbool(!grid[1][2].human, "Previous grid cell cleared");
+  testbool(grid[humans[0]->x][humans[0]->y].human == humans[0],
+	   "Destination cell occupied by the right human");
+
+  // --- //
+  resetHumans(2, &population, humans, grid, gridLength, gridHeight, &noFreeCells, &freeCells, numSocials);
+  changeHumanLocation(1, 2, humans[0], grid);
+  changeHumanLocation(1, 1, humans[1], grid);
+  humans[0]->socialPreference = 0;
+  humans[1]->socialPreference = 0;
+
+  // humans[0] should not move to [1][1] ([1][1] is occupied)
+  moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight);
+
+  testbool(!(humans[0]->x == humans[1]->x && humans[0]->y == humans[1]->y),
+	   "Human cannot move to an occupied space");
 
   printf("\n");
 
