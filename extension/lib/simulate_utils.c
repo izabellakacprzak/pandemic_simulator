@@ -110,7 +110,11 @@ void checkInfections(Grid grid, Human **humans, int *population,
 		*humans[i] = *humans[*population - 1];
 		CELL_SET(grid[humans[i]->x][humans[i]->y], humans[i]);
 	}
-	humans = realloc(humans, sizeof(Human *) * ((*population) - 1));       
+	if(humans[*population - 1]){
+	  free(humans[*population - 1]);
+          humans[*population - 1] = NULL;	  
+	}
+	//humans = realloc(humans, sizeof(Human *) * ((*population) - 1));       
 	/*
 	if(humans[*population - 1]){
 		free(humans[*population - 1]);
