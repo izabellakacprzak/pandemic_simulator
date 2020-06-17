@@ -70,9 +70,9 @@ void cellSet(GridCell *cell, Human *newHuman);
 
 void cellClear(GridCell *cell);
 
-void move(Grid grid, Human **humans, int population, int length, int height);
+void move(Grid grid, Human **humans, int population, int gridColumns, int gridRows);
 
-void checkInfections(Grid grid, Human **humans, int *population, int length, int height, Disease *disease);
+void checkInfections(Grid grid, Human **humans, int *population, int gridColumns, int gridRows, Disease *disease);
 
 typedef enum errorCode {
   OK,

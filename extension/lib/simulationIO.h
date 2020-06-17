@@ -12,14 +12,17 @@
 #define FATAL_CHANCE (0.1)
 #define RECOVERY_CHANCE (0.6)
 
-void printToTerminal(Grid grid, int gridLength, int gridHeight);
+void printToTerminal(Grid grid, int gridColumns, int gridRows);
 
 int getNextInput(char *input);
 
-void setInitial(Disease *disease, int *population, int *initiallyInfected,int *gridLength, int *gridHeight, int *numSocials);
+void setInitial(Disease *disease, int *population, int *initiallyInfected,
+        int *gridColumns, int *gridRows, int *numSocials);
 
-void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight, int *numSocials);
+void configurate(Disease *disease, int *population, int *initiallyInfected,
+        int *gridColumns, int *gridRows, int *numSocials);
 
-void printConfigValues(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight);
+void printConfigValues(Disease *disease, int *population, int *initiallyInfected,
+                       int *gridColumns, int *gridRows, int *numSocials);
 
 #endif

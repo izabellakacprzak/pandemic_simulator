@@ -6,4 +6,3 @@ infection_rate 0.5
 fatality_rate 0.1
 height 100
 length 50
-
