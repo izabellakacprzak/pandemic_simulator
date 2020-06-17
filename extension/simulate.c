@@ -80,10 +80,8 @@ int main (int argc, char **argv) {
 		//makes sure two humans cant be in the same square
 
 		humans[i]->risk = randomFrom0To1() * 2;
-		if (numSocials == 1) {
-      			humans[i]->socialPreference = 1;
-    		} else if (numSocials) {
-		      humans[i]->socialPreference = RANDINT(1, numSocials);
+		if (numSocials) {
+		      humans[i]->socialPreference = RANDINT(0, numSocials);
 	        }
 		CELL_SET(grid[currPoint.x][currPoint.y], humans[i]);
 
