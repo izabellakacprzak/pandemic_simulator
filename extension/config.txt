@@ -1,4 +1,4 @@
-population 100
+population 250
 // This is a comment
 initially_infected 3
 latency_period 7

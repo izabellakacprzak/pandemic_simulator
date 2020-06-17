@@ -109,7 +109,10 @@ int main (int argc, char **argv) {
     }
   }
 
-  int socialTime = (gridColumns + gridRows) / (numSocials);
+  int socialTime = -1;
+  if(numSocials){
+   socialTime = (gridColumns + gridRows) / (numSocials);
+  }
   int socialIndex = 1;
   if (outputType == TERMINAL) {
     FATAL_SYS(getNextInput(input) != 1); //kill if no item is scanned
