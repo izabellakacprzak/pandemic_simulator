@@ -123,7 +123,7 @@ int main (int argc, char **argv) {
         moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows);
         } else {
         if(socialIndex == socialTime){
-          socialIndex = -socialTime;	
+          socialIndex = -socialTime * 3 / 2;	
         }
         move(grid, humans, population, gridColumns, gridRows);
         }
