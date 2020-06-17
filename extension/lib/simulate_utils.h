@@ -45,10 +45,7 @@ typedef struct diseaseStruct {
   double recoveryChance;
 } Disease;
 
-typedef struct socialSpace {
-  int x;
-  int y;
-} SocialSpace;
+typedef Point SocialSpace;
 
 typedef GridCell** Grid;
 

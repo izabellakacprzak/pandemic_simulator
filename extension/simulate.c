@@ -34,12 +34,12 @@ int main (int argc, char **argv) {
   Point *freeCells;
 
   //creates an array of humans on the heap
-  Grid grid = calloc(gridHeight, sizeof(GridCell*));
+  Grid grid = calloc(gridLength, sizeof(GridCell*));
 
   FATAL_PROG((grid == NULL), ALLOCATION_FAIL);
 
-  for (int i = 0; i < gridHeight; i++) {
-    grid[i] = calloc(gridLength, sizeof(GridCell));
+  for (int i = 0; i < gridLength; i++) {
+    grid[i] = calloc(gridHeight, sizeof(GridCell));
     FATAL_PROG((grid[i] == NULL), ALLOCATION_FAIL);
     //creates unoccupied cells of default type
   }

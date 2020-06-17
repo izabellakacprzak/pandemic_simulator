@@ -1,6 +1,6 @@
-population 100
+population 200
 // This is a comment
-initially_infected 3
+initially_infected 20
 latency_period 7
 infection_rate 0.5
 fatality_rate 0.1
