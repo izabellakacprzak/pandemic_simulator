@@ -30,22 +30,23 @@ void moveAStar(Grid grid, Human **humans, int population, SocialSpace *socialPla
             for(int x = -1; x < 2; x++) {
                 for(int y = -1; y < 2; y++) {
 
-                    if((x >= 0 && y >= 0 && x < gridColumns && y < gridRows) &&
+                    if(((humans[i]->x + x) >= 0 && (humans[i]->y + y) >= 0 
+                    	&& (humans[i]->x + x) < gridColumns && (humans[i]->y + y) < gridRows) &&
                         (!grid[humans[i]->y + y][humans[i]->x + x].human || (x == 0 && y == 0))) {
                         int a = ((humans[i]->x + x) - socialPlaces[humans[i]->socialPreference].x);
                         int b = ((humans[i]->y + y) - socialPlaces[humans[i]->socialPreference].y);
-                        heuristics[x + 1][y + 1] = (a * a) + (b * b);
+                        heuristics[y + 1][x + 1] = (a * a) + (b * b);
 
                     } else {
-                        heuristics[x + 1][y + 1] = INT_MAX;
+                        heuristics[y + 1][x + 1] = INT_MAX;
                     }
                 }
             }
             int minX = 0, minY = 0, minHeur = INT_MAX;
             for(int x = 0; x < 3; x++) {
                 for(int y = 0; y < 3; y++) {
-                    if(heuristics[x][y] < minHeur) {
-                        minHeur = heuristics[x][y];
+                    if(heuristics[y][x] < minHeur) {
+                        minHeur = heuristics[y][x];
                         minX = x - 1;
                         minY = y - 1;
                     }

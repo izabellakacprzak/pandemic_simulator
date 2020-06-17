@@ -62,8 +62,8 @@ int main (int argc, char **argv) {
   // initialized all cell Points to be free
   for(int i = 0; i < gridRows; i++){
 	for(int j = 0; j < gridColumns; j++){
-		freeCells[i * gridColumns + j].x = i;
-		freeCells[i * gridColumns + j].y = j;
+		freeCells[i * gridColumns + j].y = i;
+		freeCells[i * gridColumns + j].x = j;
 	}
   }
 
@@ -82,7 +82,7 @@ int main (int argc, char **argv) {
 		if (numSocials) {
 		     humans[i]->socialPreference = RANDINT(0, numSocials);
 	    }
-		CELL_SET(grid[currPoint.y][currPoint.x], humans[i]);
+		cellSet(&grid[currPoint.y][currPoint.x], humans[i]);
 		freeCells[index] = freeCells[noFreeCells - 1];
 		noFreeCells--;
 		if(noFreeCells > 0){
