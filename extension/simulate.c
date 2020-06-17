@@ -109,6 +109,8 @@ int main (int argc, char **argv) {
     }
   }
 
+  int socialTime = (gridColumns + gridRows) / (numSocials);
+  int socialIndex = 1;
   if (outputType == TERMINAL) {
     FATAL_SYS(getNextInput(input) != 1); //kill if no item is scanned
   
@@ -117,8 +119,16 @@ int main (int argc, char **argv) {
       
       for (int i = 0; i < noTurns; i++) {
       //call turn function
+      	if(socialIndex > 0 && socialIndex < socialTime){
         moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows);
+        } else {
+        if(socialIndex == socialTime){
+          socialIndex = -socialTime;	
+        }
+        move(grid, humans, population, gridColumns, gridRows);
+        }
         checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
+        socialIndex++;
       }
 
       printToTerminal(grid, gridColumns, gridRows);
@@ -138,9 +148,17 @@ int main (int argc, char **argv) {
     
     for (int i = 0; i < noTurns; i++) {
       //call turn function
-      moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows);
-      checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
-      writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
+      	if(socialIndex > 0 && socialIndex < socialTime){
+        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows);
+        } else {
+        if(socialIndex == socialTime){
+          socialIndex = -socialTime * 3 / 2;	
+        }
+        move(grid, humans, population, gridColumns, gridRows);
+        }
+        checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
+        socialIndex++;
+        writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
     }
     
     //close gif file and produce gif
