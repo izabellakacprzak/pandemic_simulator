@@ -11,8 +11,8 @@ void initialiseSocials(int amount, Grid grid, SocialSpace *socialPlaces,
   int x, y;
   for (int i = 0; i < amount; i++) {
     do {
-      x = RANDINT(0, gridLength - 1);
-      y = RANDINT(0, gridHeight - 1);
+      x = RANDINT(0, gridLength);
+      y = RANDINT(0, gridHeight);
     } while (grid[x][y].type == SOCIAL);
 
     grid[x][y].type = SOCIAL;
@@ -37,7 +37,7 @@ void moveAStar(Grid grid, Human **humans, int population, SocialSpace *socialPla
 	for(int y = -1; y < 2; y++) {
 	  
 	  if(inBounds(length, height, humans[i]->x + x, humans[i]->y + y) &&
-	     !(grid[humans[i]->x + x][humans[i]->y +y].human && (x != 0 && y != 0))){
+	     (!grid[humans[i]->x + x][humans[i]->y +y].human || (x == 0 && y == 0))){
 	    int a = ((humans[i]->x + x) - socialPlaces[humans[i]->socialPreference].x);
 	    int b = ((humans[i]->y + y) - socialPlaces[humans[i]->socialPreference].y);
 	    heuristics[x + 1][y + 1] = (a * a) + (b * b);
@@ -60,11 +60,12 @@ void moveAStar(Grid grid, Human **humans, int population, SocialSpace *socialPla
 	  }
 	}
       }
-    
-      cellClear(&grid[humans[i]->x][humans[i]->y]);
-      humans[i]->x += minX;
-      humans[i]->y += minY;
-      cellSet(&grid[humans[i]->x][humans[i]->y], humans[i]);
+      if(minHeur < INT_MAX){ 
+        cellClear(&grid[humans[i]->x][humans[i]->y]);
+        humans[i]->x += minX;
+        humans[i]->y += minY;
+        cellSet(&grid[humans[i]->x][humans[i]->y], humans[i]);
+      }
     }
   }
 }

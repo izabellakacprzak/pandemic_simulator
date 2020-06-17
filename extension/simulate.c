@@ -61,10 +61,10 @@ int main (int argc, char **argv) {
 
   FATAL_PROG((freeCells == NULL), ALLOCATION_FAIL);
   // initialized all cell Points to be free
-  for(int i = 0; i < gridLength; i++){
-	for(int j = 0; j < gridHeight; j++){
-		freeCells[i + (j * gridLength)].x = i;
-		freeCells[i + (j * gridLength)].y = j;
+  for(int i = 0; i < gridHeight; i++){
+	for(int j = 0; j < gridLength; j++){
+		freeCells[i * gridLength + j].x = i;
+		freeCells[i * gridLength + j].y = j;
 	}
   }
 
@@ -81,10 +81,9 @@ int main (int argc, char **argv) {
 
 		humans[i]->risk = randomFrom0To1() * 2;
 		if (numSocials) {
-		      humans[i]->socialPreference = RANDINT(1, numSocials);
+		     humans[i]->socialPreference = RANDINT(0, numSocials);
 	        }
 		CELL_SET(grid[currPoint.x][currPoint.y], humans[i]);
-
 		freeCells[index] = freeCells[noFreeCells - 1];
 		noFreeCells--;
 		if(noFreeCells > 0){
@@ -105,7 +104,7 @@ int main (int argc, char **argv) {
     if (strcmp(input, "gif") == 0) {
       outputType = GIF;
     } else if (strcmp(input, "terminal") == 0) {
-      outputType = GIF;
+      outputType = TERMINAL;
     } else {
       printf("Invalid input %s\n", input);
     }
@@ -119,7 +118,7 @@ int main (int argc, char **argv) {
       
       for (int i = 0; i < noTurns; i++) {
       //call turn function
-	move(grid, humans, population, gridLength, gridHeight);
+	moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight);
 	checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
       }
       
@@ -152,7 +151,7 @@ int main (int argc, char **argv) {
  fatalError:
 
   if (grid) {
-    for (int i = 0; i < gridLength; i++) {
+    for (int i = 0; i < gridHeight; i++) {
       free(grid[i]);
     }
   }

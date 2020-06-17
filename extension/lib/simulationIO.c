@@ -11,7 +11,7 @@ void printToTerminal(Grid grid, int gridLength, int gridHeight) {
 
   for (int i = 0; i < gridHeight; i++) {
     for (int j = 0; j < gridLength; j++) {
-      cell = grid[j][i]; //assuming array goes [x][y]
+      cell = grid[i][j]; //assuming array goes [x][y]
       if (cell.human) {
 	switch (cell.human->status) {
 	case HEALTHY:
@@ -28,7 +28,7 @@ void printToTerminal(Grid grid, int gridLength, int gridHeight) {
 	  break;
 	}
       } else {
-	if (grid[j][i].type == SOCIAL) {
+	if (grid[i][j].type == SOCIAL) {
 	  printf("S"); //social space
 	} else {
 	  printf("-"); //empty cell

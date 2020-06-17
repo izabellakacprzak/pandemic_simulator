@@ -36,10 +36,10 @@ void move(Grid grid, Human **humans, int population,
 }
 
 static HealthStatus **statusGrid(Human **humans, int population, int gridLength, int gridHeight) {
-  HealthStatus **prevState = calloc(gridLength, sizeof(HealthStatus *));
+  HealthStatus **prevState = calloc(gridHeight, sizeof(HealthStatus *));
 
-  for (int i = 0; i < gridLength; i++) {
-    prevState[i] = calloc(gridHeight, sizeof(HealthStatus));
+  for (int i = 0; i < gridHeight; i++) {
+    prevState[i] = calloc(gridLength, sizeof(HealthStatus));
   }
 
   for (int i = 0; i < population; i++) {
@@ -49,12 +49,12 @@ static HealthStatus **statusGrid(Human **humans, int population, int gridLength,
   return prevState;
 }
 
-static void freeStatusGrid(HealthStatus **state, int gridLength, int gridHeight) {
+static void freeStatusGrid(HealthStatus **state, int gridHeight) {
   if (!state) {
     return;
   }
   
-  for (int i = 0; i < gridLength; i++) {
+  for (int i = 0; i < gridHeight; i++) {
     if (state[i]) {
       free(state[i]);
     }
@@ -80,7 +80,7 @@ void checkInfections(Grid grid, Human **humans, int *population,
 	  for (int k = y - 1; k <= y + 1; k++) {
 	    if (0 <= k && k < height) {
 	      //performs a random infection check for each infected neighbour
-	      if (prevState[j][k] != HEALTHY &&
+	      if (prevState[k][j] != HEALTHY &&
 		  randomFrom0To1() < disease->infectionChance) {
 		humans[i]->status = LATENT;
 		humans[i]->latencyTime = disease->latencyPeriod;
@@ -124,13 +124,6 @@ void checkInfections(Grid grid, Human **humans, int *population,
 	  free(humans[*population - 1]);
           humans[*population - 1] = NULL;	  
 	}
-	//humans = realloc(humans, sizeof(Human *) * ((*population) - 1));       
-	/*
-	if(humans[*population - 1]){
-		free(humans[*population - 1]);
-		humans[*population - 1] = NULL;
-	}
-	*/
  	*population = *population - 1;
 	i--;
       } else if (randomFrom0To1() < disease->recoveryChance) {
@@ -139,7 +132,7 @@ void checkInfections(Grid grid, Human **humans, int *population,
     }
   }
 
-  freeStatusGrid(prevState, length, height);
+  freeStatusGrid(prevState, height);
 }
 
 char *getProgramError(ErrorCode e) {
