@@ -81,7 +81,8 @@ void checkInfections(Grid grid, Human **humans, int *population,
                         if (0 <= k && k < gridRows) {
                             //performs a random infection check for each infected neighbour
                             if (prevState[k][j] != HEALTHY &&
-                                randomFrom0To1() < disease->infectionChance) {
+                                randomFrom0To1() < disease->infectionChance
+				&& randomFrom0To1() < humans[i]->risk) {
                                 humans[i]->status = LATENT;
                                 humans[i]->latencyTime = disease->latencyPeriod;
                             }
@@ -98,6 +99,7 @@ void checkInfections(Grid grid, Human **humans, int *population,
                 if (randomFrom0To1() < humans[i]->risk) {
                     humans[i]->status = SICK;
                 } else {
+		    humans[i]->risk = 0;
                     humans[i]->status = HEALTHY;
                 }
             }
@@ -125,7 +127,8 @@ void checkInfections(Grid grid, Human **humans, int *population,
                 *population = *population - 1;
                 i--;
             } else if(randomFrom0To1() < disease->recoveryChance) {
-                humans[i]->status = HEALTHY;
+                humans[i]->risk = 0;
+		humans[i]->status = HEALTHY;
             }
         }
     }

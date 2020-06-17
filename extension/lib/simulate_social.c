@@ -25,7 +25,7 @@ void moveAStar(Grid grid, Human **humans, int population, SocialSpace *socialPla
     for(int i = 0; i < population; i++) {
         int heuristics[3][3];
 
-        if(humans[i]->status != DEAD) {
+        if(humans[i]->status != SICK) {
 
             for(int x = -1; x < 2; x++) {
                 for(int y = -1; y < 2; y++) {
