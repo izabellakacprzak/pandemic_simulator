@@ -27,7 +27,7 @@ static void resetHumans(int newPopulation, int *population, Human **humans,
 
   for (int i = 0; i < gridLength; i++) {
     for (int j = 0; j < gridHeight; j++) {
-      grid[i][j].human = NULL;
+      grid[j][i].human = NULL;
     }
   }
 
@@ -37,10 +37,10 @@ static void resetHumans(int newPopulation, int *population, Human **humans,
   Point *newFreeCells = calloc(newNoFreeCells, sizeof(Point));
 
   // initialized all cell Points to be free
-  for(int i = 0; i < gridLength; i++){
-    for(int j = 0; j < gridHeight; j++){
-      newFreeCells[i + (j * gridLength)].x = i;
-      newFreeCells[i + (j * gridLength)].y = j;
+  for(int i = 0; i < gridHeight; i++){
+    for(int j = 0; j < gridLength; j++){
+      newFreeCells[(i * gridLength) + j].y = i;
+      newFreeCells[(i * gridLength) + j].x = j;
     }
   }
 
@@ -59,7 +59,7 @@ static void resetHumans(int newPopulation, int *population, Human **humans,
     if (numSocials) {
       humans[i]->socialPreference = RANDINT(0, numSocials);
     }
-    cellSet(&grid[currPoint.x][currPoint.y], humans[i]);
+    cellSet(&grid[currPoint.y][currPoint.x], humans[i]);
 
     newFreeCells[index] = newFreeCells[newNoFreeCells - 1];
     newNoFreeCells--;
@@ -81,8 +81,8 @@ static void resetDisease(Disease *disease) {
 }
 
 static void changeHumanLocation(int x, int y, Human *human, Grid grid) {
-  grid[human->x][human->y].human = NULL;
-  grid[x][y].human = human;
+  grid[human->y][human->x].human = NULL;
+  grid[y][x].human = human;
   human->x = x;
   human->y = y;
 }
@@ -90,7 +90,7 @@ static void changeHumanLocation(int x, int y, Human *human, Grid grid) {
 static void resetSocialPlaces(int newNumSocials, int *numSocials,
 			      SocialSpace **socialPlaces, Grid grid) {
   for (int i = 0; i < *numSocials; i++) {
-    grid[socialPlaces[0][i].x][socialPlaces[0][i].y].type = NORMAL;
+    grid[socialPlaces[0][i].y][socialPlaces[0][i].x].type = NORMAL;
   }
   
   free(*socialPlaces);
@@ -99,7 +99,7 @@ static void resetSocialPlaces(int newNumSocials, int *numSocials,
 }
 
 static void placeSocialSpace(int x, int y, SocialSpace *socialPlace, Grid grid) {
-  grid[x][y].type = SOCIAL;
+  grid[y][x].type = SOCIAL;
   socialPlace->x = x;
   socialPlace->y = y;
 }
@@ -113,23 +113,6 @@ static void testint(int got, int expected, char *testname) {
   printf("T %s (expected=%d, got=%d): %s\n",
 	 testname, expected, got, expected==got?"OK":"FAIL");
 }
-
-/*
-  static void testlong(long got, long expected, char *testname) {
-  printf("T %s (expected=%ld, got=%ld): %s\n",
-  testname, expected, got, expected==got?"OK":"FAIL");
-  }
-
-  static void testdouble(double got, double expected, char *testname) {
-  printf("T %s (expected=%g, got=%g): %s\n",
-  testname, expected, got, expected==got?"OK":"FAIL");
-  }
-
-  static void teststring(char *got, char *expected, char *testname) {
-  printf("T %s (expected='%s', got='%s'): %s\n",
-  testname, expected, got, strcmp(expected,got)==0?"OK":"FAIL");
-  }
-*/
 
 int main(void) {
   /* SET SEED TO RANDOM */
@@ -160,10 +143,10 @@ int main(void) {
   printf("\n");
 
   /* INITIALISE VARIABLES */
-  Grid grid = calloc(gridLength, sizeof(GridCell *));
+  Grid grid = calloc(gridHeight, sizeof(GridCell *));
 
-  for (int i = 0; i < gridLength; i++) {
-    grid[i] = calloc(gridHeight, sizeof(GridCell));
+  for (int i = 0; i < gridHeight; i++) {
+    grid[i] = calloc(gridLength, sizeof(GridCell));
   }
   
   SocialSpace *socialPlaces;
@@ -178,11 +161,10 @@ int main(void) {
   int noFreeCells = gridLength * gridHeight;
   Point *freeCells = calloc(noFreeCells, sizeof(Point));
 
-  // initialized all cell Points to be free
-  for(int i = 0; i < gridLength; i++){
-    for(int j = 0; j < gridHeight; j++){
-      freeCells[i + (j * gridLength)].x = i;
-      freeCells[i + (j * gridLength)].y = j;
+  for(int i = 0; i < gridHeight; i++){
+    for(int j = 0; j < gridLength; j++){
+      freeCells[i * gridLength + j].y = i;
+      freeCells[i * gridLength + j].x = j;
     }
   }
 
@@ -190,7 +172,6 @@ int main(void) {
   Point currPoint;
   for (int i = 0; i < population; i++) {
     humans[i] = calloc(1,sizeof(Human));
-    
     index = RANDINT(0, noFreeCells); 
     currPoint = freeCells[index];
     humans[i]->x = currPoint.x;
@@ -201,8 +182,7 @@ int main(void) {
     if (numSocials) {
       humans[i]->socialPreference = RANDINT(0, numSocials);
     }
-    cellSet(&grid[currPoint.x][currPoint.y], humans[i]);
-
+    cellSet(&grid[currPoint.y][currPoint.x], humans[i]);
     freeCells[index] = freeCells[noFreeCells - 1];
     noFreeCells--;
     if(noFreeCells > 0){
@@ -275,7 +255,7 @@ int main(void) {
 
   testbool(humans[0]->x == 1 && humans[0]->y == 0, "Correct human location change");
   testbool(!grid[1][1].human, "Previous grid cell cleared");
-  testbool(grid[humans[0]->x][humans[0]->y].human == humans[0],
+  testbool(grid[humans[0]->y][humans[0]->x].human == humans[0],
 	   "Destination cell occupied by the right human");
 
   executeRand(4);
@@ -536,7 +516,7 @@ int main(void) {
     int count = 0;
     for (int i = 0; i < gridLength; i++) {
       for (int j = 0; j < gridHeight; j++) {
-	if (grid[i][j].human) {
+	if (grid[j][i].human) {
 	  count++;
 	}
       }
@@ -590,7 +570,7 @@ int main(void) {
     int count = 0;
     for (int i = 0; i < gridLength; i++) {
       for (int j = 0; j < gridHeight; j++) {
-	if (grid[i][j].type == SOCIAL) {
+	if (grid[j][i].type == SOCIAL) {
 	  count++;
 	}
       }
@@ -602,7 +582,7 @@ int main(void) {
   {
     int count = 0;
     for (int i = 0; i < numSocials; i++) {
-      if (grid[socialPlaces[i].x][socialPlaces[i].y].type == SOCIAL) {
+      if (grid[socialPlaces[i].y][socialPlaces[i].x].type == SOCIAL) {
 	count++;
       }
     }
@@ -628,8 +608,8 @@ int main(void) {
   moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight);
 
   testbool(humans[0]->x == 1 && humans[0]->y == 1, "Human moves toward social space");
-  testbool(!grid[1][2].human, "Previous grid cell cleared");
-  testbool(grid[humans[0]->x][humans[0]->y].human == humans[0],
+  testbool(!grid[2][1].human, "Previous grid cell cleared");
+  testbool(grid[humans[0]->y][humans[0]->x].human == humans[0],
 	   "Destination cell occupied by the right human");
 
   // --- //
@@ -648,7 +628,7 @@ int main(void) {
   printf("\n");
 
   /* FREE VARIABLES */
-  for (int i = 0; i < gridLength; i++) {
+  for (int i = 0; i < gridHeight; i++) {
     free(grid[i]);
   }
 
