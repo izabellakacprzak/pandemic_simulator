@@ -4,6 +4,7 @@ initially_infected 3
 latency_period 7
 infection_rate 0.5
 fatality_rate 0.1
-height 100
+height 70
 length 50
-
+// social spaces num
+// recovery chance

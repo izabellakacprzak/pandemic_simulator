@@ -21,5 +21,6 @@ clean:
 	rm -f $(wildcard *.o)
 	rm -f simulate
 	rm -f testsuite
+	rm -f pandemic.gif
 	cd lib; make clean
 	cd gifoutput; make clean
