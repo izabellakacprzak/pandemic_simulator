@@ -49,15 +49,6 @@ typedef Point SocialSpace;
 
 typedef GridCell** Grid;
 
-
-//sets a cell to be occupied by a given human
-#define CELL_SET(cell, newHuman) \
-  do { cell.human = newHuman; } while (0)
-
-//sets a cell to be unoccupied
-#define CELL_CLEAR(cell) \
-  do { cell.human = NULL; } while (0)
-
 #define RANDINT(min, max) \
   (rand() % (max - min)) + min
 

@@ -1,10 +1,10 @@
 population 250
 // This is a comment
 initially_infected 3
-latency_period 7
-infection_rate 0.5
-fatality_rate 0.1
-recovery_rate 0.3
-social_spaces 7
+latency_period 14
+infection_rate 0.8
+fatality_rate 0.01
+recovery_rate 0.02
+social_spaces 0
 columns 100
 rows 50

@@ -15,7 +15,7 @@ typedef enum outputSelection {
 
 #define CELL_SIZE 20
 
-int main (int argc, char **argv) {
+int main(void) {
   char input[10];
   int noTurns, gridColumns, gridRows, population, initiallyInfected, numSocials;
   ErrorCode err = OK;

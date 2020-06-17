@@ -59,7 +59,7 @@ static void resetHumans(int newPopulation, int *population, Human **humans,
     if (numSocials) {
       humans[i]->socialPreference = RANDINT(0, numSocials);
     }
-    CELL_SET(grid[currPoint.x][currPoint.y], humans[i]);
+    cellSet(&grid[currPoint.x][currPoint.y], humans[i]);
 
     newFreeCells[index] = newFreeCells[newNoFreeCells - 1];
     newNoFreeCells--;
@@ -201,7 +201,7 @@ int main(void) {
     if (numSocials) {
       humans[i]->socialPreference = RANDINT(0, numSocials);
     }
-    CELL_SET(grid[currPoint.x][currPoint.y], humans[i]);
+    cellSet(&grid[currPoint.x][currPoint.y], humans[i]);
 
     freeCells[index] = freeCells[noFreeCells - 1];
     noFreeCells--;
