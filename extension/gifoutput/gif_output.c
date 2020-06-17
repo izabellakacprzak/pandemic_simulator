@@ -10,9 +10,9 @@ static void addColour(uint8_t *buffer, int index, uint8_t r, uint8_t g, uint8_t 
   buffer[index+2] = b;
 }
 
-ge_GIF *initialiseGif(int gridLength, int gridHeight, int cellSize) {
-  uint16_t width = gridLength * cellSize;
-  uint16_t height = gridHeight * cellSize;
+ge_GIF *initialiseGif(int gridColumns, int gridRows, int cellSize) {
+  uint16_t width = gridColumns * cellSize;
+  uint16_t height = gridRows * cellSize;
 
   uint8_t palette[24];
 
@@ -42,11 +42,11 @@ static void drawCell(ge_GIF *gif, int x, int y, int cellSize, uint8_t currentPix
   }
 }
 
-void writeFrame(ge_GIF *gif, Grid grid, int gridLength, int gridHeight, int cellSize) {
+void writeFrame(ge_GIF *gif, Grid grid, int gridColumns, int gridRows, int cellSize) {
   Colour currentColour;
   uint8_t currentPixel;
-  for (int i = 0; i < gridLength; i++) {
-    for (int j = 0; j < gridHeight; j++) {
+  for (int i = 0; i < gridRows; i++) {
+    for (int j = 0; j < gridColumns; j++) {
 
       if (!grid[i][j].human) {
 	switch(grid[i][j].type) {
@@ -78,7 +78,7 @@ void writeFrame(ge_GIF *gif, Grid grid, int gridLength, int gridHeight, int cell
 	}
       }
       currentPixel = currentColour; //converts to 8 bit value
-      drawCell(gif, i , j, cellSize, currentPixel);
+      drawCell(gif, j , i, cellSize, currentPixel);
       //draws a square of length cellSize into the gif
       
     }
