@@ -24,7 +24,8 @@ int main(int argc, char **argv) {
   Address currAddress = 0;
   symbolNode *symbolTable = NULL;
   Instruction *extraInstructions = NULL;
-  char **currentLine = calloc((MAX_INSTRUCTION_PARAMS + 1), sizeof(char*));
+  char **currentLine = calloc(MAX_INSTRUCTION_PARAMS + 1, sizeof(char*));
+  
   FATAL_SYS((currentLine == NULL));
    
   ldrAddresses loadConstants = {0};
@@ -44,7 +45,8 @@ int main(int argc, char **argv) {
       /* Check if the first token is a label */
       label = isLabel(currentLine);
       if(label == 1) {
-	data.address = currAddress; 
+	data.address = currAddress;
+	currentLine[0][strlen(currentLine[0]) - 1] = '\0';
       } else if(label == -1) {
 	/* An invalid instruction is detected */
 	FATAL_PROG(1,INVALID_INSTRUCTION);
@@ -128,6 +130,11 @@ int main(int argc, char **argv) {
   /* End the program immediately if an error has been detected */
   fatalError:
   /* Free any dynamically allocated memory */
+  for (int i = 0; i < MAX_INSTRUCTION_PARAMS + 1; i++) {
+    if (currentLine[i]) {
+      free(currentLine[i]);
+    }
+  }
   free(currentLine);
   freeTable(symbolTable);
   free(extraInstructions);

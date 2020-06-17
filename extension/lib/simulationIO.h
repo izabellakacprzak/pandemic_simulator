@@ -16,9 +16,9 @@ void printToTerminal(Grid grid, int gridLength, int gridHeight);
 
 int getNextInput(char *input);
 
-void setInitial(Disease *disease, int *population, int *initiallyInfected,int *gridLength, int *gridHeight);
+void setInitial(Disease *disease, int *population, int *initiallyInfected,int *gridLength, int *gridHeight, int *numSocials);
 
-void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight);
+void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight, int *numSocials);
 
 void printConfigValues(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight);
 

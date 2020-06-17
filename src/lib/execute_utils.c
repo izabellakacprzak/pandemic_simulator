@@ -114,7 +114,12 @@ static Register getOffsetRegister(int carry, Instruction instruction, State *sta
     int carryBit;
 
     if(selectedShift == lsl) {
-      carryBit = (instruction & (1 << (32 - amount))) >> (32 - amount);
+      if (amount == 0) {
+	carryBit = 0;
+      } else {
+	carryBit = (instruction & (1 << (32 - amount))) >> (32 - amount);
+      }
+      
     } else {
       carryBit = (instruction & (1 << (amount - 1))) >> (amount - 1);
     }
@@ -167,44 +172,44 @@ static int executeDataProcessing(Instruction instruction, State *statePtr) {
   destination = getRegPointer(15, statePtr, instruction);
 
   switch((instruction & CREATE_MASK(24,21)) >> 21) {
-  case 0: 
+  case AND: 
     operator.operation.operationWithoutCarry = and;
     operator.isWritten = 1;
     break;
-  case 1:
+  case EOR:
     operator.operation.operationWithoutCarry = eor;
     operator.isWritten = 1;
     break;
-  case 2:
+  case SUB:
     operator.operation.operationWithCarry = sub;
     operator.isWritten = 1;
     operator.isArithmetic = 1;
     break;
-  case 3:
+  case RSB:
     operator.operation.operationWithCarry = rsb;
     operator.isWritten = 1;
     operator.isArithmetic = 1;
     break;
-  case 4:
+  case ADD:
     operator.operation.operationWithCarry = add;
     operator.isWritten = 1;
     operator.isArithmetic = 1;
     break;
-  case 8:
+  case TST:
     operator.operation.operationWithoutCarry = and;
     break;
-  case 9:
+  case TEQ:
     operator.operation.operationWithoutCarry = eor;
     break;
-  case 10:  
+  case CMP:  
     operator.operation.operationWithCarry = sub;
     operator.isArithmetic = 1;
     break;
-  case 12:
+  case ORR:
     operator.operation.operationWithoutCarry = or;
     operator.isWritten = 1;
     break;
-  case 13:
+  case MOV:
     operator.operation.operationWithoutCarry = mov;
     operator.isWritten = 1;
     break;
@@ -308,13 +313,13 @@ static int executeDataTransfer(Instruction instruction, State *statePtr) {
 	 || invalidMemoryAccess(regAddress + 3))
 	return 1;
       
-      *destReg = statePtr->memory[regAddress];
+      *destReg = (uint32_t) statePtr->memory[regAddress];
 
-      *destReg += statePtr->memory[regAddress + 1] << 8;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 1] << 8;
 
-      *destReg += statePtr->memory[regAddress + 2] << 16;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 2] << 16;
 
-      *destReg += statePtr->memory[regAddress + 3] << 24;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 3] << 24;
     } else {
       memAddress = *baseReg + offset;
       
@@ -340,13 +345,13 @@ static int executeDataTransfer(Instruction instruction, State *statePtr) {
 	 || invalidMemoryAccess(regAddress + 3))
 	return 1;
       
-      *destReg = statePtr->memory[regAddress];
+      *destReg = (uint32_t) statePtr->memory[regAddress];
 
-      *destReg += statePtr->memory[regAddress + 1] << 8;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 1] << 8;
 
-      *destReg += statePtr->memory[regAddress + 2] << 16;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 2] << 16;
 
-      *destReg += statePtr->memory[regAddress + 3] << 24;
+      *destReg += (uint32_t) statePtr->memory[regAddress + 3] << 24;
 
       *baseReg += offset;
     } else {

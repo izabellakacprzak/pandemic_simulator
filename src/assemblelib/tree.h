@@ -38,7 +38,7 @@ symbolNode* search(symbolNode * root, char* sym);
 void freeTable(symbolNode *root);
 
 /* Allocates a new node and adds the symbol and address to it */
-symbolNode *createNode(char* sym, treeData data, int isLabel);
+symbolNode *createNode(const char* sym, treeData data, int isLabel);
 
 assemblyInstruction *getDataFromOperation(char *operation);
 

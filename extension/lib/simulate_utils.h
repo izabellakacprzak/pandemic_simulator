@@ -14,7 +14,7 @@ typedef enum healthStatus {
 
 typedef enum cellType {
   NORMAL,
-  WORK,
+  SOCIAL,
   HOSPITAL
 } CellType;
 
@@ -25,11 +25,12 @@ typedef struct point {
 } Point;
 
 typedef struct humanStruct {
+  int latencyTime;
   int x;
   int y;
-  double risk; 
+  int socialPreference;
+  double risk;
   HealthStatus status;
-  int latencyTime;
 } Human;
 
 typedef struct gridCellStruct {
@@ -44,7 +45,13 @@ typedef struct diseaseStruct {
   double recoveryChance;
 } Disease;
 
+typedef struct socialSpace {
+  int x;
+  int y;
+} SocialSpace;
+
 typedef GridCell** Grid;
+
 
 //sets a cell to be occupied by a given human
 #define CELL_SET(cell, newHuman) \
@@ -58,6 +65,10 @@ typedef GridCell** Grid;
   (rand() % (max - min)) + min
 
 double randomFrom0To1(void);
+
+void cellSet(GridCell *cell, Human *newHuman);
+
+void cellClear(GridCell *cell);
 
 void move(Grid grid, Human **humans, int population, int length, int height);
 

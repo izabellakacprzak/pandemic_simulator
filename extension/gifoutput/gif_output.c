@@ -53,7 +53,7 @@ void writeFrame(ge_GIF *gif, Grid grid, int gridLength, int gridHeight, int cell
 	case NORMAL:
 	  currentColour = WHITE;
 	  break;
-	case WORK:
+	case SOCIAL:
 	  currentColour = YELLOW;
 	  break;
 	case HOSPITAL:

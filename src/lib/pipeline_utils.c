@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include "pipeline_utils.h"
 
-#define Z_MASK (1 << 30)
-#define N_MASK (1 << 31)
-#define C_MASK (1 << 29)
+#define Z_MASK (((uint32_t) 1) << 30)
+#define N_MASK (((uint32_t) 1) << 31)
+#define C_MASK (((uint32_t) 1) << 29)
 
 void terminate(State *statePtr) {
   /* Prints the values stored in the general purpose registers */
@@ -23,10 +23,10 @@ void terminate(State *statePtr) {
   for(int i = 0; i < MEMORY_SIZE; i+=4) {
     
     /* Combines four 8-bit long ints into one 32-bit long */
-    memoryValue  = (statePtr->memory[i] << 24);
-    memoryValue += (statePtr->memory[i+1] << 16);
-    memoryValue += (statePtr->memory[i+2] << 8);
-    memoryValue += statePtr->memory[i+3];
+    memoryValue  = ((uint32_t) statePtr->memory[i] << 24);
+    memoryValue += ((uint32_t) statePtr->memory[i+1] << 16);
+    memoryValue += ((uint32_t) statePtr->memory[i+2] << 8);
+    memoryValue += (uint32_t) statePtr->memory[i+3];
     
     if(memoryValue != 0) {
       printf("0x%08x: 0x%08x\n", i, memoryValue);
@@ -40,12 +40,12 @@ void fetchInstruction(State *statePtr, Pipeline *pipelinePtr) {
   pipelinePtr->decoded = pipelinePtr->fetched;
 
   /* Fetching the next instruction and incrementing PC */
-  Memory first = statePtr->memory[statePtr->regPC];
-  Memory second = statePtr->memory[statePtr->regPC + 1];
-  Memory third = statePtr->memory[statePtr->regPC + 2];
-  Memory fourth = statePtr->memory[statePtr->regPC + 3];
+  uint32_t first = statePtr->memory[statePtr->regPC];
+  uint32_t second = statePtr->memory[statePtr->regPC + 1];
+  uint32_t third = statePtr->memory[statePtr->regPC + 2];
+  uint32_t fourth = statePtr->memory[statePtr->regPC + 3];
 
-    
+  /* first-fourth are assigned Memory type (uint8_t), so this should not cause overlap*/
   pipelinePtr->fetched = first | (second << 8) | (third << 16) | (fourth << 24);
   statePtr->regPC += 4;
 }
@@ -96,7 +96,7 @@ int determineValidity(Instruction instruction, State *statePtr) {
   uint32_t setZ	= statePtr->regCPSR & Z_MASK;
   uint32_t clearZ = !(setZ);
   uint32_t stateOfN = statePtr->regCPSR >> 31;
-  uint32_t stateOfV = (statePtr->regCPSR << 3) >> 31;
+  uint32_t stateOfV = ((uint32_t) statePtr->regCPSR << 3) >> 31;
 
   /* Checks whether the condition is fulfilled
      and updates validity accordingly */
@@ -121,7 +121,7 @@ int determineValidity(Instruction instruction, State *statePtr) {
   return validity;
 }
 
-void setZ(State *statePtr, int result) { 
+void setZ(State *statePtr, Register result) {
   if(!result){
     statePtr->regCPSR = Z_MASK | statePtr->regCPSR;
   } else{
@@ -130,7 +130,7 @@ void setZ(State *statePtr, int result) {
 }
 
 
-void setN(State *statePtr, int result) { 
+void setN(State *statePtr, Register result) { 
   if(result & N_MASK){
     statePtr->regCPSR = N_MASK | statePtr->regCPSR;
   } else{
@@ -138,7 +138,7 @@ void setN(State *statePtr, int result) {
   }
 }
 
-void setC(State *statePtr, int value) {
+void setC(State *statePtr, Register value) {
   if(value){
     statePtr->regCPSR = C_MASK | statePtr->regCPSR;
   } else{

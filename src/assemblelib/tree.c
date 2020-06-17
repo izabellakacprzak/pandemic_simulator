@@ -3,7 +3,7 @@
 
 #include "tree.h"
 
-symbolNode *createNode(char* sym, treeData data, int isLabel) {
+symbolNode *createNode(const char* sym, treeData data, int isLabel) {
     symbolNode *root = calloc(1, sizeof(symbolNode));
 
     root->symbol = strdup(sym);
