@@ -18,8 +18,8 @@ typedef enum Colours {
   TURQUOISE  
 } Colour;
 
-ge_GIF *initialiseGif(int gridLength, int gridHeight, int cellSize);
+ge_GIF *initialiseGif(int gridColumns, int gridRows, int cellSize);
 
-void writeFrame(ge_GIF *gif, Grid grid, int gridLength, int gridHeight, int cellSize);
+void writeFrame(ge_GIF *gif, Grid grid, int gridColumns, int gridRows, int cellSize);
 
 #endif

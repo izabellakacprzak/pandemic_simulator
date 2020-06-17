@@ -1,7 +1,6 @@
 #include "simulate_utils.h"
 #include "simulate_social.h"
 #include "simulationIO.h"
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +17,7 @@ typedef enum outputSelection {
 
 int main (int argc, char **argv) {
   char input[10];
-  int noTurns, gridLength, gridHeight, population, initiallyInfected, numSocials;
+  int noTurns, gridColumns, gridRows, population, initiallyInfected, numSocials;
   ErrorCode err = OK;
   Disease disease = {0};
   outputSelection outputType = NO_OUTPUT; //no output selected
@@ -26,20 +25,20 @@ int main (int argc, char **argv) {
   srand(time(NULL));
 
   setInitial(&disease, &population, &initiallyInfected,
-	     &gridLength, &gridHeight, &numSocials);
+             &gridColumns, &gridRows, &numSocials);
   configurate(&disease, &population, &initiallyInfected,
-	      &gridLength, &gridHeight, &numSocials);
+              &gridColumns, &gridRows, &numSocials);
 
   int noFreeCells;
   Point *freeCells;
 
   //creates an array of humans on the heap
-  Grid grid = calloc(gridHeight, sizeof(GridCell*));
+  Grid grid = calloc(gridRows, sizeof(GridCell*));
 
   FATAL_PROG((grid == NULL), ALLOCATION_FAIL);
 
-  for (int i = 0; i < gridHeight; i++) {
-    grid[i] = calloc(gridLength, sizeof(GridCell));
+  for (int i = 0; i < gridRows; i++) {
+    grid[i] = calloc(gridColumns, sizeof(GridCell));
     FATAL_PROG((grid[i] == NULL), ALLOCATION_FAIL);
     //creates unoccupied cells of default type
   }
@@ -48,7 +47,7 @@ int main (int argc, char **argv) {
 
   if(numSocials){
     socialPlaces = calloc(numSocials, sizeof(SocialSpace));
-    initialiseSocials(numSocials, grid, socialPlaces, gridLength, gridHeight);
+    initialiseSocials(numSocials, grid, socialPlaces, gridColumns, gridRows);
   }
   
   Human **humans = calloc(population, sizeof(Human*));
@@ -56,15 +55,15 @@ int main (int argc, char **argv) {
   FATAL_PROG((humans == NULL), ALLOCATION_FAIL);
 
 
-  noFreeCells = gridLength * gridHeight;
+  noFreeCells = gridColumns * gridRows;
   freeCells = calloc(noFreeCells, sizeof(Point));
 
   FATAL_PROG((freeCells == NULL), ALLOCATION_FAIL);
   // initialized all cell Points to be free
-  for(int i = 0; i < gridLength; i++){
-	for(int j = 0; j < gridHeight; j++){
-		freeCells[i + (j * gridLength)].x = i;
-		freeCells[i + (j * gridLength)].y = j;
+  for(int i = 0; i < gridRows; i++){
+	for(int j = 0; j < gridColumns; j++){
+		freeCells[i * gridColumns + j].y = i;
+		freeCells[i * gridColumns + j].x = j;
 	}
   }
 
@@ -81,10 +80,9 @@ int main (int argc, char **argv) {
 
 		humans[i]->risk = randomFrom0To1() * 2;
 		if (numSocials) {
-		      humans[i]->socialPreference = RANDINT(1, numSocials);
-	        }
-		CELL_SET(grid[currPoint.x][currPoint.y], humans[i]);
-
+		     humans[i]->socialPreference = RANDINT(0, numSocials);
+	    }
+		cellSet(&grid[currPoint.y][currPoint.x], humans[i]);
 		freeCells[index] = freeCells[noFreeCells - 1];
 		noFreeCells--;
 		if(noFreeCells > 0){
@@ -105,12 +103,14 @@ int main (int argc, char **argv) {
     if (strcmp(input, "gif") == 0) {
       outputType = GIF;
     } else if (strcmp(input, "terminal") == 0) {
-      outputType = GIF;
+      outputType = TERMINAL;
     } else {
       printf("Invalid input %s\n", input);
     }
   }
 
+  int socialTime = (gridColumns + gridRows) / (numSocials);
+  int socialIndex = 1;
   if (outputType == TERMINAL) {
     FATAL_SYS(getNextInput(input) != 1); //kill if no item is scanned
   
@@ -119,11 +119,19 @@ int main (int argc, char **argv) {
       
       for (int i = 0; i < noTurns; i++) {
       //call turn function
-	move(grid, humans, population, gridLength, gridHeight);
-	checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+      	if(socialIndex > 0 && socialIndex < socialTime){
+        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows);
+        } else {
+        if(socialIndex == socialTime){
+          socialIndex = -socialTime * 3 / 2;	
+        }
+        move(grid, humans, population, gridColumns, gridRows);
+        }
+        checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
+        socialIndex++;
       }
-      
-      printToTerminal(grid, gridLength, gridHeight);
+
+      printToTerminal(grid, gridColumns, gridRows);
 
       FATAL_SYS(getNextInput(input) != 1);
     }
@@ -132,17 +140,25 @@ int main (int argc, char **argv) {
     scanf("%9s", input);
     noTurns = atoi(input);
 
-    ge_GIF *gif = initialiseGif(gridLength, gridHeight, CELL_SIZE);
+    ge_GIF *gif = initialiseGif(gridColumns, gridRows, CELL_SIZE);
 
 
-    writeFrame(gif, grid, gridLength, gridHeight, CELL_SIZE);
+    writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
     //adds a frame of the current board to the gif
     
     for (int i = 0; i < noTurns; i++) {
       //call turn function
-      moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight);
-      checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
-      writeFrame(gif, grid, gridLength, gridHeight, CELL_SIZE);
+      	if(socialIndex > 0 && socialIndex < socialTime){
+        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows);
+        } else {
+        if(socialIndex == socialTime){
+          socialIndex = -socialTime * 3 / 2;	
+        }
+        move(grid, humans, population, gridColumns, gridRows);
+        }
+        checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
+        socialIndex++;
+        writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
     }
     
     //close gif file and produce gif
@@ -151,15 +167,15 @@ int main (int argc, char **argv) {
 
  fatalError:
 
-  if (grid) {
-    for (int i = 0; i < gridLength; i++) {
+  if(grid) {
+    for(int i = 0; i < gridRows; i++) {
       free(grid[i]);
     }
   }
 
-  if (humans) {
-    for (int i = 0; i < population; i++) {
-      if (humans[i]) {
+  if(humans) {
+    for(int i = 0; i < population; i++) {
+      if(humans[i]) {
         free(humans[i]);
       }
     }
@@ -172,7 +188,7 @@ int main (int argc, char **argv) {
   free(humans);
   free(freeCells);
 
-  if (err != OK) {
+  if(err != OK) {
     /* Print an error message*/
     char *errorMessage;
     if(EC_IS_SYS_ERROR(err)) {

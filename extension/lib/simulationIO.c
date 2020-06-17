@@ -3,40 +3,40 @@
 #include <assert.h>
 #include <string.h>
 
-void printToTerminal(Grid grid, int gridLength, int gridHeight) {
-  assert(gridLength >= 0);
-  assert(gridHeight >= 0);
+void printToTerminal(Grid grid, int gridColumns, int gridRows) {
+    assert(gridColumns >= 0);
+    assert(gridRows >= 0);
 
-  GridCell cell;
+    GridCell cell;
 
-  for (int i = 0; i < gridHeight; i++) {
-    for (int j = 0; j < gridLength; j++) {
-      cell = grid[j][i]; //assuming array goes [x][y]
-      if (cell.human) {
-	switch (cell.human->status) {
-	case HEALTHY:
-	  printf("H"); //healthy
-	  break;
-	case LATENT:
-	  printf("L"); //carrier
-	  break;
-	case SICK:
-	  printf("I"); //infected
-	  break;
-	default:
-	  printf("E"); //error
-	  break;
-	}
-      } else {
-	if (grid[j][i].type == SOCIAL) {
-	  printf("S"); //social space
-	} else {
-	  printf("-"); //empty cell
-	}
-      }
+    for(int i = 0; i < gridRows; i++) {
+        for(int j = 0; j < gridColumns; j++) {
+            cell = grid[i][j];
+            if(cell.human) {
+                switch (cell.human->status) {
+                    case HEALTHY:
+                        printf("H"); //healthy
+                        break;
+                    case LATENT:
+                        printf("L"); //carrier
+                        break;
+                    case SICK:
+                        printf("I"); //infected
+                        break;
+                    default:
+                        printf("E"); //error
+                        break;
+                }
+            } else {
+                if(grid[i][j].type == SOCIAL) {
+                    printf("S"); //social space
+                } else {
+                    printf("-"); //empty cell
+                }
+            }
+        }
+        printf("\n");
     }
-    printf("\n");
-  }
 }
 
 int getNextInput(char *input) {
@@ -58,13 +58,13 @@ static void getDouble(char *buffer, double *value){
   }
 }
 
-void setInitial(Disease *disease, int *population, int *initiallyInfected,int *gridLength, int *gridHeight, int *numSocials){
+void setInitial(Disease *disease, int *population, int *initiallyInfected, int *gridColumns, int *gridRows, int *numSocials){
 
   *population = DEFAULT_POPULATION;
   *initiallyInfected = DEFAULT_INFECTED;
-  *gridLength = GRID_SIZE;
-  *gridHeight = GRID_SIZE;
-  *numSocials = 2;
+  *gridColumns = GRID_SIZE;
+  *gridRows = GRID_SIZE;
+  *numSocials = SOCIAL_SPACES;
   disease->latencyPeriod = LATENCY;
   disease->infectionChance = INF_CHANCE;
   disease->fatalityChance = FATAL_CHANCE;
@@ -72,57 +72,61 @@ void setInitial(Disease *disease, int *population, int *initiallyInfected,int *g
    
 }
 
-void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight, int *numSocials) {
+void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridColumns, int *gridRows, int *numSocials) {
 
-  FILE *configFile;
-    if((configFile = fopen("config.txt", "r" )) == NULL){
+    FILE *configFile;
+    if ((configFile = fopen("config.txt", "r")) == NULL) {
         printf("Error loading configuration file... Reverting to default...\n");
-	setInitial(disease, population, initiallyInfected, gridLength, gridHeight, numSocials);
-    } else{
-      char buffer[BUFFER_SIZE];
+        setInitial(disease, population, initiallyInfected, gridColumns, gridRows, numSocials);
+    } else {
+        char buffer[BUFFER_SIZE];
 
-      //Code duplication to remove - this is a working version
-      while(!feof(configFile)) {
-  
-	fgets(buffer, BUFFER_SIZE, configFile);
-    /* Comments in config file are denoted with / */
-	if(buffer[0] == '/') {
-	  continue;
-	} else if(strstr(buffer, "population")) {
-	  getInt(buffer, population);
-	} else if(strstr(buffer, "initially_infected")) {
-	  getInt(buffer, initiallyInfected);
-	} else if(strstr(buffer, "latency_period")){
-	  getInt(buffer, &disease->latencyPeriod);      
-	} else if(strstr(buffer, "length")){
-	  getInt(buffer, gridLength);      
-	} else if(strstr(buffer, "height")){
-	  getInt(buffer, gridHeight);      
-	} else if(strstr(buffer, "infection_rate")){
-	  getDouble(buffer, &disease->infectionChance);
-	} else if(strstr(buffer, "fatality_rate")){
-	  getDouble(buffer, &disease->fatalityChance);
-	} else if(strstr(buffer, "recovery_rate")){
-	  getDouble(buffer, &disease->recoveryChance);
-	} else {
-	  printf("Configuration variable %s does not exist\n", buffer);
-	}
-      }
-      fclose(configFile);
+        //Code duplication to remove - this is a working version
+        while (!feof(configFile)) {
+
+            fgets(buffer, BUFFER_SIZE, configFile);
+            /* Comments in config file are denoted with / */
+            if (buffer[0] == '/') {
+                continue;
+            } else if (strstr(buffer, "population")) {
+                getInt(buffer, population);
+            } else if (strstr(buffer, "initially_infected")) {
+                getInt(buffer, initiallyInfected);
+            } else if (strstr(buffer, "latency_period")) {
+                getInt(buffer, &disease->latencyPeriod);
+            } else if (strstr(buffer, "columns")) {
+                getInt(buffer, gridColumns);
+            } else if (strstr(buffer, "rows")) {
+                getInt(buffer, gridRows);
+            } else if (strstr(buffer, "infection_rate")) {
+                getDouble(buffer, &disease->infectionChance);
+            } else if (strstr(buffer, "fatality_rate")) {
+                getDouble(buffer, &disease->fatalityChance);
+            } else if (strstr(buffer, "recovery_rate")) {
+                getDouble(buffer, &disease->recoveryChance);
+            } else if (strstr(buffer, "social_spaces")) {
+                getInt(buffer, numSocials);
+            } else {
+                printf("Configuration variable %s does not exist\n", buffer);
+            }
+        }
+        fclose(configFile);
     }
-    printConfigValues(disease, population, initiallyInfected, gridLength, gridHeight); 
+    printConfigValues(disease, population, initiallyInfected, gridColumns, gridRows, numSocials);
 
 }
 
-void printConfigValues(Disease *disease, int *population, int *initiallyInfected, int *gridLength, int *gridHeight) {
+void printConfigValues(Disease *disease, int *population, int *initiallyInfected,
+                       int *gridColumns, int *gridRows, int *numSocials) {
 
   printf("Population is: %d\n", *population);
   printf("The number of initially infected is: %d\n", *initiallyInfected);
   printf("The latency period of the virus is: %d\n", disease->latencyPeriod);
+  printf("The number of social spaces is %d\n", *numSocials);
   printf("The infection rate is: %lf\n", disease->infectionChance);
   printf("The fatality rate is: %lf\n", disease->fatalityChance);
-  printf("The recovery chance is: %lf\n", disease->recoveryChance);
-  printf("The grid width is: %d\n", *gridHeight);
-  printf("The grid length is %d\n", *gridLength);
+  printf("The recovery rate is: %lf\n", disease->recoveryChance);
+  printf("The number of grid rows is: %d\n", *gridRows);
+  printf("The number of grid columns is %d\n", *gridColumns);
 
 }
