@@ -17,6 +17,15 @@ void initialiseSocials(int amount, Grid grid, SocialSpace *socialPlaces,
         grid[y][x].type = SOCIAL;
         socialPlaces[i].x = x;
         socialPlaces[i].y = y;
+
+	int radius = (gridColumns * gridRows) / (50 * 50);
+	for (int i = -radius + x; i < radius + x; i++) {
+	  for (int j = -radius + y; j < radius + y; j++) {
+	    if (i < gridColumns && j < gridRows && i >= 0 && j >=0) {
+	      grid[j][i].type = NEAR_SOCIAL;
+	    }
+	  }
+	}
     }
 }
 

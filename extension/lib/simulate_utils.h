@@ -15,7 +15,7 @@ typedef enum healthStatus {
 typedef enum cellType {
   NORMAL,
   SOCIAL,
-  HOSPITAL
+  NEAR_SOCIAL
 } CellType;
 
 

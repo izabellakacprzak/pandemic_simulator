@@ -53,11 +53,9 @@ void writeFrame(ge_GIF *gif, Grid grid, int gridColumns, int gridRows, int cellS
 	case NORMAL:
 	  currentColour = WHITE;
 	  break;
+	case NEAR_SOCIAL:
 	case SOCIAL:
 	  currentColour = YELLOW;
-	  break;
-	case HOSPITAL:
-	  currentColour = PURPLE;
 	  break;
 	default:
 	  currentColour = BLACK;

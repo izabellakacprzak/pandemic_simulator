@@ -28,7 +28,7 @@ void printToTerminal(Grid grid, int gridColumns, int gridRows) {
                         break;
                 }
             } else {
-                if(grid[i][j].type == SOCIAL) {
+                if(grid[i][j].type == SOCIAL || grid[i][j].type == NEAR_SOCIAL) {
                     printf("S"); //social space
                 } else {
                     printf("-"); //empty cell
