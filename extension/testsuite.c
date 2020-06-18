@@ -78,6 +78,7 @@ static void resetDisease(Disease *disease) {
   disease->infectionChance = 0;
   disease->fatalityChance = 0;
   disease->recoveryChance = 0;
+  disease->immunity = 0;
 }
 
 static void changeHumanLocation(int x, int y, Human *human, Grid grid) {
@@ -121,6 +122,7 @@ int main(void) {
   /* ORIGINAL CONFIGS */
   int population = 10;
   int initiallyInfected = 5;
+  int quarantine = 0;
 
   Disease disease = {0};
   disease.latencyPeriod = 7;
@@ -159,7 +161,8 @@ int main(void) {
   Human **humans = calloc(population, sizeof(Human *));
 
   int noFreeCells = gridLength * gridHeight;
-  Point *freeCells = calloc(noFreeCells, sizeof(Point));
+
+ Point *freeCells = calloc(noFreeCells, sizeof(Point));
 
   for(int i = 0; i < gridHeight; i++){
     for(int j = 0; j < gridLength; j++){
@@ -251,7 +254,7 @@ int main(void) {
   // randoms: {0, -1}
   // x should set to x + 0 = 1
   // y should set to y - 1 = 0
-  move(grid, humans, population, gridLength, gridHeight);
+  move(grid, humans, population, gridLength, gridHeight, quarantine);
 
   testbool(humans[0]->x == 1 && humans[0]->y == 0, "Correct human location change");
   testbool(!grid[1][1].human, "Previous grid cell cleared");
@@ -266,7 +269,7 @@ int main(void) {
   // {-1, -1} should be ignored
   // x should set to x + 0 = 0
   // y should set to y + 1 = 1
-  move(grid, humans, population, gridLength, gridHeight);
+  move(grid, humans, population, gridLength, gridHeight, quarantine);
 
   testbool(humans[0]->x >= 0 && humans[0]->y >= 0,
 	   "Human cannot be placed outside of grid (left and top)");
@@ -279,7 +282,7 @@ int main(void) {
   // {1, 1} should be ignored
   // x should set to x - 1 = gridLength - 1
   // y should set to y - 1 = gridHeight - 1
-  move(grid, humans, population, gridLength, gridHeight);
+  move(grid, humans, population, gridLength, gridHeight, quarantine);
 
   testbool(humans[0]->x < gridLength && humans[0]->y < gridHeight,
 	   "Human cannot be placed outside of grid (right and bottom)");
@@ -293,7 +296,7 @@ int main(void) {
   // {1, -1} should be ignored by humans[0] ([2][0] is occupied)
   // humans[0]->x should be x - 1 = 0
   // humans[0]->y should be y - 1 = 0
-  move(grid, humans, population, gridLength, gridHeight);
+  move(grid, humans, population, gridLength, gridHeight, quarantine);
 
   testbool(!(humans[0]->x == humans[1]->x && humans[0]->y == humans[1]->y),
 	   "Human cannot move to an occupied space");
@@ -605,7 +608,7 @@ int main(void) {
   changeHumanLocation(1, 2, humans[0], grid);
   humans[0]->socialPreference = 0;
   
-  moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight);
+  moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight, quarantine);
 
   testbool(humans[0]->x == 1 && humans[0]->y == 1, "Human moves toward social space");
   testbool(!grid[2][1].human, "Previous grid cell cleared");
@@ -620,7 +623,7 @@ int main(void) {
   humans[1]->socialPreference = 0;
 
   // humans[0] should not move to [1][1] ([1][1] is occupied)
-  moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight);
+  moveAStar(grid, humans, population, socialPlaces, gridLength, gridHeight, quarantine);
 
   testbool(!(humans[0]->x == humans[1]->x && humans[0]->y == humans[1]->y),
 	   "Human cannot move to an occupied space");

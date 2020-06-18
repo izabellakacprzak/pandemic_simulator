@@ -21,11 +21,11 @@ void initialiseSocials(int amount, Grid grid, SocialSpace *socialPlaces,
 }
 
 void moveAStar(Grid grid, Human **humans, int population, SocialSpace *socialPlaces,
-		int gridColumns, int gridRows) {
+		int gridColumns, int gridRows, int quarantine) {
     for(int i = 0; i < population; i++) {
         int heuristics[3][3];
 
-        if(humans[i]->status != SICK) {
+        if(!(quarantine && humans[i]->status == SICK)) {
 
             for(int x = -1; x < 2; x++) {
                 for(int y = -1; y < 2; y++) {

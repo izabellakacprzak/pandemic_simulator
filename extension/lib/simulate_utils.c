@@ -17,10 +17,10 @@ void cellClear(GridCell *cell) {
 }
 
 void move(Grid grid, Human **humans, int population,
-          int gridColumns, int gridRows) {
+          int gridColumns, int gridRows, int quarantine) {
   int x, y;
   for(int i = 0; i < population; i++) {
-    if(humans[i]->status != SICK) {
+    if(!(quarantine && humans[i]->status == SICK)) {
       do{
 	x = humans[i]->x + (RANDINT(0, 3) - 1); //random int from -1 to 1
 	y = humans[i]->y + (RANDINT(0, 3) - 1);
@@ -81,8 +81,12 @@ void checkInfections(Grid grid, Human **humans, int *population,
                         if (0 <= k && k < gridRows) {
                             //performs a random infection check for each infected neighbour
                             if (prevState[k][j] != HEALTHY &&
-                                randomFrom0To1() < disease->infectionChance) {
+                                randomFrom0To1() < disease->infectionChance
+				&& !(disease->immunity && humans[i]->risk == 0)) {
                                 humans[i]->status = LATENT;
+				if(disease->immunity){
+				  humans[i]->risk = 0;
+				}
                                 humans[i]->latencyTime = disease->latencyPeriod;
                             }
                         }

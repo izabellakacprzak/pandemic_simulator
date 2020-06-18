@@ -18,12 +18,12 @@ void printToTerminal(Grid grid, int gridColumns, int gridRows);
 int getNextInput(char *input);
 
 void setInitial(Disease *disease, int *population, int *initiallyInfected,
-        int *gridColumns, int *gridRows, int *numSocials);
+        int *gridColumns, int *gridRows, int *numSocials, int *quarantine);
 
 void configurate(Disease *disease, int *population, int *initiallyInfected,
-        int *gridColumns, int *gridRows, int *numSocials);
+        int *gridColumns, int *gridRows, int *numSocials, int *quarantine);
 
 void printConfigValues(Disease *disease, int *population, int *initiallyInfected,
-                       int *gridColumns, int *gridRows, int *numSocials);
+                       int *gridColumns, int *gridRows, int *numSocials, int *quarantine);
 
 #endif

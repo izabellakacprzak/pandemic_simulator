@@ -17,7 +17,7 @@ typedef enum outputSelection {
 
 int main(void) {
   char input[10];
-  int noTurns, gridColumns, gridRows, population, initiallyInfected, numSocials;
+  int noTurns, gridColumns, gridRows, population, initiallyInfected, numSocials, quarantine;
   ErrorCode err = OK;
   Disease disease = {0};
   outputSelection outputType = NO_OUTPUT; //no output selected
@@ -25,9 +25,9 @@ int main(void) {
   srand(time(NULL));
 
   setInitial(&disease, &population, &initiallyInfected,
-             &gridColumns, &gridRows, &numSocials);
+             &gridColumns, &gridRows, &numSocials, &quarantine);
   configurate(&disease, &population, &initiallyInfected,
-              &gridColumns, &gridRows, &numSocials);
+              &gridColumns, &gridRows, &numSocials, &quarantine);
 
   int noFreeCells;
   Point *freeCells;
@@ -123,12 +123,12 @@ int main(void) {
       for (int i = 0; i < noTurns; i++) {
       //call turn function
       	if(socialIndex > 0 && socialIndex < socialTime){
-        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows);
+        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows, quarantine);
         } else {
         if(socialIndex == socialTime){
           socialIndex = -socialTime * 3 / 2;	
         }
-        move(grid, humans, population, gridColumns, gridRows);
+        move(grid, humans, population, gridColumns, gridRows, quarantine);
         }
         checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
         socialIndex++;
@@ -152,12 +152,12 @@ int main(void) {
     for (int i = 0; i < noTurns; i++) {
       //call turn function
       	if(socialIndex > 0 && socialIndex < socialTime){
-        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows);
+        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows, quarantine);
         } else {
         if(socialIndex == socialTime){
           socialIndex = -socialTime * 3 / 2;	
         }
-        move(grid, humans, population, gridColumns, gridRows);
+        move(grid, humans, population, gridColumns, gridRows, quarantine);
         }
         checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
         socialIndex++;

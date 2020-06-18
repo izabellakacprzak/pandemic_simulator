@@ -58,7 +58,7 @@ static void getDouble(char *buffer, double *value){
   }
 }
 
-void setInitial(Disease *disease, int *population, int *initiallyInfected, int *gridColumns, int *gridRows, int *numSocials){
+void setInitial(Disease *disease, int *population, int *initiallyInfected, int *gridColumns, int *gridRows, int *numSocials, int *quarantine){
 
   *population = DEFAULT_POPULATION;
   *initiallyInfected = DEFAULT_INFECTED;
@@ -69,15 +69,16 @@ void setInitial(Disease *disease, int *population, int *initiallyInfected, int *
   disease->infectionChance = INF_CHANCE;
   disease->fatalityChance = FATAL_CHANCE;
   disease->recoveryChance = RECOVERY_CHANCE;
-   
+  disease->immunity = 0;
+  *quarantine = 0;  
 }
 
-void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridColumns, int *gridRows, int *numSocials) {
+void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridColumns, int *gridRows, int *numSocials, int *quarantine) {
 
     FILE *configFile;
     if ((configFile = fopen("config.txt", "r")) == NULL) {
         printf("Error loading configuration file... Reverting to default...\n");
-        setInitial(disease, population, initiallyInfected, gridColumns, gridRows, numSocials);
+        setInitial(disease, population, initiallyInfected, gridColumns, gridRows, numSocials, quarantine);
     } else {
         char buffer[BUFFER_SIZE];
 
@@ -106,18 +107,22 @@ void configurate(Disease *disease, int *population, int *initiallyInfected, int 
                 getDouble(buffer, &disease->recoveryChance);
             } else if (strstr(buffer, "social_spaces")) {
                 getInt(buffer, numSocials);
+            } else if (strstr(buffer, "immunity")) {
+                getInt(buffer, &disease->immunity);
+            } else if (strstr(buffer, "quarantine")) {
+                getInt(buffer, quarantine);
             } else {
                 printf("Configuration variable %s does not exist\n", buffer);
             }
         }
         fclose(configFile);
     }
-    printConfigValues(disease, population, initiallyInfected, gridColumns, gridRows, numSocials);
+    printConfigValues(disease, population, initiallyInfected, gridColumns, gridRows, numSocials, quarantine);
 
 }
 
 void printConfigValues(Disease *disease, int *population, int *initiallyInfected,
-                       int *gridColumns, int *gridRows, int *numSocials) {
+                       int *gridColumns, int *gridRows, int *numSocials, int *quarantine) {
 
   printf("Population is: %d\n", *population);
   printf("The number of initially infected is: %d\n", *initiallyInfected);
@@ -126,6 +131,8 @@ void printConfigValues(Disease *disease, int *population, int *initiallyInfected
   printf("The infection rate is: %lf\n", disease->infectionChance);
   printf("The fatality rate is: %lf\n", disease->fatalityChance);
   printf("The recovery rate is: %lf\n", disease->recoveryChance);
+  printf("The immunity is %s\n", disease->immunity==1?"ON":"OFF");
+  printf("the quarantine for sick humans is %s\n", *quarantine==1?"ON":"OFF");
   printf("The number of grid rows is: %d\n", *gridRows);
   printf("The number of grid columns is %d\n", *gridColumns);
 

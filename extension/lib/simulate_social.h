@@ -7,6 +7,6 @@
 void initialiseSocials(int amount, Grid grid, SocialSpace *socialPlaces, int gridColumns, int gridRows);
 
 void moveAStar(Grid grid, Human **humans, int population, SocialSpace *socialPlaces,
-	  int gridColumns, int gridRows);
+	  int gridColumns, int gridRows, int quarantine);
 
 #endif

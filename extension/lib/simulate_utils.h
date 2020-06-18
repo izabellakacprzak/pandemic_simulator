@@ -43,6 +43,7 @@ typedef struct diseaseStruct {
   double infectionChance;
   double fatalityChance;
   double recoveryChance;
+  int immunity;
 } Disease;
 
 typedef Point SocialSpace;
@@ -58,7 +59,7 @@ void cellSet(GridCell *cell, Human *newHuman);
 
 void cellClear(GridCell *cell);
 
-void move(Grid grid, Human **humans, int population, int gridColumns, int gridRows);
+void move(Grid grid, Human **humans, int population, int gridColumns, int gridRows, int quarantine);
 
 void checkInfections(Grid grid, Human **humans, int *population, int gridColumns, int gridRows, Disease *disease);
 
