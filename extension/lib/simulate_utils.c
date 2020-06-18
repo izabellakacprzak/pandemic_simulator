@@ -1,4 +1,5 @@
 #include "simulate_utils.h"
+#include "simulate_social.h"
 #include "simulationIO.h"
 #include <assert.h>
 #include <stdio.h>
@@ -14,6 +15,21 @@ void cellSet(GridCell *cell, Human *newHuman) {
 
 void cellClear(GridCell *cell) {
   cell->human = NULL;
+}
+
+void makeTurn(Grid grid, int gridColumns, int gridRows, Human **humans,
+	      int *population, SocialSpace *socialPlaces,
+	      int *socialIndex, int socialTime, Disease *disease) {
+  if(*socialIndex > 0 && *socialIndex < socialTime){
+    moveAStar(grid, humans, *population, socialPlaces, gridColumns, gridRows);
+  } else {
+    if(*socialIndex == socialTime){
+      *socialIndex = -socialTime * 3 / 2;	
+    }
+    move(grid, humans, *population, gridColumns, gridRows);
+  }
+  checkInfections(grid, humans, population, gridColumns, gridRows, disease);
+  *socialIndex = *socialIndex + 1;
 }
 
 void move(Grid grid, Human **humans, int population,

@@ -121,17 +121,8 @@ int main(void) {
       noTurns = atoi(input);
       
       for (int i = 0; i < noTurns; i++) {
-      //call turn function
-      	if(socialIndex > 0 && socialIndex < socialTime){
-        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows);
-        } else {
-        if(socialIndex == socialTime){
-          socialIndex = -socialTime * 3 / 2;	
-        }
-        move(grid, humans, population, gridColumns, gridRows);
-        }
-        checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
-        socialIndex++;
+        makeTurn(grid, gridColumns, gridRows, humans, &population, socialPlaces,
+                 &socialIndex, socialTime, &disease);
       }
 
       printToTerminal(grid, gridColumns, gridRows);
@@ -150,17 +141,8 @@ int main(void) {
     //adds a frame of the current board to the gif
     
     for (int i = 0; i < noTurns; i++) {
-      //call turn function
-      	if(socialIndex > 0 && socialIndex < socialTime){
-        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows);
-        } else {
-        if(socialIndex == socialTime){
-          socialIndex = -socialTime * 3 / 2;	
-        }
-        move(grid, humans, population, gridColumns, gridRows);
-        }
-        checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
-        socialIndex++;
+        makeTurn(grid, gridColumns, gridRows, humans, &population, socialPlaces,
+                 &socialIndex, socialTime, &disease);
         writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
     }
     

@@ -58,6 +58,9 @@ void cellSet(GridCell *cell, Human *newHuman);
 
 void cellClear(GridCell *cell);
 
+void makeTurn(Grid grid, int gridColumns, int gridRows, Human **humans, int *population,
+	      SocialSpace *socialPlaces, int *socialIndex, int socialTime, Disease *disease);
+
 void move(Grid grid, Human **humans, int population, int gridColumns, int gridRows);
 
 void checkInfections(Grid grid, Human **humans, int *population, int gridColumns, int gridRows, Disease *disease);
