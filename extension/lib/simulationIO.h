@@ -6,14 +6,16 @@
 #define BUFFER_SIZE (100)
 
 /* Default values used instead of the configure file */
-#define GRID_SIZE (10)
-#define DEFAULT_POPULATION (10)
-#define DEFAULT_INFECTED (4)
-#define LATENCY (5)
-#define INF_CHANCE (0.4)
-#define FATAL_CHANCE (0.1)
-#define RECOVERY_CHANCE (0.6)
-#define SOCIAL_SPACES (2)
+#define GRID_SIZE (100)
+#define DEFAULT_POPULATION (500)
+#define DEFAULT_INFECTED (100)
+#define LATENCY (7)
+#define INF_CHANCE (0.8)
+#define FATAL_CHANCE (0.05)
+#define RECOVERY_CHANCE (0.05)
+#define SOCIAL_SPACES (5)
+#define IMMUNITY (1)
+#define QUARANTINE (0)
 
 /* Prints a grid to the terminal with the social places 
    and the status of each human displayed accordingly */

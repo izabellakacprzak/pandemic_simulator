@@ -25,10 +25,8 @@ int main(void) {
   /* Set up the configuration file */
   setInitial(&disease, &population, &initiallyInfected,
              &gridColumns, &gridRows, &numSocials, &quarantine);
-  configure(&disease, &population, &initiallyInfected,
-              &gridColumns, &gridRows, &numSocials, &quarantine);
 
-  printf("The default values the program will be run with are: \n\n");	
+  printf("The default values the program will be run with are: \n");	
   printConfigValues(&disease, &population, &initiallyInfected, 
   	              &gridColumns, &gridRows, &numSocials, &quarantine);
   
@@ -40,6 +38,8 @@ int main(void) {
       configType = CONFIG;
     } else if(strcmp(input, "default") != 0) {
       printf("Invalid input %s\n", input);
+    } else {
+      break;
     }
   }
 
@@ -141,6 +141,8 @@ int main(void) {
     socialTime = (gridColumns + gridRows) / (numSocials);
   }
   int socialIndex = 1;
+
+  int latentStatTemp = 0, sickStatTemp = 0;
   
   /* Perform the amount of turns specified by 
      the user until the choose to quit */
@@ -151,17 +153,14 @@ int main(void) {
       noTurns = atoi(input);
      
       for (int i = 0; i < noTurns; i++) {
-      //call turn function
-      	if(socialIndex > 0 && socialIndex < socialTime){
-        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows, quarantine);
-        } else {
-        if(socialIndex == socialTime){
-          socialIndex = -socialTime * 3 / 2;	
-        }
-        move(grid, humans, population, gridColumns, gridRows, quarantine);
-     }
-        checkInfections(grid, humans, &population, &sickStat, &latentStat, gridColumns, gridRows, &disease);
-        socialIndex++;
+	latentStatTemp = 0;
+	sickStatTemp = 0;
+	
+        makeTurn(grid, gridColumns, gridRows, humans, &population, socialPlaces,
+                 &socialIndex, socialTime, &disease, quarantine, &sickStatTemp, &latentStatTemp);
+	
+	latentStat += latentStatTemp;
+	sickStat += sickStatTemp;
       }
 
       printToTerminal(grid, gridColumns, gridRows);
@@ -177,26 +176,27 @@ int main(void) {
 
     /* Add a frame of the current board to the gif */
     writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
-    //adds a frame of the current board to the gif
-    
+
     for (int i = 0; i < noTurns; i++) {
-      //call turn function
-      	if(socialIndex > 0 && socialIndex < socialTime){
-        moveAStar(grid, humans, population, socialPlaces,gridColumns, gridRows, quarantine);
-        } else {
-        if(socialIndex == socialTime){
-          socialIndex = -socialTime * 3 / 2;	
-        }
-        move(grid, humans, population, gridColumns, gridRows, quarantine);
- 	}
-	checkInfections(grid, humans, &population, &sickStat, &latentStat, gridColumns, gridRows, &disease); 
-	socialIndex++;
-        writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
+      latentStatTemp = 0;
+      sickStatTemp = 0;
+      
+      makeTurn(grid, gridColumns, gridRows, humans, &population, socialPlaces,
+	       &socialIndex, socialTime, &disease, quarantine, &sickStat, &latentStatTemp);
+      
+      latentStat += latentStatTemp;
+      sickStat += sickStatTemp;
+      
+      writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
     }
+
     ge_close_gif(gif);
   }
 
+  latentStat -= latentStatTemp;
+  sickStat -= sickStatTemp;
   deadStat = populationStat - population;
+  
   printf("The stats at the end of the simulation are: \n");
   printf("Initial population: %d\n", populationStat);
   printf("Number of deaths: %d\n", deadStat);

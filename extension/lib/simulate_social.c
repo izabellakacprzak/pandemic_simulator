@@ -18,6 +18,18 @@ void initialiseSocials(int amount, Grid grid, SocialSpace *socialPlaces,
     grid[y][x].type = SOCIAL;
     socialPlaces[i].x = x;
     socialPlaces[i].y = y;
+
+    /* Assign the spaces around the social space to type
+       NEAR_SOCIAL (drawn in the same colour as SOCIAL) */
+    int radius = (gridColumns * gridRows) / (50 * 50);
+    for(int i = -radius + x; i < radius + x; i++) {
+      for(int j = -radius + y; j < radius + y; j++) {
+	if(i < gridColumns && j < gridRows && i >= 0 && j >=0) {
+	  grid[j][i].type = NEAR_SOCIAL;
+	}
+      }
+    }
+    
   }
 }
 

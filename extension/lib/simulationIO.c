@@ -28,7 +28,7 @@ void printToTerminal(Grid grid, int gridColumns, int gridRows) {
             break;
         }
       } else {
-        if(grid[i][j].type == SOCIAL) {
+        if(grid[i][j].type == SOCIAL || grid[i][j].type == NEAR_SOCIAL) {
           printf("S"); /* social space */
         } else {
           printf("-"); /* empty cell */
@@ -70,8 +70,8 @@ void setInitial(Disease *disease, int *population, int *initiallyInfected, int *
   disease->infectionChance = INF_CHANCE;
   disease->fatalityChance = FATAL_CHANCE;
   disease->recoveryChance = RECOVERY_CHANCE;
-  disease->immunity = 0;
-  *quarantine = 0;  
+  disease->immunity = IMMUNITY;
+  *quarantine = QUARANTINE;  
 }
 
 void configure(Disease *disease, int *population, int *initiallyInfected, int *gridColumns, int *gridRows, int *numSocials, int *quarantine) {

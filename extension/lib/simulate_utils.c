@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "simulate_utils.h"
+#include "simulate_social.h"
 
 double randomFrom0To1(void) {
   return (double) rand() / (double) RAND_MAX;
@@ -12,6 +13,22 @@ void cellSet(GridCell *cell, Human *newHuman) {
 
 void cellClear(GridCell *cell) {
   cell->human = NULL;
+}
+
+void makeTurn(Grid grid, int gridColumns, int gridRows, Human **humans, int *population, 
+              SocialSpace *socialPlaces, int *socialIndex, int socialTime,
+              Disease *disease, int quarantine, int *sickStat, int *latentStat) {
+  checkInfections(grid, humans, population, sickStat, latentStat, gridColumns, gridRows, disease);
+  
+  if(*socialIndex > 0 && *socialIndex < socialTime) {
+    moveAStar(grid, humans, *population, socialPlaces, gridColumns, gridRows, quarantine);
+  } else {
+    if(*socialIndex == socialTime) {
+      *socialIndex = -socialTime * 3 / 2;	
+    }
+    move(grid, humans, *population, gridColumns, gridRows, quarantine);
+  }
+  *socialIndex = *socialIndex + 1;
 }
 
 void move(Grid grid, Human **humans, int population,
@@ -80,11 +97,8 @@ void checkInfections(Grid grid, Human **humans, int *population, int *sickStat,
                   randomFrom0To1() < disease->infectionChance
                   && !(disease->immunity && humans[i]->risk == 0)) {
                 humans[i]->status = LATENT;
-		if(disease->immunity){
-		  humans[i]->risk = 0;
-		}
                 humans[i]->latencyTime = disease->latencyPeriod;
-                ++*latentStat;
+                (*latentStat)++;
               }
             }
           }
@@ -102,7 +116,11 @@ void checkInfections(Grid grid, Human **humans, int *population, int *sickStat,
           ++*sickStat;
         } else {
           humans[i]->status = HEALTHY;
-       }
+        }
+
+        if(disease->immunity){
+          humans[i]->risk = 0;
+	}
       }
       /* Reduce latency time */
       humans[i]->latencyTime--;

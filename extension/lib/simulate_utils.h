@@ -31,6 +31,7 @@ typedef enum healthStatus {
 typedef enum cellType {
   NORMAL,
   SOCIAL,
+  NEAR_SOCIAL
 } CellType;
 
 /* Struct for holding the coordinates of a point */
@@ -106,6 +107,11 @@ void cellSet(GridCell *cell, Human *newHuman);
 
 /* Clears the Human field of a cell */
 void cellClear(GridCell *cell);
+
+/* Moves humans and checks for infections */
+void makeTurn(Grid grid, int gridColumns, int gridRows, Human **humans, int *population, 
+              SocialSpace *socialPlaces, int *socialIndex, int socialTime,
+              Disease *disease, int quarantine, int *sickStat, int *latentStat);
 
 /* Impements a random movement algorith which moves 
    each human to a random free cell next to them */

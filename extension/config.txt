@@ -1,12 +1,12 @@
-population 150
+population 70
 // This is a comment
-initially_infected 20
+initially_infected 1
 latency_period 14
 infection_rate 0.8
 fatality_rate 0.01
 recovery_rate 0.02
-immunity 0
-quarantine 1
+immunity 1
+quarantine 0
 social_spaces 10
-columns 20
-rows 20
+columns 10
+rows 10
