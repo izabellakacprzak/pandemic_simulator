@@ -142,25 +142,18 @@ int main(void) {
   }
   int socialIndex = 1;
 
-  int latentStatTemp = 0, sickStatTemp = 0;
-  
   /* Perform the amount of turns specified by 
      the user until the choose to quit */
   if(outputType == TERMINAL) {
     FATAL_SYS(getNextInput(input) != 1); 
 
+   
     while(strcmp(input, "q")) {
       noTurns = atoi(input);
      
-      for (int i = 0; i < noTurns; i++) {
-	latentStatTemp = 0;
-	sickStatTemp = 0;
-	
+      for (int i = 0; i < noTurns; i++) {	
         makeTurn(grid, gridColumns, gridRows, humans, &population, socialPlaces,
-                 &socialIndex, socialTime, &disease, quarantine, &sickStatTemp, &latentStatTemp);
-	
-	latentStat += latentStatTemp;
-	sickStat += sickStatTemp;
+                 &socialIndex, socialTime, &disease, quarantine, &sickStat, &latentStat);
       }
 
       printToTerminal(grid, gridColumns, gridRows);
@@ -178,31 +171,23 @@ int main(void) {
     writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
 
     for (int i = 0; i < noTurns; i++) {
-      latentStatTemp = 0;
-      sickStatTemp = 0;
-      
+         
       makeTurn(grid, gridColumns, gridRows, humans, &population, socialPlaces,
-	       &socialIndex, socialTime, &disease, quarantine, &sickStat, &latentStatTemp);
-      
-      latentStat += latentStatTemp;
-      sickStat += sickStatTemp;
-      
+	       &socialIndex, socialTime, &disease, quarantine, &sickStat, &latentStat);
+           
       writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
     }
 
     ge_close_gif(gif);
   }
 
-  latentStat -= latentStatTemp;
-  sickStat -= sickStatTemp;
+ 
   deadStat = populationStat - population;
-  
   printf("The stats at the end of the simulation are: \n");
   printf("Initial population: %d\n", populationStat);
   printf("Number of deaths: %d\n", deadStat);
-  printf("Number of latent cases: %d\n", latentStat);
+  printf("Number of times people got infected: %d\n", latentStat);
   printf("Number of sick cases: %d\n", sickStat);
-
 
   fatalError:
 
