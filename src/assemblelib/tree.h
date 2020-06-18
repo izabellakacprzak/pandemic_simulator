@@ -40,6 +40,8 @@ void freeTable(symbolNode *root);
 /* Allocates a new node and adds the symbol and address to it */
 symbolNode *createNode(const char* sym, treeData data, int isLabel);
 
+/* Gets the correct data from the instruction 
+   mnemonic which is later added to the treeData */ 
 assemblyInstruction *getDataFromOperation(char *operation);
 
 #endif

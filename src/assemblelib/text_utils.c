@@ -68,8 +68,6 @@ static int instructionTok(char **destArray, char *line) {
   return OK;
 }
 
-/* Load the next instruction line into an array of chars (line)
-   and tokenise it into the destArray */
 int loadNextInstruction(char **destArray, FILE *sourceFile) {
   if(!sourceFile) {
       printf("Could not access file");
@@ -99,10 +97,6 @@ int writeNextInstruction(Instruction next, FILE *outputFile) {
   return OK;
 }
 
-/* Takes in a line, returns:
-   0 if the line is not a label
-   1 if the line is a label
-   -1 if the first character is not alphabetical (the instruction is invalid) */
 int isLabel(char **line) {
   /* Take the first token of line */
   char *currentChar = *line;

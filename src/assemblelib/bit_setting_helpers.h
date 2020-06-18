@@ -7,7 +7,6 @@
 /* Set bits starting from "bit" to a given value */
 Instruction setBits(uint32_t value, int bit, Instruction instr);
 
-
 /* Calculates the second operand in Data Transfer and Data Processing instructions */
 int calculateOperand(Instruction *instruction, char **code, int opIndex, int processing);
 
