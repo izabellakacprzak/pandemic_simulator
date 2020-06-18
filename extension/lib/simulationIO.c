@@ -118,7 +118,7 @@ void configure(Disease *disease, int *population, int *initiallyInfected, int *g
 void printConfigValues(Disease *disease, int *population, int *initiallyInfected,
                        int *gridColumns, int *gridRows, int *numSocials) {
 
-  printf("Population is: %d\n", *population);
+  printf("\nPopulation is: %d\n", *population);
   printf("The number of initially infected is: %d\n", *initiallyInfected);
   printf("The latency period of the virus is: %d\n", disease->latencyPeriod);
   printf("The number of social spaces is %d\n", *numSocials);
@@ -126,6 +126,8 @@ void printConfigValues(Disease *disease, int *population, int *initiallyInfected
   printf("The fatality rate is: %lf\n", disease->fatalityChance);
   printf("The recovery rate is: %lf\n", disease->recoveryChance);
   printf("The number of grid rows is: %d\n", *gridRows);
-  printf("The number of grid columns is %d\n", *gridColumns);
+  printf("The number of grid columns is %d\n\n", *gridColumns);
 
 }
+
+

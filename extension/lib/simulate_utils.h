@@ -112,7 +112,8 @@ void cellClear(GridCell *cell);
 void move(Grid grid, Human **humans, int population, int gridColumns, int gridRows);
 
 /* Updates the sickness status of each human as well as the grid accordingly */
-void checkInfections(Grid grid, Human **humans, int *population, int gridColumns, int gridRows, Disease *disease);
+void checkInfections(Grid grid, Human **humans, int *population, int *sickStat,
+                     int *latentStat, int gridColumns, int gridRows, Disease *disease);
 
 /* Gets the error code */
 char *getProgramError(ErrorCode e);

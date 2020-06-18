@@ -17,7 +17,7 @@ int main(void) {
   ErrorCode err = OK;
   Disease disease = {0};
   outputSelection outputType = NO_OUTPUT; 
-  configSelection configType = NO_CONFIGURATION;
+  configSelection configType = NO_CONFIGURATION; 
   
   /* Seed the random number generator */
   srand(time(NULL));
@@ -26,7 +26,7 @@ int main(void) {
   setInitial(&disease, &population, &initiallyInfected,
              &gridColumns, &gridRows, &numSocials);
 
-  printf("The default values the program will be run with are: \n");	
+  printf("The default values the program will be run with are: \n\n");	
   printConfigValues(&disease, &population, &initiallyInfected, 
   	              &gridColumns, &gridRows, &numSocials);
   
@@ -46,6 +46,13 @@ int main(void) {
   configure(&disease, &population, &initiallyInfected,
               &gridColumns, &gridRows, &numSocials);
   }
+
+
+  /* Set up variables that display the changes at the end of the simulation */	  
+  int populationStat, sickStat, deadStat, latentStat;
+  populationStat = population;
+  latentStat = initiallyInfected;
+  sickStat = 0;
   
   int noFreeCells;
   Point *freeCells;
@@ -151,7 +158,7 @@ int main(void) {
           }
           move(grid, humans, population, gridColumns, gridRows);
         }
-        checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
+        checkInfections(grid, humans, &population, &sickStat, &latentStat, gridColumns, gridRows, &disease);
         socialIndex++;
       }
 
@@ -178,12 +185,20 @@ int main(void) {
         }
         move(grid, humans, population, gridColumns, gridRows);
       }
-      checkInfections(grid, humans, &population, gridColumns, gridRows, &disease);
+      checkInfections(grid, humans, &population, &sickStat, &latentStat, gridColumns, gridRows, &disease);
       socialIndex++;
       writeFrame(gif, grid, gridColumns, gridRows, CELL_SIZE);
     }
     ge_close_gif(gif);
   }
+
+  deadStat = population - populationStat;
+  printf("The stats at the end of the simulation are: \n");
+  printf("Initial population: %d\n", populationStat);
+  printf("Number of deaths: %d\n", deadStat);
+  printf("Number of latent cases: %d\n", latentStat);
+  printf("Number of sick cases: %d\n", sickStat);
+
 
   fatalError:
 

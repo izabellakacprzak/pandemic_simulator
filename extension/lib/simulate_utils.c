@@ -60,8 +60,8 @@ static void freeStatusGrid(HealthStatus **state, int gridRows) {
   free(state);
 }
 
-void checkInfections(Grid grid, Human **humans, int *population,
-                     int gridColumns, int gridRows, Disease *disease) {
+void checkInfections(Grid grid, Human **humans, int *population, int *sickStat,
+                     int *latentStat, int gridColumns, int gridRows, Disease *disease) {
   HealthStatus **prevState = statusGrid(humans, *population, gridColumns, gridRows);
 
   int x, y;
@@ -81,6 +81,7 @@ void checkInfections(Grid grid, Human **humans, int *population,
                   && randomFrom0To1() < humans[i]->risk) {
                 humans[i]->status = LATENT;
                 humans[i]->latencyTime = disease->latencyPeriod;
+                ++*latentStat;
               }
             }
           }
@@ -95,6 +96,7 @@ void checkInfections(Grid grid, Human **humans, int *population,
            depend on a human's risk and a random check */
         if(randomFrom0To1() < humans[i]->risk) {
           humans[i]->status = SICK;
+          ++*sickStat;
         } else {
           humans[i]->risk = 0;
           humans[i]->status = HEALTHY;
