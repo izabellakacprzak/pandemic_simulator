@@ -129,8 +129,6 @@ int main(void) {
   disease.infectionChance = 0.5;
   disease.fatalityChance = 0.1;
 
-  int populationStat = population;
-  int deadStat = 0;
   int sickStat = 0;
   int latentStat = initiallyInfected;
 

@@ -1,12 +1,24 @@
-population 70
-// This is a comment
-initially_infected 1
-latency_period 14
-infection_rate 0.8
-fatality_rate 0.01
-recovery_rate 0.02
-immunity 1
-quarantine 0
-social_spaces 10
+// GRID SIZE
 columns 10
 rows 10
+// INITIAL POPULATION
+population 70
+// INITIALLY INFECTED PEOPLE
+initially_infected 1
+// NUMBER OF TURNS BEFORE RECOVERY/SICKNESS
+latency_period 5
+// CHANCE OF BECOMING INFECTED WHILE NEXT TO A
+//   SICK OR LATENT HUMAN
+infection_rate 0.8
+// CHANCE OF DEATH PER TURN WHEN SICK
+fatality_rate 0.01
+// CHANCE OF RECOVERY PER TURN WHEN SICK
+recovery_rate 0.02
+// NUMBER OF SOCIAL SPACES HUMANS MAY CONGREGATE TO
+social_spaces 10
+// TOGGLE IMMUNITY EFFECTS
+//   (HUMANS CANNOT BECOME LATENT AFTER BEING LATENT/SICK)
+immunity 1
+// TOGGLE QUARANTINE EFFECTS
+//   (SICK HUMANS DO NOT MOVE EACH TURN)
+quarantine 0
