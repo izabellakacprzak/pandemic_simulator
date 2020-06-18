@@ -7,15 +7,15 @@
 #define CREATE_MASK(start, end) ((1 << (start + 1)) - (1 << end))
 
 /* Creates a function out of an inbuilt arithmetic operator */
-#define OPERATOR_NONSHIFT(name, operator)				   \
+#define OPERATOR_NONSHIFT(name, operator)				      \
   static Register name(const Register operand1, const Register operand2) { \
-    return operand1 operator operand2;				           \
+    return operand1 operator operand2;				      \
   }
 
 /* Creates a function out of a shift operator */
-#define OPERATOR_SHIFT(name, operator)				     \
+#define OPERATOR_SHIFT(name, operator)				\
   static Register name(const uint32_t value, const uint32_t shift) { \
-    return value operator shift;				     \
+    return value operator shift;				       \
   }
 
 /* Gets the flag in a given instruction */
@@ -114,7 +114,7 @@ static Register getOffsetRegister(int carry, Instruction instruction, State *sta
     int carryBit;
 
     if(selectedShift == lsl) {
-      if (amount == 0) {
+      if(amount == 0) {
 	carryBit = 0;
       } else {
 	carryBit = (instruction & (1 << (32 - amount))) >> (32 - amount);
@@ -132,7 +132,7 @@ static Register getOffsetRegister(int carry, Instruction instruction, State *sta
 /* Checks the type of the operator and calls it */
 static Register callOperator(int sFlag, State *statePtr, const Operator *operator,
 			     Register operand1, Register operand2) {
-  if (operator->isArithmetic) {
+  if(operator->isArithmetic) {
     return operator->operation.operationWithCarry(sFlag, statePtr, operand1, operand2);
   }
   
@@ -378,7 +378,7 @@ static int executeBranch(Instruction instruction, State *statePtr) {
   int32_t extendedOffset = (CREATE_MASK(23, 0) & instruction) << 2;
   Register oldPC = statePtr->regPC;
   
-  if (extendedOffset & (1 << 25)) {
+  if(extendedOffset & (1 << 25)) {
     extendedOffset = extendedOffset | ~((1 << 26) - 1);
   }
 

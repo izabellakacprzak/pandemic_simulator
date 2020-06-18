@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 
       /* Checks whether a branch instruction has been executed
          and if so - resets the pipeline */
-      if (currentState.branchFlag) {
+      if(currentState.branchFlag) {
 	fetchInstruction(currentStatePtr, currentPipelinePtr);
 	currentState.branchFlag = 0;
       } 

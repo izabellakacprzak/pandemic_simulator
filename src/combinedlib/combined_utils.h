@@ -3,13 +3,14 @@
 
 #include <stdint.h>
 
+/* Typedef denoting instructions */
 typedef uint32_t Instruction;
 
-// The type for label addresses
+/* Typedef denoting label addresses */
 typedef uint32_t Address;
 
-// enum representing all 4 instruction types
-// plus the all-0 - HALT instruction
+/* Enum representing all 4 instruction types
+   plus the all-0 - HALT instruction */
 typedef enum instr_type{
   BRANCH,
   DATA_TRANSFER,
@@ -19,8 +20,8 @@ typedef enum instr_type{
   SHIFT
 } InstructionType;
 
-// enum representing condition codes
-// as hexadecimal numbers
+/* Enum representing the condition codes
+   as hexadecimal numbers */
 typedef enum condition_code{
   eq = 0x0,   // 0b0000
   ne = 0x1,   // 0b0001
@@ -31,7 +32,7 @@ typedef enum condition_code{
   al = 0xE    // 0b1110
 } ConditionCode;
 
-
+/* Enum representing the opcodes */
 typedef enum opcode{
 	AND = 0,
 	EOR = 1,
@@ -53,6 +54,8 @@ typedef enum opcode{
 /* Performs rotate right to the value by rotating cyclically 
    with bit 0 shifting into bit 31 */
 int32_t ror(uint32_t value, uint32_t shift);
+
+/* Performs rotate left to the value by rotating cyclically */
 int32_t rol(uint32_t value, uint32_t shift);
 
 #endif // COMBINED_UTILS_H

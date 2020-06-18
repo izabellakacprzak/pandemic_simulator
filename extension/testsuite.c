@@ -129,6 +129,11 @@ int main(void) {
   disease.infectionChance = 0.5;
   disease.fatalityChance = 0.1;
 
+  int populationStat = population;
+  int deadStat = 0;
+  int sickStat = 0;
+  int latentStat = initiallyInfected;
+
   int gridLength = 7; // Note: DO NOT CHANGE for initialiseSocials tests (must be >= 3)
   int gridHeight = 10; // Note: DO NOT CHANGE for initialiseSocials tests (must be >= 3)
 
@@ -315,7 +320,7 @@ int main(void) {
   // fatalityChance and recoveryChance = 0
   humans[0]->status = HEALTHY;
 
-  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, &sickStat, &latentStat, gridLength, gridHeight, &disease);
 
   testbool(humans[0]->status == HEALTHY, "Single healthy human remains healthy");
 
@@ -333,7 +338,7 @@ int main(void) {
      - - -   */
 
   humans[4]->status = LATENT;
-  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, &sickStat, &latentStat, gridLength, gridHeight, &disease);
 
   {
     int latent = 0;
@@ -355,7 +360,7 @@ int main(void) {
 
   humans[8]->status = LATENT;
 
-  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, &sickStat, &latentStat, gridLength, gridHeight, &disease);
 
   {
     int correct = 0;
@@ -384,7 +389,7 @@ int main(void) {
   disease.infectionChance = 1;
   disease.latencyPeriod = 10;
   
-  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, &sickStat, &latentStat, gridLength, gridHeight, &disease);
 
   {
     int latent = 0;
@@ -406,7 +411,7 @@ int main(void) {
 
   humans[8]->status = SICK;
 
-  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, &sickStat, &latentStat, gridLength, gridHeight, &disease);
 
   {
     int correct = 0;
@@ -434,7 +439,7 @@ int main(void) {
     humans[i]->latencyTime = 10;
   }
 
-  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, &sickStat, &latentStat, gridLength, gridHeight, &disease);
   
   {
     int latent = 0;
@@ -467,7 +472,7 @@ int main(void) {
     humans[i]->risk = 0;
   }
 
-  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, &sickStat, &latentStat, gridLength, gridHeight, &disease);
   
   {
     int recovered = 0;
@@ -488,7 +493,7 @@ int main(void) {
     humans[i]->risk = 1;
   }
 
-  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, &sickStat, &latentStat, gridLength, gridHeight, &disease);
 
   {
     int sick = 0;
@@ -510,7 +515,7 @@ int main(void) {
     humans[i]->status = SICK;
   }
 
-  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, &sickStat, &latentStat, gridLength, gridHeight, &disease);
 
   testint(10 - population, 10,
 	  "All SICK humans should be DEAD (i.e. population = 0) [fatalityChance = 1]");
@@ -537,7 +542,7 @@ int main(void) {
     humans[i]->status = SICK;
   }
 
-  checkInfections(grid, humans, &population, gridLength, gridHeight, &disease);
+  checkInfections(grid, humans, &population, &sickStat, &latentStat, gridLength, gridHeight, &disease);
 
   {
     int healthy = 0;

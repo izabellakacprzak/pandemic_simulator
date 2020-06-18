@@ -152,7 +152,7 @@ int setRegistersMultiply(Instruction *instruction, char **code) {
 
 /* assumes destTok[MAX_EXPR_IN_BRACKETS][MAX_INSTRUCTION_SIZE] */
 int removeBrackets(char **destTok, char *expression) {
-  if (expression[0] != '[') {
+  if(expression[0] != '[') {
     return 0;
   }
 
@@ -160,7 +160,7 @@ int removeBrackets(char **destTok, char *expression) {
   char *token = strtok(expression, delims);
 
   int i = 0;
-  while (token && i <= MAX_EXPR_IN_BRACKETS) {
+  while(token && i <= MAX_EXPR_IN_BRACKETS) {
     destTok[i] = token;
     token = strtok(NULL, delims);
     i++;
@@ -172,7 +172,7 @@ int removeBrackets(char **destTok, char *expression) {
 int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instruction *instruction) {
   Address expression = (Address) strtol(strtok(code[2], "="), NULL, 0);
 
-  if (expression <= 0xFF) {
+  if(expression <= 0xFF) {
     /* Treat as a mov instruction, with the condition code - al */
     code[2][0] = '#';
     *instruction = setBits(al, 28, 0);
@@ -180,7 +180,7 @@ int dataTransferImmediate(ldrAddresses *ldrAddresses, char **code, Instruction *
     return operandAssignment(instruction, code);
   }
 
-  if (expression > 0xFFFFFFFF) {
+  if(expression > 0xFFFFFFFF) {
     printf("Invalid address provided");
     return INVALID_INSTRUCTION;
   }

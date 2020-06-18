@@ -66,7 +66,6 @@ static int setMultiply(Instruction *instruction, char **code, symbolNode *operat
   }
 }
 
-/* In the case of <ldr/str> Rd,<address> (where <address> is 1-3 tokens) */
 static int setDataTransfer(Instruction *instruction, char **code,
 			   ldrAddresses *ldrAddresses, symbolNode *operationNode) {
   *instruction = 0;
@@ -220,7 +219,7 @@ static int setBranch(Instruction *instruction, char **code,
 
 static int setHalt(Instruction *instruction) {
   *instruction = 0;
-	return 0;
+  return 0;
 }
 
 static int setSpecialInstruction(Instruction *instruction, char **code, symbolNode *operationNode) {
@@ -248,7 +247,7 @@ int assemble(Instruction *setInstruction, symbolNode *symbolTable,
 
   symbolNode *operationNode = search(symbolTable, nextInstruction[0]);
 
-  if (!operationNode) {
+  if(!operationNode) {
     return NOT_IN_TABLE;
   }
   
