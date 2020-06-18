@@ -1,9 +1,20 @@
-
 #ifndef SIMULATE_UTILS
 #define SIMULATE_UTILS
 
 #include <stdlib.h>
 #include <errno.h>
+
+#define EC_FROM_SYS_ERROR(e) (SYS + e)
+#define EC_TO_SYS_ERROR(e) (e - SYS)
+#define EC_IS_SYS_ERROR(e) (e >= SYS)
+
+/* For program errors such as invalid instructions */
+#define FATAL_PROG(pred, status) \
+  do { if (pred) {err = status; goto fatalError;} } while (0)
+
+/* For system errors such as failed file open */
+#define FATAL_SYS(pred) \
+  do { if (pred) {err = EC_FROM_SYS_ERROR(errno); goto fatalError;} } while (0)
 
 typedef enum healthStatus {
   HEALTHY,
@@ -24,6 +35,8 @@ typedef struct point {
 	int y;
 } Point;
 
+typedef Point SocialSpace;
+
 typedef struct humanStruct {
   int latencyTime;
   int x;
@@ -38,6 +51,8 @@ typedef struct gridCellStruct {
   CellType type;
 } GridCell;
 
+typedef GridCell** Grid;
+
 typedef struct diseaseStruct {
   int latencyPeriod;
   double infectionChance;
@@ -45,9 +60,23 @@ typedef struct diseaseStruct {
   double recoveryChance;
 } Disease;
 
-typedef Point SocialSpace;
+typedef enum outputSelection {
+  NO_OUTPUT,
+  GIF,
+  TERMINAL
+} outputSelection;
 
-typedef GridCell** Grid;
+typedef enum errorCode {
+  OK,
+  ALLOCATION_FAIL,
+  SYS
+} ErrorCode;
+
+/* Struct containing the error message based on the error code*/
+typedef struct err {
+  int code;
+  char *message;
+} ErrorType;
 
 #define RANDINT(min, max) \
   (rand() % (max - min)) + min
@@ -62,29 +91,6 @@ void move(Grid grid, Human **humans, int population, int gridColumns, int gridRo
 
 void checkInfections(Grid grid, Human **humans, int *population, int gridColumns, int gridRows, Disease *disease);
 
-typedef enum errorCode {
-  OK,
-  ALLOCATION_FAIL,
-  SYS
-} ErrorCode;
-
-/* Struct containing the error message based on the error code*/
-typedef struct err {
-  int code;
-  char *message;
-} ErrorType;
-
-#define EC_FROM_SYS_ERROR(e) (SYS + e)
-#define EC_TO_SYS_ERROR(e) (e - SYS)
-#define EC_IS_SYS_ERROR(e) (e >= SYS)
-
-/* For program errors such as invalid instructions */
-#define FATAL_PROG(pred, status) \
-  do { if (pred) {err = status; goto fatalError;} } while (0)
-
-/* For system errors such as failed file open */
-#define FATAL_SYS(pred) \
-  do { if (pred) {err = EC_FROM_SYS_ERROR(errno); goto fatalError;} } while (0)
-
 char *getProgramError(ErrorCode e);
+
 #endif

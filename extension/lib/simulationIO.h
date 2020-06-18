@@ -2,9 +2,9 @@
 #define SIMULATE_IO
 
 #include "simulate_utils.h"
+
 #define GRID_SIZE (10)
 #define BUFFER_SIZE (100)
-
 #define DEFAULT_POPULATION (10)
 #define DEFAULT_INFECTED (4)
 #define LATENCY (5)
