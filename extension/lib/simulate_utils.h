@@ -75,6 +75,13 @@ typedef enum outputSelection {
   TERMINAL
 } outputSelection;
 
+/* Enum which displays the configuration selected by the user */
+typedef enum configSelection {
+  NO_CONFIGURATION,
+  CONFIG
+} configSelection;
+
+
 /* Enum containing the error codes performed by the program */
 typedef enum errorCode {
   OK,

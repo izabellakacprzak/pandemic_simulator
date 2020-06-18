@@ -17,16 +17,36 @@ int main(void) {
   ErrorCode err = OK;
   Disease disease = {0};
   outputSelection outputType = NO_OUTPUT; 
-
+  configSelection configType = NO_CONFIGURATION;
+  
   /* Seed the random number generator */
   srand(time(NULL));
 
   /* Set up the configuration file */
   setInitial(&disease, &population, &initiallyInfected,
              &gridColumns, &gridRows, &numSocials);
+
+  printf("The default values the program will be run with are: \n");	
+  printConfigValues(&disease, &population, &initiallyInfected, 
+  	              &gridColumns, &gridRows, &numSocials);
+  
+  while(configType == NO_CONFIGURATION) {
+    printf("Would you like to keep the default variables or use the ones from the config file? ('default'/'config')\n");
+    scanf("%9s", input);
+
+    if(strcmp(input, "config") == 0) {
+      configType = CONFIG;
+    } else if(strcmp(input, "default") != 0) {
+      printf("Invalid input %s\n", input);
+    }
+  }
+
+  if(configType == CONFIG){   
+  printf("The new values the program will be run with are: \n");	        
   configure(&disease, &population, &initiallyInfected,
               &gridColumns, &gridRows, &numSocials);
-
+  }
+  
   int noFreeCells;
   Point *freeCells;
 
