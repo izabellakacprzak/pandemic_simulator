@@ -9,29 +9,29 @@ void printToTerminal(Grid grid, int gridColumns, int gridRows) {
 
   GridCell cell;
 
-  for (int i = 0; i < gridRows; i++) {
-    for (int j = 0; j < gridColumns; j++) {
+  for(int i = 0; i < gridRows; i++) {
+    for(int j = 0; j < gridColumns; j++) {
       cell = grid[i][j];
-      if (cell.human) {
+      if(cell.human) {
         switch (cell.human->status) {
           case HEALTHY:
-            printf("H"); //healthy
+            printf("H"); /* healthy */
             break;
           case LATENT:
-            printf("L"); //carrier
+            printf("L"); /* carrier */
             break;
           case SICK:
-            printf("I"); //infected
+            printf("I"); /* infected */
             break;
           default:
-            printf("E"); //error
+            printf("E"); /* error */
             break;
         }
       } else {
-        if (grid[i][j].type == SOCIAL) {
-          printf("S"); //social space
+        if(grid[i][j].type == SOCIAL) {
+          printf("S"); /* social space */
         } else {
-          printf("-"); //empty cell
+          printf("-"); /* empty cell */
         }
       }
     }
@@ -44,13 +44,15 @@ int getNextInput(char *input) {
   return scanf("%9s", input);
 }
 
+/* Sets an int variable with the value from the configuration file */
 static void getInt(char *buffer, int *value) {
-  if (!sscanf(buffer, "%*s%d", value)) {
+  if(!sscanf(buffer, "%*s%d", value)) {
     perror("Configuration value not found\n");
     exit(EXIT_FAILURE);
   }
 }
 
+/* Sets a double variable with the value from the configuration file */
 static void getDouble(char *buffer, double *value){
   if(!sscanf(buffer, "%*s%lf", value)){
     perror("Configuration value not found\n");
@@ -72,39 +74,36 @@ void setInitial(Disease *disease, int *population, int *initiallyInfected, int *
 
 }
 
-void configurate(Disease *disease, int *population, int *initiallyInfected, int *gridColumns, int *gridRows, int *numSocials) {
+void configure(Disease *disease, int *population, int *initiallyInfected, int *gridColumns, int *gridRows, int *numSocials) {
 
   FILE *configFile;
-  if ((configFile = fopen("config.txt", "r")) == NULL) {
-    printf("Error loading configuration file... Reverting to default...\n");
-    setInitial(disease, population, initiallyInfected, gridColumns, gridRows, numSocials);
+  if((configFile = fopen("config.txt", "r")) == NULL) {
+    printf("Error loading config.txt file... Reverting to default...\n");
   } else {
     char buffer[BUFFER_SIZE];
 
-    //Code duplication to remove - this is a working version
-    while (!feof(configFile)) {
-
+    while(!feof(configFile)) {
       fgets(buffer, BUFFER_SIZE, configFile);
       /* Comments in config file are denoted with / */
-      if (buffer[0] == '/') {
+      if(buffer[0] == '/') {
         continue;
-      } else if (strstr(buffer, "population")) {
+      } else if(strstr(buffer, "population")) {
         getInt(buffer, population);
-      } else if (strstr(buffer, "initially_infected")) {
+      } else if(strstr(buffer, "initially_infected")) {
         getInt(buffer, initiallyInfected);
-      } else if (strstr(buffer, "latency_period")) {
+      } else if(strstr(buffer, "latency_period")) {
         getInt(buffer, &disease->latencyPeriod);
-      } else if (strstr(buffer, "columns")) {
+      } else if(strstr(buffer, "columns")) {
         getInt(buffer, gridColumns);
-      } else if (strstr(buffer, "rows")) {
+      } else if(strstr(buffer, "rows")) {
         getInt(buffer, gridRows);
-      } else if (strstr(buffer, "infection_rate")) {
+      } else if(strstr(buffer, "infection_rate")) {
         getDouble(buffer, &disease->infectionChance);
-      } else if (strstr(buffer, "fatality_rate")) {
+      } else if(strstr(buffer, "fatality_rate")) {
         getDouble(buffer, &disease->fatalityChance);
-      } else if (strstr(buffer, "recovery_rate")) {
+      } else if(strstr(buffer, "recovery_rate")) {
         getDouble(buffer, &disease->recoveryChance);
-      } else if (strstr(buffer, "social_spaces")) {
+      } else if(strstr(buffer, "social_spaces")) {
         getInt(buffer, numSocials);
       } else {
         printf("Configuration variable %s does not exist\n", buffer);

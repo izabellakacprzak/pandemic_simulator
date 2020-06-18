@@ -130,8 +130,8 @@ int main(int argc, char **argv) {
   /* End the program immediately if an error has been detected */
   fatalError:
   /* Free any dynamically allocated memory */
-  for (int i = 0; i < MAX_INSTRUCTION_PARAMS + 1; i++) {
-    if (currentLine[i]) {
+  for(int i = 0; i < MAX_INSTRUCTION_PARAMS + 1; i++) {
+    if(currentLine[i]) {
       free(currentLine[i]);
     }
   }

@@ -16,6 +16,7 @@
 #define FATAL_SYS(pred) \
   do { if (pred) {err = EC_FROM_SYS_ERROR(errno); goto fatalError;} } while (0)
 
+/* Enum which displays the health status of a human*/
 typedef enum healthStatus {
   HEALTHY,
   LATENT,
@@ -23,20 +24,24 @@ typedef enum healthStatus {
   DEAD
 } HealthStatus;
 
+/* Enum which displays whether the cell is a social place or not */
 typedef enum cellType {
   NORMAL,
   SOCIAL,
-  HOSPITAL
 } CellType;
 
-
+/* Struct for holding the coordinates of a point */
 typedef struct point {
 	int x;
 	int y;
 } Point;
 
+/* Typedef for social spaces which hold the 
+   coordinates of a social space on the grid */
 typedef Point SocialSpace;
 
+/* Struct which holds the coordinates of the human, their prefered social space,
+   the time they have been latent for and their risk of catching the virus */
 typedef struct humanStruct {
   int latencyTime;
   int x;
@@ -46,11 +51,14 @@ typedef struct humanStruct {
   HealthStatus status;
 } Human;
 
+/* Struct for the grid cells with each holding a pointer to 
+   the human currently in the cell as well as the type of the cell */
 typedef struct gridCellStruct {
   Human *human;
   CellType type;
 } GridCell;
 
+/* Typedef for a 2d array made out of grid cells */
 typedef GridCell** Grid;
 
 typedef struct diseaseStruct {
@@ -60,12 +68,14 @@ typedef struct diseaseStruct {
   double recoveryChance;
 } Disease;
 
+/* Enum which displays the output selected by the user */
 typedef enum outputSelection {
   NO_OUTPUT,
   GIF,
   TERMINAL
 } outputSelection;
 
+/* Enum containing the error codes performed by the program */
 typedef enum errorCode {
   OK,
   ALLOCATION_FAIL,
@@ -81,16 +91,23 @@ typedef struct err {
 #define RANDINT(min, max) \
   (rand() % (max - min)) + min
 
+/* Returns a random double between 0 and 1 with the random generator seeded in main */
 double randomFrom0To1(void);
 
+/* Assigns a cell a new human */
 void cellSet(GridCell *cell, Human *newHuman);
 
+/* Clears the Human field of a cell */
 void cellClear(GridCell *cell);
 
+/* Impements a random movement algorith which moves 
+   each human to a random free cell next to them */
 void move(Grid grid, Human **humans, int population, int gridColumns, int gridRows);
 
+/* Updates the sickness status of each human as well as the grid accordingly */
 void checkInfections(Grid grid, Human **humans, int *population, int gridColumns, int gridRows, Disease *disease);
 
+/* Gets the error code */
 char *getProgramError(ErrorCode e);
 
 #endif

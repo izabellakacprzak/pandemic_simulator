@@ -16,7 +16,7 @@ typedef struct Operator {
   } operation;
 } Operator;
 
-/* Struct for the different flags which appear in 
+/* Enum for the different flags which appear in 
    the instruction set of the emulator with their value 
    set to their respective position in an instruction */
 typedef enum Flags {
