@@ -2,7 +2,7 @@ Welcome to group 28's C Project Extension!
 
 We Hope you enjoy using our program.
 
-This file outlines:
+This file contains:
 -Installation
 -Operation
 -Output Legend
@@ -11,6 +11,8 @@ This file outlines:
 
 Installation:
 Go into the directory with this file on a terminal and type "make" or "make all".
+You can then run the program with the command ./simulation
+You can also run a test suite with the command ./testsuite
 You can uninstall object files by typing "make clean", but please note that this will also delete any GIFs created by the program from this directory.
 
 Operation:
