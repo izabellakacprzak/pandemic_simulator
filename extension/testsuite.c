@@ -565,8 +565,9 @@ int main(void) {
 
   resetSocialPlaces(5, &numSocials, &socialPlaces, grid);
   srand(1);
-  executeRand(10); // next in initialiseSocials are (1, 5), (1, 5), (4, 5) (when grid size is (7, 10))
+  executeRand(10);
 
+  // next in initialiseSocials are (1, 5), (1, 5), (4, 5) (when grid size is (7, 10))
   initialiseSocials(numSocials, grid, socialPlaces, gridLength, gridHeight);
 
   testbool(!(socialPlaces[0].x == socialPlaces[1].x && socialPlaces[0].y == socialPlaces[1].y),
@@ -602,7 +603,6 @@ int main(void) {
                      int length, int height) */
   printf("Tests for moveAStar (simulate_social.c):\n");
 
-  // population = 1, numSocials = 1
   resetSocialPlaces(1, &numSocials, &socialPlaces, grid);
   resetHumans(1, &population, humans, grid, gridLength, gridHeight, &noFreeCells, &freeCells, numSocials);
 
