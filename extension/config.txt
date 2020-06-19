@@ -1,10 +1,10 @@
 // GRID SIZE
-columns 10
-rows 10
+columns 50
+rows 30
 // INITIAL POPULATION
-population 70
+population 500
 // INITIALLY INFECTED PEOPLE
-initially_infected 1
+initially_infected 100
 // NUMBER OF TURNS BEFORE RECOVERY/SICKNESS
 latency_period 5
 // CHANCE OF BECOMING INFECTED WHILE NEXT TO A
@@ -15,10 +15,10 @@ fatality_rate 0.01
 // CHANCE OF RECOVERY PER TURN WHEN SICK
 recovery_rate 0.02
 // NUMBER OF SOCIAL SPACES HUMANS MAY CONGREGATE TO
-social_spaces 10
+social_spaces 5
 // TOGGLE IMMUNITY EFFECTS
 //   (HUMANS CANNOT BECOME LATENT AFTER BEING LATENT/SICK)
-immunity 1
+immunity 0
 // TOGGLE QUARANTINE EFFECTS
 //   (SICK HUMANS DO NOT MOVE EACH TURN)
 quarantine 0
